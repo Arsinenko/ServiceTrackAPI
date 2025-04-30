@@ -1,0 +1,57 @@
+using AuthApp.application.Interfaces;
+using AuthApp.domain.Entities;
+using AuthApp.infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace AuthApp.infrastructure.Repositories;
+
+public class RoleRepository : IRoleRepository
+{
+    private readonly ApplicationDbContext _context;
+
+    public RoleRepository(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<Role?> GetByIdAsync(Guid id)
+    {
+        return await _context.Roles.FindAsync(id);
+    }
+
+    public async Task<Role?> GetByNameAsync(string name)
+    {
+        return await _context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == name.ToLower());
+    }
+
+    public async Task<IEnumerable<Role>> GetAllAsync()
+    {
+        return await _context.Roles.ToListAsync();
+    }
+
+    public async Task<Guid> CreateAsync(Role role)
+    {
+        role.CreatedAt = DateTime.UtcNow;
+        _context.Roles.Add(role);
+        await _context.SaveChangesAsync();
+        return role.Id;
+    }
+
+    public async Task<Guid> UpdateAsync(Role role)
+    {
+        role.UpdatedAt = DateTime.UtcNow;
+        _context.Roles.Update(role);
+        await _context.SaveChangesAsync();
+        return role.Id;
+    }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var role = await _context.Roles.FindAsync(id);
+        if (role != null)
+        {
+            _context.Roles.Remove(role);
+            await _context.SaveChangesAsync();
+        }
+    }
+} 
