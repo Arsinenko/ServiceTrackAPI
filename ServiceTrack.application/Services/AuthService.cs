@@ -35,14 +35,14 @@ public class AuthService : IAuthService
             };
         }
 
-        // Get default role (you might want to make this configurable)
-        var defaultRole = await _roleRepository.GetByNameAsync("User");
-        if (defaultRole == null)
+        // Get role by ID from the request
+        var role = await _roleRepository.GetByIdAsync(registerUserDto.RoleId);
+        if (role == null)
         {
             return new AuthResult
             {
                 Success = false,
-                Message = "Default role not found"
+                Message = "Specified role not found"
             };
         }
 
@@ -56,7 +56,8 @@ public class AuthService : IAuthService
             FirstName = registerUserDto.FirstName,
             LastName = registerUserDto.LastName,
             CreatedAt = DateTime.UtcNow,
-            RoleId = defaultRole.Id
+            RoleId = role.Id,
+            Role = role
         };
         await _userRepository.CreateAsync(user);
         string token = _jwtGenerator.CreateToken(user);

@@ -7,7 +7,7 @@ namespace AuthApp.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin")]
+
 public class RoleController : ControllerBase
 {
     private readonly IRoleService _roleService;
@@ -16,7 +16,7 @@ public class RoleController : ControllerBase
     {
         _roleService = roleService;
     }
-
+    
     [HttpGet]
     public async Task<ActionResult<IEnumerable<RoleDto>>> GetAll()
     {
@@ -33,14 +33,15 @@ public class RoleController : ControllerBase
 
         return Ok(role);
     }
-
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<RoleDto>> Create(CreateRoleDto createRoleDto)
     {
         var role = await _roleService.CreateAsync(createRoleDto);
         return CreatedAtAction(nameof(GetById), new { id = role.Id }, role);
     }
-
+    
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<ActionResult<RoleDto>> Update(Guid id, UpdateRoleDto updateRoleDto)
     {
@@ -50,7 +51,8 @@ public class RoleController : ControllerBase
 
         return Ok(role);
     }
-
+    
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {

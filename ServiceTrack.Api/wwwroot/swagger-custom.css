@@ -1,0 +1,36 @@
+.swagger-ui .authorize-wrapper {
+    margin: 1em 0;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.swagger-ui .auth-wrapper .authorize {
+    background-color: #49cc90;
+    color: #fff;
+    border-color: #49cc90;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 4px;
+    text-shadow: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.swagger-ui .auth-wrapper .authorize:hover {
+    background-color: #3aa876;
+    border-color: #3aa876;
+}
+
+.swagger-ui .auth-wrapper .authorize svg {
+    fill: #fff;
+    margin-right: 5px;
+}
+
+.swagger-ui .auth-container {
+    margin: 0 0 20px;
+    padding: 10px 20px;
+    border: 1px solid #49cc90;
+    border-radius: 4px;
+    background: #f8f8f8;
+} 
