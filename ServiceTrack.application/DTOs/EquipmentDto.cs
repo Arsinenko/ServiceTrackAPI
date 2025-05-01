@@ -23,8 +23,8 @@ public class EquipmentDto
             SerialNumber = equipment.SerialNumber,
             Manufacturer = equipment.Manufacturer,
             Quantity = equipment.Quantity,
-            CreatedAt = equipment.CreatedAt,
-            UpdatedAt = equipment.UpdatedAt
+            CreatedAt = equipment.CreatedAt.ToLocalTime(),
+            UpdatedAt = equipment.UpdatedAt.ToLocalTime()
         };
     }
 }

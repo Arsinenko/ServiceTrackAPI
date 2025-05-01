@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using AuthApp.infrastructure.Data;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,9 +16,9 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo 
     { 
-        Title = "Auth API", 
+        Title = "ServiceTrack API", 
         Version = "v1",
-        Description = "API для аутентификации и авторизации пользователей"
+        Description = "API для управления оборудованием и его компонентами"
     });
 
     // Настройка авторизации Swagger
@@ -45,6 +46,11 @@ builder.Services.AddSwaggerGen(c =>
             Array.Empty<string>()
         }
     });
+
+    // Добавляем XML-документацию
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
 });
 
 // Добавление слоев Application и Infrastructure
