@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using AuthApp.application.DTOs;
 using AuthApp.application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -61,6 +62,25 @@ public class ServiceRequestController : ControllerBase
     [HttpGet("user/{userId}")]
     public async Task<ActionResult<IEnumerable<ServiceRequestDto>>> GetByUserId(Guid userId)
     {
+        var requests = await _serviceRequestService.GetByUserIdAsync(userId);
+        return Ok(requests);
+    }
+
+    /// <summary>
+    /// Получает список заявок для текущего пользователя
+    /// </summary>
+    /// <returns>Список заявок</returns>
+    /// <response code="200">Возвращает список заявок</response>
+    /// <response code="401">Требуется авторизация</response>
+    [Authorize]
+    [HttpGet("user")]
+    public async Task<ActionResult<IEnumerable<ServiceRequestDto>>> GetForCurrentUser()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
         var requests = await _serviceRequestService.GetByUserIdAsync(userId);
         return Ok(requests);
     }

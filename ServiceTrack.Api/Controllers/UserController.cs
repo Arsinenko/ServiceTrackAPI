@@ -116,6 +116,19 @@ public class UserController : ControllerBase
         return Ok(user);
     }
 
+    [Authorize]
+    [HttpPut("me")]
+    public async Task<ActionResult<UserDto>> UpdateCurrentUser(UpdateUserDto updateUserDto)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+        var user = await _userService.UpdateAsync(userId, updateUserDto);
+        return Ok(user);
+    }
+
     /// <summary>
     /// Удаляет пользователя (мягкое удаление)
     /// </summary>
