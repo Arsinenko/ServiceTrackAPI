@@ -2,7 +2,7 @@ using AuthApp.application.DTOs;
 
 namespace AuthApp.application.Interfaces;
 
-public interface IEquipmentInterface
+public interface IEquipmentService
 {
     Task<EquipmentDto?> GetByIdAsync(Guid id);
     Task<EquipmentDto?> GetByNameAsync(string name);

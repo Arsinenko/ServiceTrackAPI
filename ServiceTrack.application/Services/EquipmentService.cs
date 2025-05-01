@@ -4,7 +4,7 @@ using AuthApp.domain.Entities;
 
 namespace AuthApp.application.Services;
 
-public class EquipmentService : IEquipmentInterface
+public class EquipmentService : IEquipmentService
 {
     private readonly IEquipmentRepository _equipmentRepository;
 
@@ -46,13 +46,25 @@ public class EquipmentService : IEquipmentInterface
         return EquipmentDto.FromEquipment(equipment);
     }
 
-    public Task<EquipmentDto?> UpdateAsync(Guid id, UpdateEquipmentDto updateEquipmentDto)
+    public async Task<EquipmentDto?> UpdateAsync(Guid id, UpdateEquipmentDto updateEquipmentDto)
     {
-        throw new NotImplementedException();
+        var equipment = await _equipmentRepository.GetByIdAsync(id);
+        if (equipment == null)
+        {
+            return null;
+        }
+        equipment.Name = updateEquipmentDto.Name;
+        equipment.Model = updateEquipmentDto.Model;
+        equipment.SerialNumber = updateEquipmentDto.SerialNumber;
+        equipment.Manufacturer = updateEquipmentDto.Manufacturer;
+        equipment.Quantity = updateEquipmentDto.Quantity;
+        
+        await _equipmentRepository.UpdateAsync(equipment);
+        return EquipmentDto.FromEquipment(equipment);
     }
 
-    public Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
-        throw new NotImplementedException();
+        await _equipmentRepository.DeleteAsync(id); 
     }
 }

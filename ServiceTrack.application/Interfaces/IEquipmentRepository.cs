@@ -8,7 +8,7 @@ public interface IEquipmentRepository
     Task<Equipment?> GetByIdAsync(Guid id);
     Task<Equipment?> GetByNameAsync(string name);
     Task<IEnumerable<Equipment>> GetAllAsync();
-    Task<Equipment> CreateAsync(Equipment equipment);
-    Task<Equipment?> UpdateAsync(Equipment equipment);
+    Task<Guid> CreateAsync(Equipment equipment);
+    Task<Guid?> UpdateAsync(Equipment equipment);
     Task DeleteAsync(Guid id);
 }
