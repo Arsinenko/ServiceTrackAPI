@@ -9,10 +9,17 @@ public class CreateServiceRequestDto
     public string Customer { get; set; }
     public string Description { get; set; }
     public List<InitialUserAssignmentDto> InitialAssignments { get; set; } = new();
+    public List<InitialEquipmentAssignmentDto> InitialEquipment { get; set; } = new();
 }
 
 public class InitialUserAssignmentDto
 {
     public Guid UserId { get; set; }
     public bool IsPrimaryAssignee { get; set; }
+}
+
+public class InitialEquipmentAssignmentDto
+{
+    public Guid EquipmentId { get; set; }
+    public string? Notes { get; set; }
 } 

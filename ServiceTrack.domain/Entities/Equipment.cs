@@ -16,4 +16,7 @@ public class Equipment
     
     // Навигационное свойство для компонентов
     public ICollection<EquipmentComponent> Components { get; set; }
+    
+    // Many-to-many relationship with ServiceRequest
+    public ICollection<ServiceRequestEquipment> ServiceRequestEquipments { get; set; }
 }   

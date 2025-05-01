@@ -12,6 +12,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<EquipmentComponent> EquipmentComponents { get; set; }
     public DbSet<ServiceRequest> ServiceRequests { get; set; }
     public DbSet<UserServiceRequest> UserServiceRequests { get; set; }
+    public DbSet<ServiceRequestEquipment> ServiceRequestEquipments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -77,6 +78,24 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(usr => usr.ServiceRequest)
                 .WithMany(sr => sr.UserServiceRequests)
                 .HasForeignKey(usr => usr.ServiceRequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ServiceRequestEquipment>(entity =>
+        {
+            entity.HasKey(sre => new { sre.ServiceRequestId, sre.EquipmentId });
+
+            entity.Property(sre => sre.AddedAt).IsRequired();
+            entity.Property(sre => sre.Notes).HasMaxLength(500);
+
+            entity.HasOne(sre => sre.ServiceRequest)
+                .WithMany(sr => sr.ServiceRequestEquipments)
+                .HasForeignKey(sre => sre.ServiceRequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(sre => sre.Equipment)
+                .WithMany(e => e.ServiceRequestEquipments)
+                .HasForeignKey(sre => sre.EquipmentId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

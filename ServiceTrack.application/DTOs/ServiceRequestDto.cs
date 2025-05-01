@@ -15,6 +15,7 @@ public class ServiceRequestDto
     public bool IsCompleted { get; set; }
     public DateTime? CompletedAt { get; set; }
     public List<AssignedUserDto> AssignedUsers { get; set; } = new();
+    public List<AssignedEquipmentDto> AssignedEquipment { get; set; } = new();
 
     public static ServiceRequestDto FromServiceRequest(AuthApp.domain.Entities.ServiceRequest request)
     {
@@ -36,7 +37,18 @@ public class ServiceRequestDto
                     AssignedAt = usr.AssignedAt,
                     IsPrimaryAssignee = usr.IsPrimaryAssignee
                 })
-                .ToList() ?? new List<AssignedUserDto>()
+                .ToList() ?? new List<AssignedUserDto>(),
+            AssignedEquipment = request.ServiceRequestEquipments?
+                .Select(sre => new AssignedEquipmentDto
+                {
+                    EquipmentId = sre.EquipmentId,
+                    Name = sre.Equipment.Name,
+                    Model = sre.Equipment.Model,
+                    SerialNumber = sre.Equipment.SerialNumber,
+                    AddedAt = sre.AddedAt,
+                    Notes = sre.Notes
+                })
+                .ToList() ?? new List<AssignedEquipmentDto>()
         };
     }
 }
@@ -47,4 +59,14 @@ public class AssignedUserDto
     public string FullName { get; set; }
     public DateTime AssignedAt { get; set; }
     public bool IsPrimaryAssignee { get; set; }
+}
+
+public class AssignedEquipmentDto
+{
+    public Guid EquipmentId { get; set; }
+    public string Name { get; set; }
+    public string Model { get; set; }
+    public string SerialNumber { get; set; }
+    public DateTime AddedAt { get; set; }
+    public string? Notes { get; set; }
 }

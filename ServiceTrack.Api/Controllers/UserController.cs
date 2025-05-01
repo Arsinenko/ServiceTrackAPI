@@ -11,7 +11,7 @@ namespace AuthApp.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -28,6 +28,7 @@ public class UserController : ControllerBase
     /// <response code="200">Возвращает информацию о пользователе</response>
     /// <response code="401">Требуется авторизация</response>
     /// <response code="404">Пользователь не найден</response>
+    [Authorize]
     [HttpGet("me")]
     public async Task<ActionResult<UserDto>> GetCurrentUser()
     {
@@ -66,6 +67,7 @@ public class UserController : ControllerBase
     /// <response code="401">Требуется авторизация</response>
     /// <response code="404">Пользователь не найден</response>
     [HttpGet("{id:guid}")]
+    [Authorize]
     public async Task<ActionResult<UserDto>> GetById(Guid id)
     {
         var user = await _userService.GetByIdAsync(id);
@@ -84,6 +86,7 @@ public class UserController : ControllerBase
     /// <response code="401">Требуется авторизация</response>
     /// <response code="404">Пользователь не найден</response>
     [HttpGet("email/{email}")]
+    [Authorize]
     public async Task<ActionResult<UserDto>> GetByEmail(string email)
     {
         var user = await _userService.GetByEmailAsync(email);
@@ -103,6 +106,7 @@ public class UserController : ControllerBase
     /// <response code="401">Требуется авторизация</response>
     /// <response code="404">Пользователь не найден</response>
     [HttpPut("{id:guid}")]
+    [Authorize]
     public async Task<ActionResult<UserDto>> Update(Guid id, UpdateUserDto updateUserDto)
     {
         var user = await _userService.UpdateAsync(id, updateUserDto);

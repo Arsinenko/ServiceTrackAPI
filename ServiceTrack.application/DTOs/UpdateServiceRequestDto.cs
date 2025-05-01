@@ -9,10 +9,17 @@ public class UpdateServiceRequestDto
     public string Description { get; set; }
     public bool IsCompleted { get; set; }
     public List<UserAssignmentDto> UserAssignments { get; set; } = new();
+    public List<EquipmentAssignmentDto> EquipmentAssignments { get; set; } = new();
 }
 
 public class UserAssignmentDto
 {
     public Guid UserId { get; set; }
     public bool IsPrimaryAssignee { get; set; }
+}
+
+public class EquipmentAssignmentDto
+{
+    public Guid EquipmentId { get; set; }
+    public string? Notes { get; set; }
 } 

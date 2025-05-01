@@ -8,13 +8,16 @@ public class ServiceRequestService : IServiceRequestService
 {
     private readonly IServiceRequestRepository _serviceRequestRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IEquipmentRepository _equipmentRepository;
 
     public ServiceRequestService(
         IServiceRequestRepository serviceRequestRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IEquipmentRepository equipmentRepository)
     {
         _serviceRequestRepository = serviceRequestRepository;
         _userRepository = userRepository;
+        _equipmentRepository = equipmentRepository;
     }
 
     public async Task<ServiceRequestDto?> GetByIdAsync(int id)
@@ -44,7 +47,8 @@ public class ServiceRequestService : IServiceRequestService
             Description = createDto.Description,
             CreatedAt = DateTime.UtcNow,
             IsCompleted = false,
-            UserServiceRequests = new List<UserServiceRequest>()
+            UserServiceRequests = new List<UserServiceRequest>(),
+            ServiceRequestEquipments = new List<ServiceRequestEquipment>()
         };
 
         // Add initial user assignments
@@ -59,6 +63,22 @@ public class ServiceRequestService : IServiceRequestService
                     ServiceRequestId = request.Id,
                     AssignedAt = DateTime.UtcNow,
                     IsPrimaryAssignee = assignment.IsPrimaryAssignee
+                });
+            }
+        }
+
+        // Add initial equipment assignments
+        foreach (var equipment in createDto.InitialEquipment)
+        {
+            var eq = await _equipmentRepository.GetByIdAsync(equipment.EquipmentId);
+            if (eq != null)
+            {
+                request.ServiceRequestEquipments.Add(new ServiceRequestEquipment
+                {
+                    EquipmentId = eq.Id,
+                    ServiceRequestId = request.Id,
+                    AddedAt = DateTime.UtcNow,
+                    Notes = equipment.Notes
                 });
             }
         }
@@ -96,6 +116,29 @@ public class ServiceRequestService : IServiceRequestService
                         ServiceRequestId = request.Id,
                         AssignedAt = DateTime.UtcNow,
                         IsPrimaryAssignee = assignment.IsPrimaryAssignee
+                    });
+                }
+            }
+        }
+
+        // Update equipment assignments
+        if (updateDto.EquipmentAssignments != null)
+        {
+            // Remove existing assignments
+            request.ServiceRequestEquipments.Clear();
+
+            // Add new assignments
+            foreach (var assignment in updateDto.EquipmentAssignments)
+            {
+                var equipment = await _equipmentRepository.GetByIdAsync(assignment.EquipmentId);
+                if (equipment != null)
+                {
+                    request.ServiceRequestEquipments.Add(new ServiceRequestEquipment
+                    {
+                        EquipmentId = equipment.Id,
+                        ServiceRequestId = request.Id,
+                        AddedAt = DateTime.UtcNow,
+                        Notes = assignment.Notes
                     });
                 }
             }
@@ -152,6 +195,45 @@ public class ServiceRequestService : IServiceRequestService
         if (assignment != null)
         {
             request.UserServiceRequests.Remove(assignment);
+            await _serviceRequestRepository.UpdateAsync(request);
+        }
+
+        return ServiceRequestDto.FromServiceRequest(request);
+    }
+
+    public async Task<ServiceRequestDto?> AssignEquipmentAsync(int requestId, Guid equipmentId, string? notes = null)
+    {
+        var request = await _serviceRequestRepository.GetByIdAsync(requestId);
+        if (request == null)
+            return null;
+
+        var equipment = await _equipmentRepository.GetByIdAsync(equipmentId);
+        if (equipment == null)
+            return null;
+
+        // Add new assignment
+        request.ServiceRequestEquipments.Add(new ServiceRequestEquipment
+        {
+            EquipmentId = equipment.Id,
+            ServiceRequestId = request.Id,
+            AddedAt = DateTime.UtcNow,
+            Notes = notes
+        });
+
+        await _serviceRequestRepository.UpdateAsync(request);
+        return ServiceRequestDto.FromServiceRequest(request);
+    }
+
+    public async Task<ServiceRequestDto?> UnassignEquipmentAsync(int requestId, Guid equipmentId)
+    {
+        var request = await _serviceRequestRepository.GetByIdAsync(requestId);
+        if (request == null)
+            return null;
+
+        var assignment = request.ServiceRequestEquipments.FirstOrDefault(sre => sre.EquipmentId == equipmentId);
+        if (assignment != null)
+        {
+            request.ServiceRequestEquipments.Remove(assignment);
             await _serviceRequestRepository.UpdateAsync(request);
         }
 

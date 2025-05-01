@@ -67,11 +67,7 @@ public class EquipmentController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<EquipmentDto>> UpdateEquipment(Guid id, UpdateEquipmentDto updateEquipmentDto)
     {
-        var equipment = await _equipmentServiceservice.GetByIdAsync(id);
-        if (equipment == null)
-        {
-            return NotFound();
-        }
+        var equipment = await _equipmentServiceservice.UpdateAsync(id, updateEquipmentDto);
         return Ok(equipment);
     }
 

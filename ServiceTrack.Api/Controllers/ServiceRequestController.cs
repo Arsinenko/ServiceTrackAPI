@@ -156,4 +156,43 @@ public class ServiceRequestController : ControllerBase
 
         return Ok(request);
     }
+
+    /// <summary>
+    /// Назначает оборудование на заявку
+    /// </summary>
+    /// <param name="id">Идентификатор заявки</param>
+    /// <param name="equipmentId">Идентификатор оборудования</param>
+    /// <param name="notes">Примечания к назначению</param>
+    /// <returns>Обновленная заявка</returns>
+    /// <response code="200">Оборудование успешно назначено</response>
+    /// <response code="401">Требуется авторизация</response>
+    /// <response code="404">Заявка или оборудование не найдены</response>
+    [HttpPost("{id}/equipment/{equipmentId}")]
+    public async Task<ActionResult<ServiceRequestDto>> AssignEquipment(int id, Guid equipmentId, [FromQuery] string? notes = null)
+    {
+        var request = await _serviceRequestService.AssignEquipmentAsync(id, equipmentId, notes);
+        if (request == null)
+            return NotFound();
+
+        return Ok(request);
+    }
+
+    /// <summary>
+    /// Отменяет назначение оборудования на заявку
+    /// </summary>
+    /// <param name="id">Идентификатор заявки</param>
+    /// <param name="equipmentId">Идентификатор оборудования</param>
+    /// <returns>Обновленная заявка</returns>
+    /// <response code="200">Назначение успешно отменено</response>
+    /// <response code="401">Требуется авторизация</response>
+    /// <response code="404">Заявка не найдена</response>
+    [HttpPost("{id}/equipment/{equipmentId}/unassign")]
+    public async Task<ActionResult<ServiceRequestDto>> UnassignEquipment(int id, Guid equipmentId)
+    {
+        var request = await _serviceRequestService.UnassignEquipmentAsync(id, equipmentId);
+        if (request == null)
+            return NotFound();
+
+        return Ok(request);
+    }
 } 

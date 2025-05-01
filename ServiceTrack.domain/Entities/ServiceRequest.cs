@@ -13,4 +13,7 @@ public class ServiceRequest
     
     // Many-to-many relationship with User
     public ICollection<UserServiceRequest> UserServiceRequests { get; set; }
+    
+    // Many-to-many relationship with Equipment
+    public ICollection<ServiceRequestEquipment> ServiceRequestEquipments { get; set; }
 }
