@@ -15,17 +15,23 @@ public class EquipmentRepository : IEquipmentRepository
     }
     public async Task<Equipment?> GetByIdAsync(Guid id)
     {
-        return await _context.Equipment.FindAsync(id);
+        return await _context.Equipment
+            .Include(e => e.Components)
+            .FirstOrDefaultAsync(e => e.Id == id);
     }
 
     public async Task<Equipment?> GetByNameAsync(string name)
     {
-        return await _context.Equipment.FirstOrDefaultAsync(e => e.Name.ToLower() == name);
+        return await _context.Equipment
+            .Include(e => e.Components)
+            .FirstOrDefaultAsync(e => e.Name.ToLower() == name.ToLower());
     }
 
     public async Task<IEnumerable<Equipment>> GetAllAsync()
     {
-        return await _context.Equipment.ToListAsync();
+        return await _context.Equipment
+            .Include(e => e.Components)
+            .ToListAsync();
     }
 
     public async Task<Guid> CreateAsync(Equipment equipment)
@@ -52,6 +58,5 @@ public class EquipmentRepository : IEquipmentRepository
             _context.Equipment.Remove(equipment);
             await _context.SaveChangesAsync();
         }
-        
     }
 }

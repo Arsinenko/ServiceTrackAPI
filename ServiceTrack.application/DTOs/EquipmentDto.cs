@@ -12,6 +12,7 @@ public class EquipmentDto
     public int Quantity { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public ICollection<EquipmentComponentDto> Components { get; set; }
 
     public static EquipmentDto FromEquipment(Equipment equipment)
     {
@@ -24,7 +25,8 @@ public class EquipmentDto
             Manufacturer = equipment.Manufacturer,
             Quantity = equipment.Quantity,
             CreatedAt = equipment.CreatedAt.ToLocalTime(),
-            UpdatedAt = equipment.UpdatedAt.ToLocalTime()
+            UpdatedAt = equipment.UpdatedAt.ToLocalTime(),
+            Components = equipment.Components?.Select(c => EquipmentComponentDto.FromEquipmentComponent(c)).ToList()
         };
     }
 }
