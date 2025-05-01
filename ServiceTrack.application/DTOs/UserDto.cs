@@ -11,6 +11,8 @@ public class UserDto
     public DateTime CreatedAt { get; set; }
     public DateTime? LastLoginAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public bool IsAlive { get; set; }
+    public RoleDto Role { get; set; }
 
     public static UserDto FromUser(AuthApp.domain.Entities.User user)
     {
@@ -22,7 +24,9 @@ public class UserDto
             Email = user.Email,
             CreatedAt = user.CreatedAt.ToLocalTime(),
             LastLoginAt = user.LastLoginAt?.ToLocalTime(),
-            UpdatedAt = user.UpdatedAt?.ToLocalTime()
+            UpdatedAt = user.UpdatedAt?.ToLocalTime(),
+            IsAlive = user.IsAlive,
+            Role = user.Role != null ? RoleDto.FromRole(user.Role) : null
         };
     }
 } 

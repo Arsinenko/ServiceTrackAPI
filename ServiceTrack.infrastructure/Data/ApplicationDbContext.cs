@@ -36,6 +36,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.LastLoginAt);
             entity.Property(e => e.UpdatedAt);
+            entity.Property(e => e.IsAlive).IsRequired();
             
             entity.HasIndex(e => e.Email).IsUnique();
             

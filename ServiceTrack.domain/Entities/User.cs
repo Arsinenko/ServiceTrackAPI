@@ -10,6 +10,7 @@ public class User
     public DateTime CreatedAt { get; set; }
     public DateTime? LastLoginAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public bool IsAlive { get; set; } = true;
     
     // Navigation property
     public Guid RoleId { get; set; }
