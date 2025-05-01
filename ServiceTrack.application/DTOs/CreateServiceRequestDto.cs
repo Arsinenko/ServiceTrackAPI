@@ -1,0 +1,18 @@
+using System;
+using System.Collections.Generic;
+
+namespace AuthApp.application.DTOs;
+
+public class CreateServiceRequestDto
+{
+    public int ContractId { get; set; }
+    public string Customer { get; set; }
+    public string Description { get; set; }
+    public List<InitialUserAssignmentDto> InitialAssignments { get; set; } = new();
+}
+
+public class InitialUserAssignmentDto
+{
+    public Guid UserId { get; set; }
+    public bool IsPrimaryAssignee { get; set; }
+} 

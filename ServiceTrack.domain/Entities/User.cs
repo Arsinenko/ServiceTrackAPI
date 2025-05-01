@@ -15,4 +15,7 @@ public class User
     // Navigation property
     public Guid RoleId { get; set; }
     public Role Role { get; set; }
+    
+    // Many-to-many relationship with ServiceRequest
+    public ICollection<UserServiceRequest> UserServiceRequests { get; set; }
 }

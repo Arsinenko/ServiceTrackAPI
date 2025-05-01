@@ -10,6 +10,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Role> Roles { get; set; }
     public DbSet<Equipment> Equipment { get; set; }
     public DbSet<EquipmentComponent> EquipmentComponents { get; set; }
+    public DbSet<ServiceRequest> ServiceRequests { get; set; }
+    public DbSet<UserServiceRequest> UserServiceRequests { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,6 +47,39 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(e => e.RoleId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+
+        modelBuilder.Entity<ServiceRequest>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ContractId).IsRequired();
+            entity.Property(e => e.Customer).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Description).IsRequired();
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.UpdatedAt);
+            entity.Property(e => e.IsCompleted).IsRequired();
+            entity.Property(e => e.CompletedAt);
+
+            entity.HasIndex(e => e.ContractId).IsUnique();
+        });
+
+        modelBuilder.Entity<UserServiceRequest>(entity =>
+        {
+            entity.HasKey(usr => new { usr.UserId, usr.ServiceRequestId });
+
+            entity.Property(usr => usr.AssignedAt).IsRequired();
+            entity.Property(usr => usr.IsPrimaryAssignee).IsRequired();
+
+            entity.HasOne(usr => usr.User)
+                .WithMany(u => u.UserServiceRequests)
+                .HasForeignKey(usr => usr.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(usr => usr.ServiceRequest)
+                .WithMany(sr => sr.UserServiceRequests)
+                .HasForeignKey(usr => usr.ServiceRequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
         modelBuilder.Entity<Equipment>(entity =>
         {
             entity.HasKey(e => e.Id);

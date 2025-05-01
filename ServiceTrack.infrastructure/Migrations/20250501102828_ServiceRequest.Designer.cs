@@ -3,6 +3,7 @@ using System;
 using AuthApp.infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AuthApp.infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250501102828_ServiceRequest")]
+    partial class ServiceRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -144,17 +147,17 @@ namespace AuthApp.infrastructure.Migrations
 
             modelBuilder.Entity("AuthApp.domain.Entities.ServiceRequest", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("ContractId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ContractId"));
+
+                    b.Property<Guid?>("AssignedUserId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("ContractId")
-                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -174,10 +177,9 @@ namespace AuthApp.infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("Id");
+                    b.HasKey("ContractId");
 
-                    b.HasIndex("ContractId")
-                        .IsUnique();
+                    b.HasIndex("AssignedUserId");
 
                     b.ToTable("ServiceRequests");
                 });
@@ -232,27 +234,6 @@ namespace AuthApp.infrastructure.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("AuthApp.domain.Entities.UserServiceRequest", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("ServiceRequestId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("AssignedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsPrimaryAssignee")
-                        .HasColumnType("boolean");
-
-                    b.HasKey("UserId", "ServiceRequestId");
-
-                    b.HasIndex("ServiceRequestId");
-
-                    b.ToTable("UserServiceRequests");
-                });
-
             modelBuilder.Entity("AuthApp.domain.Entities.EquipmentComponent", b =>
                 {
                     b.HasOne("AuthApp.domain.Entities.Equipment", "Equipment")
@@ -262,6 +243,16 @@ namespace AuthApp.infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Equipment");
+                });
+
+            modelBuilder.Entity("AuthApp.domain.Entities.ServiceRequest", b =>
+                {
+                    b.HasOne("AuthApp.domain.Entities.User", "AssignedUser")
+                        .WithMany()
+                        .HasForeignKey("AssignedUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("AssignedUser");
                 });
 
             modelBuilder.Entity("AuthApp.domain.Entities.User", b =>
@@ -275,25 +266,6 @@ namespace AuthApp.infrastructure.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("AuthApp.domain.Entities.UserServiceRequest", b =>
-                {
-                    b.HasOne("AuthApp.domain.Entities.ServiceRequest", "ServiceRequest")
-                        .WithMany("UserServiceRequests")
-                        .HasForeignKey("ServiceRequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AuthApp.domain.Entities.User", "User")
-                        .WithMany("UserServiceRequests")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ServiceRequest");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("AuthApp.domain.Entities.Equipment", b =>
                 {
                     b.Navigation("Components");
@@ -302,16 +274,6 @@ namespace AuthApp.infrastructure.Migrations
             modelBuilder.Entity("AuthApp.domain.Entities.Role", b =>
                 {
                     b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("AuthApp.domain.Entities.ServiceRequest", b =>
-                {
-                    b.Navigation("UserServiceRequests");
-                });
-
-            modelBuilder.Entity("AuthApp.domain.Entities.User", b =>
-                {
-                    b.Navigation("UserServiceRequests");
                 });
 #pragma warning restore 612, 618
         }
