@@ -15,6 +15,13 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
+    /// <summary>
+    /// Регистрирует нового пользователя
+    /// </summary>
+    /// <param name="registerUserDto">Данные для регистрации пользователя</param>
+    /// <returns>Результат регистрации</returns>
+    /// <response code="200">Пользователь успешно зарегистрирован</response>
+    /// <response code="400">Некорректные данные или ошибка регистрации</response>
     [HttpPost("register")]
     public async Task<ActionResult<AuthResult>> Register(RegisterUserDto registerUserDto)
     {
@@ -30,6 +37,14 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Выполняет вход пользователя в систему
+    /// </summary>
+    /// <param name="loginUserDto">Данные для входа</param>
+    /// <returns>Результат аутентификации</returns>
+    /// <response code="200">Успешный вход в систему</response>
+    /// <response code="400">Некорректные данные</response>
+    /// <response code="401">Неверные учетные данные</response>
     [HttpPost("login")]
     public async Task<ActionResult<AuthResult>> Login(LoginUserDto loginUserDto)
     {

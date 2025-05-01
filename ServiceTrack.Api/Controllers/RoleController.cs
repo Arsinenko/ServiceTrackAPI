@@ -16,14 +16,24 @@ public class RoleController : ControllerBase
     {
         _roleService = roleService;
     }
-    
+    /// <summary>
+    /// Получает все роли. 
+    /// </summary>
+    /// <returns>Список ролей</returns>
+    /// <response code="200">Возвращает список ролей</response>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<RoleDto>>> GetAll()
     {
         var roles = await _roleService.GetAllAsync();
         return Ok(roles);
     }
-
+    /// <summary>
+    /// Получает роль по id
+    /// </summary>
+    /// <param name="id">Идентификатор роли</param>
+    /// <returns>Роль</returns>
+    /// <response code="200">Возвращает роль</response>
+    /// <response code="404">Роль не найдена</response>
     [HttpGet("{id}")]
     public async Task<ActionResult<RoleDto>> GetById(Guid id)
     {
@@ -33,6 +43,14 @@ public class RoleController : ControllerBase
 
         return Ok(role);
     }
+    /// <summary>
+    /// Создает новую роль
+    /// </summary>
+    /// <param name="createRoleDto">Данные для создания роли</param>
+    /// <returns>Созданная роль</returns>
+    /// <response code="201">Роль успешно создана</response>
+    /// <response code="401">Требуется авторизация</response>
+    /// <response code="403">Нет прав доступа</response>
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<RoleDto>> Create(CreateRoleDto createRoleDto)
@@ -41,6 +59,16 @@ public class RoleController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = role.Id }, role);
     }
     
+    /// <summary>
+    /// Обновляет существующую роль
+    /// </summary>
+    /// <param name="id">Идентификатор роли</param>
+    /// <param name="updateRoleDto">Данные для обновления роли</param>
+    /// <returns>Обновленная роль</returns>
+    /// <response code="200">Роль успешно обновлена</response>
+    /// <response code="401">Требуется авторизация</response>
+    /// <response code="403">Нет прав доступа</response>
+    /// <response code="404">Роль не найдена</response>
     [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<ActionResult<RoleDto>> Update(Guid id, UpdateRoleDto updateRoleDto)
@@ -52,6 +80,14 @@ public class RoleController : ControllerBase
         return Ok(role);
     }
     
+    /// <summary>
+    /// Удаляет роль
+    /// </summary>
+    /// <param name="id">Идентификатор роли</param>
+    /// <returns>Нет содержимого</returns>
+    /// <response code="204">Роль успешно удалена</response>
+    /// <response code="401">Требуется авторизация</response>
+    /// <response code="403">Нет прав доступа</response>
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
