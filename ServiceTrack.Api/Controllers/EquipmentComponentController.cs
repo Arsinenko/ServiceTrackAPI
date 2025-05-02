@@ -82,6 +82,32 @@ public class EquipmentComponentController : ControllerBase
     }
 
     /// <summary>
+    /// Создает новый дочерний компонент для существующего компонента
+    /// </summary>
+    /// <param name="parentId">Идентификатор родительского компонента</param>
+    /// <param name="createComponentDto">Данные для создания компонента</param>
+    /// <returns>Созданный дочерний компонент</returns>
+    /// <response code="201">Возвращает созданный компонент</response>
+    /// <response code="400">Если данные некорректны</response>
+    /// <response code="404">Если родительский компонент не найден</response>
+    [HttpPost("{parentId}/children")]
+    [ProducesResponseType(typeof(EquipmentComponentDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<EquipmentComponentDto>> CreateChildComponent(Guid parentId, CreateEquipmentComponentDto createComponentDto)
+    {
+        try
+        {
+            var component = await _componentService.CreateChildComponentAsync(parentId, createComponentDto);
+            return CreatedAtAction(nameof(GetComponentById), new { id = component.Id }, component);
+        }
+        catch (ArgumentException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Обновляет существующий компонент оборудования
     /// </summary>
     /// <param name="id">Идентификатор компонента</param>

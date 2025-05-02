@@ -14,6 +14,12 @@ public class EquipmentComponentDto
     public Guid EquipmentId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    
+    // Связь с родительским компонентом
+    public Guid? ParentComponentId { get; set; }
+    
+    // Коллекция дочерних компонентов
+    public ICollection<EquipmentComponentDto> ChildComponents { get; set; }
 
     public static EquipmentComponentDto FromEquipmentComponent(EquipmentComponent component)
     {
@@ -28,7 +34,9 @@ public class EquipmentComponentDto
             Quantity = component.Quantity,
             EquipmentId = component.EquipmentId,
             CreatedAt = component.CreatedAt.ToLocalTime(),
-            UpdatedAt = component.UpdatedAt.ToLocalTime()
+            UpdatedAt = component.UpdatedAt.ToLocalTime(),
+            ParentComponentId = component.ParentComponentId,
+            ChildComponents = component.ChildComponents?.Select(c => FromEquipmentComponent(c)).ToList()
         };
     }
 }
@@ -42,6 +50,7 @@ public class CreateEquipmentComponentDto
     public string Description { get; set; }
     public int Quantity { get; set; }
     public Guid EquipmentId { get; set; }
+    public Guid? ParentComponentId { get; set; }
 }
 
 public class UpdateEquipmentComponentDto : CreateEquipmentComponentDto; 

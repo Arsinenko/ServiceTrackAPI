@@ -134,6 +134,16 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Quantity).IsRequired();
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.UpdatedAt).IsRequired();
+            
+            entity.HasOne(e => e.ParentComponent)
+                .WithMany(e => e.ChildComponents)
+                .HasForeignKey(e => e.ParentComponentId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            entity.HasOne(e => e.Equipment)
+                .WithMany(e => e.Components)
+                .HasForeignKey(e => e.EquipmentId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
         modelBuilder.Entity<JobType>(entity =>
         {

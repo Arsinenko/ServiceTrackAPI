@@ -43,6 +43,35 @@ public class EquipmentComponentService : IEquipmentComponentService
             Description = createComponentDto.Description,
             Quantity = createComponentDto.Quantity,
             EquipmentId = createComponentDto.EquipmentId,
+            ParentComponentId = createComponentDto.ParentComponentId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        await _componentRepository.CreateAsync(component);
+        return EquipmentComponentDto.FromEquipmentComponent(component);
+    }
+
+    public async Task<EquipmentComponentDto> CreateChildComponentAsync(Guid parentId, CreateEquipmentComponentDto createComponentDto)
+    {
+        // Проверяем существование родительского компонента
+        var parentComponent = await _componentRepository.GetByIdAsync(parentId);
+        if (parentComponent == null)
+        {
+            throw new ArgumentException($"Parent component with ID {parentId} not found");
+        }
+
+        var component = new EquipmentComponent
+        {
+            Id = Guid.NewGuid(),
+            Name = createComponentDto.Name,
+            Model = createComponentDto.Model,
+            SerialNumber = createComponentDto.SerialNumber,
+            Manufacturer = createComponentDto.Manufacturer,
+            Description = createComponentDto.Description,
+            Quantity = createComponentDto.Quantity,
+            EquipmentId = parentComponent.EquipmentId, // Используем EquipmentId родительского компонента
+            ParentComponentId = parentId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -66,6 +95,7 @@ public class EquipmentComponentService : IEquipmentComponentService
         component.Description = updateComponentDto.Description;
         component.Quantity = updateComponentDto.Quantity;
         component.EquipmentId = updateComponentDto.EquipmentId;
+        component.ParentComponentId = updateComponentDto.ParentComponentId;
         component.UpdatedAt = DateTime.UtcNow;
 
         await _componentRepository.UpdateAsync(component);
