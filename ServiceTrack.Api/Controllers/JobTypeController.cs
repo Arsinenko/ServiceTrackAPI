@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthApp.Api.Controllers;
+
+/// <summary>
+/// Контроллер для управления типами работ
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class JobTypeController : ControllerBase
@@ -15,6 +19,13 @@ public class JobTypeController : ControllerBase
         _jobTypeService = jobTypeService;
     }
 
+    /// <summary>
+    /// Получает тип работы по идентификатору
+    /// </summary>
+    /// <param name="id">Идентификатор типа работы</param>
+    /// <returns>Тип работы</returns>
+    /// <response code="200">Возвращает тип работы</response>
+    /// <response code="404">Тип работы не найден</response>
     [HttpGet("{id}")]
     public async Task<ActionResult<JobTypeDto>> GetById(Guid id)
     {
@@ -24,6 +35,13 @@ public class JobTypeController : ControllerBase
         return Ok(jobType);
     }
 
+    /// <summary>
+    /// Получает тип работы по названию
+    /// </summary>
+    /// <param name="name">Название типа работы</param>
+    /// <returns>Тип работы</returns>
+    /// <response code="200">Возвращает тип работы</response>
+    /// <response code="404">Тип работы не найден</response>
     [HttpGet("name/{name}")]
     public async Task<ActionResult<JobTypeDto>> GetByName(string name)
     {
@@ -33,19 +51,46 @@ public class JobTypeController : ControllerBase
         return Ok(jobType);
     }
 
+    /// <summary>
+    /// Получает список всех типов работ
+    /// </summary>
+    /// <returns>Список типов работ</returns>
+    /// <response code="200">Возвращает список типов работ</response>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<JobTypeDto>>> GetAll()
     {
         var jobTypes = await _jobTypeService.GetAllAsync();
         return Ok(jobTypes);
     }
+
+    /// <summary>
+    /// Создает новый тип работы
+    /// </summary>
+    /// <param name="jobTypeDto">Данные для создания типа работы</param>
+    /// <returns>Созданный тип работы</returns>
+    /// <response code="201">Тип работы успешно создан</response>
+    /// <response code="400">Некорректные данные</response>
+    /// <response code="401">Требуется авторизация</response>
+    /// <response code="403">Нет прав доступа (требуется роль Admin)</response>
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<JobTypeDto>> Create(CreateJobTypeDto jobTypeDto)
     {
-        var  jobType = await _jobTypeService.CreateAsync(jobTypeDto);
-        return Ok(jobType);
+        var jobType = await _jobTypeService.CreateAsync(jobTypeDto);
+        return CreatedAtAction(nameof(GetById), new { id = jobType.Id }, jobType);
     }
+
+    /// <summary>
+    /// Обновляет существующий тип работы
+    /// </summary>
+    /// <param name="id">Идентификатор типа работы</param>
+    /// <param name="jobTypeDto">Данные для обновления типа работы</param>
+    /// <returns>Обновленный тип работы</returns>
+    /// <response code="200">Тип работы успешно обновлен</response>
+    /// <response code="400">Некорректные данные</response>
+    /// <response code="401">Требуется авторизация</response>
+    /// <response code="403">Нет прав доступа (требуется роль Admin)</response>
+    /// <response code="404">Тип работы не найден</response>
     [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<ActionResult<JobTypeDto>> Update(Guid id, UpdateJobTypeDto jobTypeDto)
@@ -57,5 +102,4 @@ public class JobTypeController : ControllerBase
         }
         return Ok(jobType);
     }
-    
 }
