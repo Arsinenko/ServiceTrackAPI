@@ -18,6 +18,6 @@ public class RegisterUserDto
     [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
         ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one number and one special character")]
     public required string Password { get; set; }
-    
+    [Required(ErrorMessage = "Role cannot be empty")]
     public Guid RoleId { get; set; }
 }

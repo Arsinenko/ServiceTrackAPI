@@ -33,10 +33,10 @@ public class EquipmentDto
 
 public class CreateEquipmentDto
 {
-    public string Name { get; set; }
-    public string Model { get; set; }
-    public string SerialNumber { get; set; }
-    public string Manufacturer { get; set; }
+    public required string Name { get; set; }
+    public required string Model { get; set; }
+    public required string SerialNumber { get; set; }
+    public required string Manufacturer { get; set; }
     public int Quantity { get; set; }
 }
 
