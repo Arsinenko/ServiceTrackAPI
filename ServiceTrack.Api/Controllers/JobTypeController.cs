@@ -1,5 +1,6 @@
 using AuthApp.application.DTOs;
 using AuthApp.application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthApp.Api.Controllers;
@@ -38,14 +39,14 @@ public class JobTypeController : ControllerBase
         var jobTypes = await _jobTypeService.GetAllAsync();
         return Ok(jobTypes);
     }
-
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<JobTypeDto>> Create(CreateJobTypeDto jobTypeDto)
     {
         var  jobType = await _jobTypeService.CreateAsync(jobTypeDto);
         return Ok(jobType);
     }
-
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<ActionResult<JobTypeDto>> Update(Guid id, UpdateJobTypeDto jobTypeDto)
     {
