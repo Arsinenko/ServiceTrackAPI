@@ -60,8 +60,14 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.UpdatedAt);
             entity.Property(e => e.IsCompleted).IsRequired();
             entity.Property(e => e.CompletedAt);
+            entity.Property(e => e.JobTypeId).IsRequired();
 
             entity.HasIndex(e => e.ContractId).IsUnique();
+
+            entity.HasOne(e => e.JobType)
+                .WithMany()
+                .HasForeignKey(e => e.JobTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<UserServiceRequest>(entity =>

@@ -14,6 +14,7 @@ public class ServiceRequestDto
     public DateTime? UpdatedAt { get; set; }
     public bool IsCompleted { get; set; }
     public DateTime? CompletedAt { get; set; }
+    public JobTypeDto JobType { get; set; }
     public List<AssignedUserDto> AssignedUsers { get; set; } = new();
     public List<AssignedEquipmentDto> AssignedEquipment { get; set; } = new();
 
@@ -29,6 +30,7 @@ public class ServiceRequestDto
             UpdatedAt = request.UpdatedAt,
             IsCompleted = request.IsCompleted,
             CompletedAt = request.CompletedAt,
+            JobType = request.JobType != null ? JobTypeDto.FromJobType(request.JobType) : null,
             AssignedUsers = request.UserServiceRequests?
                 .Select(usr => new AssignedUserDto
                 {

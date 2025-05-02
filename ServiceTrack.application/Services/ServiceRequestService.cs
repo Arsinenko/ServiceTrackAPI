@@ -9,15 +9,18 @@ public class ServiceRequestService : IServiceRequestService
     private readonly IServiceRequestRepository _serviceRequestRepository;
     private readonly IUserRepository _userRepository;
     private readonly IEquipmentRepository _equipmentRepository;
+    private readonly IJobTypeRepository _jobTypeRepository;
 
     public ServiceRequestService(
         IServiceRequestRepository serviceRequestRepository,
         IUserRepository userRepository,
-        IEquipmentRepository equipmentRepository)
+        IEquipmentRepository equipmentRepository,
+        IJobTypeRepository jobTypeRepository)
     {
         _serviceRequestRepository = serviceRequestRepository;
         _userRepository = userRepository;
         _equipmentRepository = equipmentRepository;
+        _jobTypeRepository = jobTypeRepository;
     }
 
     public async Task<ServiceRequestDto?> GetByIdAsync(int id)
@@ -40,11 +43,16 @@ public class ServiceRequestService : IServiceRequestService
 
     public async Task<ServiceRequestDto> CreateAsync(CreateServiceRequestDto createDto)
     {
+        var jobType = await _jobTypeRepository.GetByIdAsync(createDto.JobTypeId);
+        if (jobType == null)
+            throw new ArgumentException("Invalid job type ID");
+
         var request = new ServiceRequest
         {
             ContractId = createDto.ContractId,
             Customer = createDto.Customer,
             Description = createDto.Description,
+            JobTypeId = createDto.JobTypeId,
             CreatedAt = DateTime.UtcNow,
             IsCompleted = false,
             UserServiceRequests = new List<UserServiceRequest>(),
@@ -93,9 +101,14 @@ public class ServiceRequestService : IServiceRequestService
         if (request == null)
             return null;
 
+        var jobType = await _jobTypeRepository.GetByIdAsync(updateDto.JobTypeId);
+        if (jobType == null)
+            throw new ArgumentException("Invalid job type ID");
+
         request.Customer = updateDto.Customer;
         request.Description = updateDto.Description;
         request.IsCompleted = updateDto.IsCompleted;
+        request.JobTypeId = updateDto.JobTypeId;
         request.UpdatedAt = DateTime.UtcNow;
 
         // Update user assignments

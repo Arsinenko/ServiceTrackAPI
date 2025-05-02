@@ -17,6 +17,7 @@ public class ServiceRequestRepository : IServiceRequestRepository
     public async Task<ServiceRequest?> GetByIdAsync(int id)
     {
         return await _context.ServiceRequests
+            .Include(sr => sr.JobType)
             .Include(sr => sr.UserServiceRequests)
                 .ThenInclude(usr => usr.User)
             .FirstOrDefaultAsync(sr => sr.Id == id);
@@ -25,6 +26,7 @@ public class ServiceRequestRepository : IServiceRequestRepository
     public async Task<IEnumerable<ServiceRequest>> GetAllAsync()
     {
         return await _context.ServiceRequests
+            .Include(sr => sr.JobType)
             .Include(sr => sr.UserServiceRequests)
                 .ThenInclude(usr => usr.User)
             .ToListAsync();
@@ -33,6 +35,7 @@ public class ServiceRequestRepository : IServiceRequestRepository
     public async Task<IEnumerable<ServiceRequest>> GetByUserIdAsync(Guid userId)
     {
         return await _context.ServiceRequests
+            .Include(sr => sr.JobType)
             .Include(sr => sr.UserServiceRequests)
                 .ThenInclude(usr => usr.User)
             .Where(sr => sr.UserServiceRequests.Any(usr => usr.UserId == userId))

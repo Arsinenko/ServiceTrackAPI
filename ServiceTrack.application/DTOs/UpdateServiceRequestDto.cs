@@ -8,6 +8,7 @@ public class UpdateServiceRequestDto
     public string Customer { get; set; }
     public string Description { get; set; }
     public bool IsCompleted { get; set; }
+    public Guid JobTypeId { get; set; }
     public List<UserAssignmentDto> UserAssignments { get; set; } = new();
     public List<EquipmentAssignmentDto> EquipmentAssignments { get; set; } = new();
 }

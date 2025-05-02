@@ -11,6 +11,10 @@ public class ServiceRequest
     public bool IsCompleted { get; set; }
     public DateTime? CompletedAt { get; set; }
     
+    // Job type relationship
+    public Guid JobTypeId { get; set; }
+    public JobType JobType { get; set; }
+    
     // Many-to-many relationship with User
     public ICollection<UserServiceRequest> UserServiceRequests { get; set; }
     
