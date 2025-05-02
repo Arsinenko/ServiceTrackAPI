@@ -11,6 +11,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Equipment> Equipment { get; set; }
     public DbSet<EquipmentComponent> EquipmentComponents { get; set; }
     public DbSet<ServiceRequest> ServiceRequests { get; set; }
+    public DbSet<JobType> JobTypes { get; set; }
     public DbSet<UserServiceRequest> UserServiceRequests { get; set; }
     public DbSet<ServiceRequestEquipment> ServiceRequestEquipments { get; set; }
 
@@ -128,5 +129,14 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.UpdatedAt).IsRequired();
         });
+        modelBuilder.Entity<JobType>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.UpdatedAt);
+        });
+
     }
 }

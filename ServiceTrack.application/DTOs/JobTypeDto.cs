@@ -1,0 +1,32 @@
+using AuthApp.domain.Entities;
+
+namespace AuthApp.application.DTOs;
+
+public class JobTypeDto
+{
+    public Guid Id { get; set; }
+    public required string Name { get; set; }
+    public required string Description { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt  { get; set; }
+
+    public static JobTypeDto FromJobType(JobType jobType)
+    {
+        return new JobTypeDto
+        {
+            Id = jobType.Id,
+            Name = jobType.Name,
+            Description = jobType.Description,
+            CreatedAt = jobType.CreatedAt.ToLocalTime(),
+            UpdatedAt = jobType.UpdatedAt?.ToLocalTime(),
+        };
+    }
+}
+
+public class CreateJobTypeDto
+{
+    public required string Name { get; set; }
+    public required string Description { get; set; }
+}
+
+public class UpdateJobTypeDto : CreateJobTypeDto;

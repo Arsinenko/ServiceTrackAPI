@@ -1,5 +1,3 @@
-using System;
-
 namespace AuthApp.application.DTOs;
 
 public class RoleDto
@@ -10,7 +8,7 @@ public class RoleDto
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
-    public static RoleDto FromRole(AuthApp.domain.Entities.Role role)
+    public static RoleDto FromRole(domain.Entities.Role role)
     {
         return new RoleDto
         {
@@ -25,8 +23,8 @@ public class RoleDto
 
 public class CreateRoleDto
 {
-    public string Name { get; set; }
-    public string Description { get; set; }
+    public required string Name { get; set; }
+    public required string Description { get; set; }
 }
 
 public class UpdateRoleDto : CreateRoleDto;
