@@ -115,7 +115,14 @@ public class UserController : ControllerBase
 
         return Ok(user);
     }
-
+    /// <summary>
+    /// Обновляет информацию о текущем пользователе
+    /// </summary>
+    /// <param name="updateUserDto">Данные для обновления</param>
+    /// <returns>Обновленная информация о пользователе</returns>
+    /// <response code="200">Информация успешно обновлена</response>
+    /// <response code="401">Требуется авторизация</response>
+    /// <response code="404">Пользователь не найден</response>
     [Authorize]
     [HttpPut("me")]
     public async Task<ActionResult<UserDto>> UpdateCurrentUser(UpdateUserDto updateUserDto)
