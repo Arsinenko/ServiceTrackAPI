@@ -40,7 +40,8 @@ public class ServiceRequestServiceTests
             Id = requestId,
             Customer = "Test Customer",
             Description = "Test Description",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            JobType = new JobType { Id = Guid.NewGuid(), Name = "Test Job Type", Description = "Test Description" }
         };
 
         _serviceRequestRepositoryMock
@@ -93,9 +94,27 @@ public class ServiceRequestServiceTests
             .Setup(repo => repo.GetByIdAsync(jobTypeId))
             .ReturnsAsync(jobType);
 
+        var createdRequest = new ServiceRequest
+        {
+            Id = 1,
+            ContractId = createDto.ContractId,
+            Customer = createDto.Customer,
+            Description = createDto.Description,
+            JobTypeId = jobTypeId,
+            JobType = jobType,
+            CreatedAt = DateTime.UtcNow,
+            IsCompleted = false,
+            UserServiceRequests = new List<UserServiceRequest>(),
+            ServiceRequestEquipments = new List<ServiceRequestEquipment>()
+        };
+
         _serviceRequestRepositoryMock
             .Setup(repo => repo.CreateAsync(It.IsAny<ServiceRequest>()))
             .ReturnsAsync(1);
+
+        _serviceRequestRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(1))
+            .ReturnsAsync(createdRequest);
 
         // Act
         var result = await _service.CreateAsync(createDto);
@@ -145,7 +164,8 @@ public class ServiceRequestServiceTests
             JobTypeId = jobTypeId,
             CreatedAt = DateTime.UtcNow,
             UserServiceRequests = new List<UserServiceRequest>(),
-            ServiceRequestEquipments = new List<ServiceRequestEquipment>()
+            ServiceRequestEquipments = new List<ServiceRequestEquipment>(),
+            JobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Description" }
         };
 
         var jobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Description" };

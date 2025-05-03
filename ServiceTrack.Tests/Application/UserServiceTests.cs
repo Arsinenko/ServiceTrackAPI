@@ -24,24 +24,18 @@ public class UserServiceTests
         // Arrange
         var userId = Guid.NewGuid();
         var roleId = Guid.NewGuid();
+        var createdAt = DateTime.UtcNow;
+        var updatedAt = DateTime.UtcNow;
         var user = new User
         {
             Id = userId,
+            FirstName = "Test",
+            LastName = "User",
             Email = "test@example.com",
-            FirstName = "John",
-            LastName = "Doe",
-            RoleId = roleId,
-            Role = new Role
-            {
-                Id = roleId,
-                Name = "Test Role",
-                Description = "Test Description",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                Users = new List<User>()
-            },
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            PasswordHash = "hashed_password",
+            CreatedAt = createdAt,
+            UpdatedAt = updatedAt,
+            Role = new Role { Id = Guid.NewGuid(), Name = "Test Role", Description = "Test Description" }
         };
 
         _userRepositoryMock
@@ -55,9 +49,10 @@ public class UserServiceTests
         Assert.NotNull(result);
         Assert.Equal(userId, result.Id);
         Assert.Equal("test@example.com", result.Email);
-        Assert.Equal("Test User", result.Username);
-        Assert.Equal(user.CreatedAt.ToLocalTime(), result.CreatedAt);
-        Assert.Equal(user.UpdatedAt.ToLocalTime(), result.UpdatedAt);
+        Assert.Equal("Test", result.FirstName);
+        Assert.Equal("User", result.LastName);
+        Assert.Equal(createdAt.ToLocalTime(), result.CreatedAt);
+        Assert.Equal(updatedAt.ToLocalTime(), result.UpdatedAt);
     }
 
     [Fact]
@@ -82,24 +77,18 @@ public class UserServiceTests
         // Arrange
         var email = "test@example.com";
         var roleId = Guid.NewGuid();
+        var createdAt = DateTime.UtcNow;
+        var updatedAt = DateTime.UtcNow;
         var user = new User
         {
             Id = Guid.NewGuid(),
+            FirstName = "Test",
+            LastName = "User",
             Email = email,
-            FirstName = "John",
-            LastName = "Doe",
-            RoleId = roleId,
-            Role = new Role
-            {
-                Id = roleId,
-                Name = "Test Role",
-                Description = "Test Description",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                Users = new List<User>()
-            },
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            PasswordHash = "hashed_password",
+            CreatedAt = createdAt,
+            UpdatedAt = updatedAt,
+            Role = new Role { Id = Guid.NewGuid(), Name = "Test Role", Description = "Test Description" }
         };
 
         _userRepositoryMock
@@ -140,6 +129,8 @@ public class UserServiceTests
     {
         // Arrange
         var roleId = Guid.NewGuid();
+        var createdAt = DateTime.UtcNow;
+        var updatedAt = DateTime.UtcNow;
         var users = new List<User>
         {
             new()
@@ -154,12 +145,12 @@ public class UserServiceTests
                     Id = roleId,
                     Name = "Test Role",
                     Description = "Test Description",
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
+                    CreatedAt = createdAt,
+                    UpdatedAt = updatedAt,
                     Users = new List<User>()
                 },
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = createdAt,
+                UpdatedAt = updatedAt
             },
             new()
             {
@@ -173,12 +164,12 @@ public class UserServiceTests
                     Id = roleId,
                     Name = "Test Role",
                     Description = "Test Description",
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
+                    CreatedAt = createdAt,
+                    UpdatedAt = updatedAt,
                     Users = new List<User>()
                 },
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = createdAt,
+                UpdatedAt = updatedAt
             }
         };
 
@@ -202,24 +193,18 @@ public class UserServiceTests
         // Arrange
         var userId = Guid.NewGuid();
         var roleId = Guid.NewGuid();
+        var createdAt = DateTime.UtcNow;
+        var updatedAt = DateTime.UtcNow;
         var existingUser = new User
         {
             Id = userId,
-            Email = "old@example.com",
-            FirstName = "Old",
-            LastName = "Name",
-            RoleId = roleId,
-            Role = new Role
-            {
-                Id = roleId,
-                Name = "Test Role",
-                Description = "Test Description",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                Users = new List<User>()
-            },
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            FirstName = "Test",
+            LastName = "User",
+            Email = "test@example.com",
+            PasswordHash = "hashed_password",
+            CreatedAt = createdAt,
+            UpdatedAt = updatedAt,
+            Role = new Role { Id = Guid.NewGuid(), Name = "Test Role", Description = "Test Description" }
         };
 
         var updateDto = new UpdateUserDto

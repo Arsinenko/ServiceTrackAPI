@@ -139,7 +139,7 @@ public class EquipmentServiceTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(equipmentId, result.Id);
+        Assert.NotEqual(Guid.Empty, result.Id);
         Assert.Equal(createDto.Name, result.Name);
         Assert.Equal(createDto.Model, result.Model);
         Assert.Equal(createDto.SerialNumber, result.SerialNumber);

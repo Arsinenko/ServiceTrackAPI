@@ -53,6 +53,7 @@ public class ServiceRequestService : IServiceRequestService
             Customer = createDto.Customer,
             Description = createDto.Description,
             JobTypeId = createDto.JobTypeId,
+            JobType = jobType,
             CreatedAt = DateTime.UtcNow,
             IsCompleted = false,
             UserServiceRequests = new List<UserServiceRequest>(),

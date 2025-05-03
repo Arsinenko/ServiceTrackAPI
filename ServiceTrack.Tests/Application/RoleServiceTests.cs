@@ -46,7 +46,7 @@ public class RoleServiceTests
         Assert.Equal("Test Role", result.Name);
         Assert.Equal("Test Description", result.Description);
         Assert.Equal(role.CreatedAt.ToLocalTime(), result.CreatedAt);
-        Assert.Equal(role.UpdatedAt.ToLocalTime(), result.UpdatedAt);
+        Assert.Equal(role.UpdatedAt?.ToLocalTime(), result.UpdatedAt);
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class RoleServiceTests
         Assert.Equal(roleName, result.Name);
         Assert.Equal("Test Description", result.Description);
         Assert.Equal(role.CreatedAt.ToLocalTime(), result.CreatedAt);
-        Assert.Equal(role.UpdatedAt.ToLocalTime(), result.UpdatedAt);
+        Assert.Equal(role.UpdatedAt?.ToLocalTime(), result.UpdatedAt);
     }
 
     [Fact]
