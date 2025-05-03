@@ -3,6 +3,7 @@ using System;
 using AuthApp.infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AuthApp.infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250503054334_ComponentsDeleted")]
+    partial class ComponentsDeleted
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,10 +34,6 @@ namespace AuthApp.infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
                     b.Property<string>("Manufacturer")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -50,9 +49,6 @@ namespace AuthApp.infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<Guid?>("ParentEquipmentId")
-                        .HasColumnType("uuid");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
@@ -65,8 +61,6 @@ namespace AuthApp.infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ParentEquipmentId");
 
                     b.ToTable("Equipment");
                 });
@@ -266,16 +260,6 @@ namespace AuthApp.infrastructure.Migrations
                     b.ToTable("UserServiceRequests");
                 });
 
-            modelBuilder.Entity("AuthApp.domain.Entities.Equipment", b =>
-                {
-                    b.HasOne("AuthApp.domain.Entities.Equipment", "ParentId")
-                        .WithMany("Components")
-                        .HasForeignKey("ParentEquipmentId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("ParentId");
-                });
-
             modelBuilder.Entity("AuthApp.domain.Entities.ServiceRequest", b =>
                 {
                     b.HasOne("AuthApp.domain.Entities.JobType", "JobType")
@@ -338,8 +322,6 @@ namespace AuthApp.infrastructure.Migrations
 
             modelBuilder.Entity("AuthApp.domain.Entities.Equipment", b =>
                 {
-                    b.Navigation("Components");
-
                     b.Navigation("ServiceRequestEquipments");
                 });
 

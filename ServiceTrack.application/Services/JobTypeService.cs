@@ -56,8 +56,8 @@ public class JobTypeService : IJobTypeService
         
     }
 
-    public Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
-        throw new NotImplementedException();
+        await _jobTypeRepository.DeleteAsync(id);
     }
 }

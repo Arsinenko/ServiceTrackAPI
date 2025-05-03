@@ -10,9 +10,11 @@ public class EquipmentDto
     public string SerialNumber { get; set; }
     public string Manufacturer { get; set; }
     public int Quantity { get; set; }
+    public Equipment? ParentId { get; set; }
+    public string? Description { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    public ICollection<EquipmentComponentDto> Components { get; set; }
+    public ICollection<EquipmentDto>? Components { get; set; }
 
     public static EquipmentDto FromEquipment(Equipment equipment)
     {
@@ -24,9 +26,11 @@ public class EquipmentDto
             SerialNumber = equipment.SerialNumber,
             Manufacturer = equipment.Manufacturer,
             Quantity = equipment.Quantity,
+            ParentId = equipment.ParentId,
+            Description = equipment.Description,
             CreatedAt = equipment.CreatedAt.ToLocalTime(),
             UpdatedAt = equipment.UpdatedAt.ToLocalTime(),
-            Components = equipment.Components?.Select(c => EquipmentComponentDto.FromEquipmentComponent(c)).ToList()
+            Components = equipment.Components?.Select(c => FromEquipment(c)).ToList()
         };
     }
 }
@@ -38,6 +42,8 @@ public class CreateEquipmentDto
     public required string SerialNumber { get; set; }
     public required string Manufacturer { get; set; }
     public int Quantity { get; set; }
+    public Equipment? ParentId { get; set; }
+    public string? Description { get; set; }
 }
 
 public class UpdateEquipmentDto : CreateEquipmentDto;

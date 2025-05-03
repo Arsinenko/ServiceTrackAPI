@@ -38,6 +38,8 @@ public class EquipmentController : ControllerBase
     public async Task<ActionResult<EquipmentDto>> GetEquipmentById(Guid id)
     {
         var equipment = await _equipmentServiceservice.GetByIdAsync(id);
+        if (equipment == null)
+            return NotFound();
         return Ok(equipment);
     }
     
@@ -68,6 +70,8 @@ public class EquipmentController : ControllerBase
     public async Task<ActionResult<EquipmentDto>> UpdateEquipment(Guid id, UpdateEquipmentDto updateEquipmentDto)
     {
         var equipment = await _equipmentServiceservice.UpdateAsync(id, updateEquipmentDto);
+        if (equipment == null)
+            return NotFound();
         return Ok(equipment);
     }
 
@@ -82,6 +86,77 @@ public class EquipmentController : ControllerBase
     public async Task<IActionResult> DeleteEquipment(Guid id)
     {
         await _equipmentServiceservice.DeleteAsync(id);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Получает компонент оборудования
+    /// </summary>
+    /// <param name="equipmentId">Идентификатор оборудования</param>
+    /// <param name="componentId">Идентификатор компонента</param>
+    /// <returns>Компонент оборудования</returns>
+    /// <response code="200">Возвращает компонент</response>
+    /// <response code="404">Компонент не найден</response>
+    [HttpGet("{equipmentId}/components/{componentId}")]
+    public async Task<ActionResult<EquipmentDto>> GetComponent(Guid equipmentId, Guid componentId)
+    {
+        var component = await _equipmentServiceservice.GetComponentAsync(equipmentId, componentId);
+        if (component == null)
+            return NotFound();
+        return Ok(component);
+    }
+
+    /// <summary>
+    /// Добавляет компонент к оборудованию
+    /// </summary>
+    /// <param name="equipmentId">Идентификатор оборудования</param>
+    /// <param name="componentDto">Данные компонента</param>
+    /// <returns>Обновленное оборудование</returns>
+    /// <response code="200">Компонент успешно добавлен</response>
+    /// <response code="400">Некорректные данные</response>
+    /// <response code="404">Оборудование не найдено</response>
+    [HttpPost("{equipmentId}/components")]
+    public async Task<ActionResult<EquipmentDto>> AddComponent(Guid equipmentId, CreateEquipmentDto componentDto)
+    {
+        var equipment = await _equipmentServiceservice.AddComponentAsync(equipmentId, componentDto);
+        if (equipment == null)
+            return NotFound();
+        return Ok(equipment);
+    }
+
+    /// <summary>
+    /// Обновляет компонент оборудования
+    /// </summary>
+    /// <param name="equipmentId">Идентификатор оборудования</param>
+    /// <param name="componentId">Идентификатор компонента</param>
+    /// <param name="componentDto">Данные для обновления компонента</param>
+    /// <returns>Обновленное оборудование</returns>
+    /// <response code="200">Компонент успешно обновлен</response>
+    /// <response code="400">Некорректные данные</response>
+    /// <response code="404">Компонент не найден</response>
+    [HttpPut("{equipmentId}/components/{componentId}")]
+    public async Task<ActionResult<EquipmentDto>> UpdateComponent(Guid equipmentId, Guid componentId, UpdateEquipmentDto componentDto)
+    {
+        var equipment = await _equipmentServiceservice.UpdateComponentAsync(equipmentId, componentId, componentDto);
+        if (equipment == null)
+            return NotFound();
+        return Ok(equipment);
+    }
+
+    /// <summary>
+    /// Удаляет компонент из оборудования
+    /// </summary>
+    /// <param name="equipmentId">Идентификатор оборудования</param>
+    /// <param name="componentId">Идентификатор компонента</param>
+    /// <returns>Нет содержимого</returns>
+    /// <response code="204">Компонент успешно удален</response>
+    /// <response code="404">Компонент не найден</response>
+    [HttpDelete("{equipmentId}/components/{componentId}")]
+    public async Task<IActionResult> RemoveComponent(Guid equipmentId, Guid componentId)
+    {
+        var result = await _equipmentServiceservice.RemoveComponentAsync(equipmentId, componentId);
+        if (!result)
+            return NotFound();
         return NoContent();
     }
 }

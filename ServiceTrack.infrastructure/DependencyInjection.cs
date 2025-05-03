@@ -19,19 +19,25 @@ public static class DependencyInjection
         // Register DbContext
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(
-                configuration.GetConnectionString("DefaultConnection")));
+                configuration.GetConnectionString("DefaultConnection"),
+                b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.GetName().Name)));
 
-        // Register services
+        // Register repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
-        services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IEquipmentRepository, EquipmentRepository>();
-        services.AddScoped<IEquipmentService, EquipmentService>();
-        services.AddScoped<IEquipmentComponentRepository, EquipmentComponentRepository>();
         services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
         services.AddScoped<IJobTypeRepository, JobTypeRepository>();
+
+        // Register services
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<IEquipmentService, EquipmentService>();
+        services.AddScoped<IServiceRequestService, ServiceRequestService>();
         services.AddScoped<IJobTypeService, JobTypeService>();
 
+        // Register security services
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddSingleton<IJwtGenerator, JwtGenerator>();
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));

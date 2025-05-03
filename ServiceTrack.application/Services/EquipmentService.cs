@@ -40,7 +40,8 @@ public class EquipmentService : IEquipmentService
             Model = createEquipmentDto.Model,
             SerialNumber = createEquipmentDto.SerialNumber,
             Manufacturer = createEquipmentDto.Manufacturer,
-            Quantity = createEquipmentDto.Quantity
+            Quantity = createEquipmentDto.Quantity,
+            Description = createEquipmentDto.Description
         };
         await _equipmentRepository.CreateAsync(equipment);
         return EquipmentDto.FromEquipment(equipment);
@@ -58,6 +59,7 @@ public class EquipmentService : IEquipmentService
         equipment.SerialNumber = updateEquipmentDto.SerialNumber;
         equipment.Manufacturer = updateEquipmentDto.Manufacturer;
         equipment.Quantity = updateEquipmentDto.Quantity;
+        equipment.Description = updateEquipmentDto.Description;
         
         await _equipmentRepository.UpdateAsync(equipment);
         return EquipmentDto.FromEquipment(equipment);
@@ -66,5 +68,49 @@ public class EquipmentService : IEquipmentService
     public async Task DeleteAsync(Guid id)
     {
         await _equipmentRepository.DeleteAsync(id); 
+    }
+
+    public async Task<EquipmentDto?> AddComponentAsync(Guid equipmentId, CreateEquipmentDto componentDto)
+    {
+        var component = new Equipment
+        {
+            Id = Guid.NewGuid(),
+            Name = componentDto.Name,
+            Model = componentDto.Model,
+            SerialNumber = componentDto.SerialNumber,
+            Manufacturer = componentDto.Manufacturer,
+            Quantity = componentDto.Quantity,
+            Description = componentDto.Description
+        };
+
+        var equipment = await _equipmentRepository.AddComponentAsync(equipmentId, component);
+        return equipment != null ? EquipmentDto.FromEquipment(equipment) : null;
+    }
+
+    public async Task<EquipmentDto?> UpdateComponentAsync(Guid equipmentId, Guid componentId, UpdateEquipmentDto componentDto)
+    {
+        var updatedComponent = new Equipment
+        {
+            Name = componentDto.Name,
+            Model = componentDto.Model,
+            SerialNumber = componentDto.SerialNumber,
+            Manufacturer = componentDto.Manufacturer,
+            Quantity = componentDto.Quantity,
+            Description = componentDto.Description
+        };
+
+        var equipment = await _equipmentRepository.UpdateComponentAsync(equipmentId, componentId, updatedComponent);
+        return equipment != null ? EquipmentDto.FromEquipment(equipment) : null;
+    }
+
+    public async Task<bool> RemoveComponentAsync(Guid equipmentId, Guid componentId)
+    {
+        return await _equipmentRepository.RemoveComponentAsync(equipmentId, componentId);
+    }
+
+    public async Task<EquipmentDto?> GetComponentAsync(Guid equipmentId, Guid componentId)
+    {
+        var component = await _equipmentRepository.GetComponentAsync(equipmentId, componentId);
+        return component != null ? EquipmentDto.FromEquipment(component) : null;
     }
 }

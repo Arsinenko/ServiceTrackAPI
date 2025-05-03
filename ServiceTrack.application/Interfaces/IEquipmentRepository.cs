@@ -11,4 +11,10 @@ public interface IEquipmentRepository
     Task<Guid> CreateAsync(Equipment equipment);
     Task<Guid?> UpdateAsync(Equipment equipment);
     Task DeleteAsync(Guid id);
+    
+    // Component management methods
+    Task<Equipment?> AddComponentAsync(Guid equipmentId, Equipment component);
+    Task<Equipment?> UpdateComponentAsync(Guid equipmentId, Guid componentId, Equipment component);
+    Task<bool> RemoveComponentAsync(Guid equipmentId, Guid componentId);
+    Task<Equipment?> GetComponentAsync(Guid equipmentId, Guid componentId);
 }

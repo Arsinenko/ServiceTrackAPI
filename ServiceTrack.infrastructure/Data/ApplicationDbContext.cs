@@ -9,7 +9,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Role> Roles { get; set; }
     public DbSet<Equipment> Equipment { get; set; }
-    public DbSet<EquipmentComponent> EquipmentComponents { get; set; }
     public DbSet<ServiceRequest> ServiceRequests { get; set; }
     public DbSet<JobType> JobTypes { get; set; }
     public DbSet<UserServiceRequest> UserServiceRequests { get; set; }
@@ -115,36 +114,16 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Manufacturer).HasMaxLength(50).IsRequired();
             entity.Property(e => e.Quantity).IsRequired();
             entity.Property(e => e.CreatedAt).IsRequired();
-            entity.Property(e => e.UpdatedAt).IsRequired();
-            
-            entity.HasMany(e => e.Components)
-                .WithOne(c => c.Equipment)
-                .HasForeignKey(c => c.EquipmentId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<EquipmentComponent>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.Model).HasMaxLength(200);
-            entity.Property(e => e.SerialNumber).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.Manufacturer).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.UpdatedAt);
             entity.Property(e => e.Description).HasMaxLength(500);
-            entity.Property(e => e.Quantity).IsRequired();
-            entity.Property(e => e.CreatedAt).IsRequired();
-            entity.Property(e => e.UpdatedAt).IsRequired();
-            
-            entity.HasOne(e => e.ParentComponent)
-                .WithMany(e => e.ChildComponents)
-                .HasForeignKey(e => e.ParentComponentId)
-                .OnDelete(DeleteBehavior.Restrict);
-                
-            entity.HasOne(e => e.Equipment)
+
+            // Configure self-referencing relationship for components
+            entity.HasOne(e => e.ParentId)
                 .WithMany(e => e.Components)
-                .HasForeignKey(e => e.EquipmentId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey("ParentEquipmentId")
+                .OnDelete(DeleteBehavior.Restrict);
         });
+        
         modelBuilder.Entity<JobType>(entity =>
         {
             entity.HasKey(e => e.Id);
