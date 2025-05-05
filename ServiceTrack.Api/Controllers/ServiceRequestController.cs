@@ -167,7 +167,7 @@ public class ServiceRequestController : ControllerBase
     /// <response code="200">Назначение успешно отменено</response>
     /// <response code="401">Требуется авторизация</response>
     /// <response code="404">Заявка не найдена</response>
-    [HttpPost("{id}/unassign/{userId}")]
+    [HttpDelete("{id}/unassign/{userId}")]
     public async Task<ActionResult<ServiceRequestDto>> UnassignUser(int id, Guid userId)
     {
         var request = await _serviceRequestService.UnassignUserAsync(id, userId);
@@ -206,7 +206,7 @@ public class ServiceRequestController : ControllerBase
     /// <response code="200">Назначение успешно отменено</response>
     /// <response code="401">Требуется авторизация</response>
     /// <response code="404">Заявка не найдена</response>
-    [HttpPost("{id}/equipment/{equipmentId}/unassign")]
+    [HttpDelete("{id}/equipment/{equipmentId}/unassign")]
     public async Task<ActionResult<ServiceRequestDto>> UnassignEquipment(int id, Guid equipmentId)
     {
         var request = await _serviceRequestService.UnassignEquipmentAsync(id, equipmentId);

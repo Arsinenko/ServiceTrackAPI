@@ -3,7 +3,6 @@ using AuthApp.application.Interfaces;
 using AuthApp.application.Services;
 using AuthApp.domain.Entities;
 using Moq;
-using Xunit;
 
 namespace ServiceTrack.Tests.Application;
 
