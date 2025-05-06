@@ -8,11 +8,11 @@ namespace AuthApp.Api.Controllers;
 [Route("api/[controller]")]
 public class EquipmentController : ControllerBase
 {
-    private readonly IEquipmentService _equipmentServiceservice;
+    private readonly IEquipmentService _equipmentService;
 
-    public EquipmentController(IEquipmentService equipmentServiceservice)
+    public EquipmentController(IEquipmentService equipmentService)
     {
-        _equipmentServiceservice = equipmentServiceservice;
+        _equipmentService = equipmentService;
     }
 
     /// <summary>
@@ -23,7 +23,7 @@ public class EquipmentController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<EquipmentDto>>> GetAllEquipment()
     {
-        var equipment = await _equipmentServiceservice.GetAllAsync();
+        var equipment = await _equipmentService.GetAllAsync();
         return Ok(equipment);
     }
 
@@ -37,7 +37,7 @@ public class EquipmentController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<EquipmentDto>> GetEquipmentById(Guid id)
     {
-        var equipment = await _equipmentServiceservice.GetByIdAsync(id);
+        var equipment = await _equipmentService.GetByIdAsync(id);
         if (equipment == null)
             return NotFound();
         return Ok(equipment);
@@ -53,8 +53,22 @@ public class EquipmentController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<EquipmentDto>> CreateEquipment(CreateEquipmentDto createEquipmentDto)
     {
-        var equipment = await _equipmentServiceservice.CreateAsync(createEquipmentDto);
+        var equipment = await _equipmentService.CreateAsync(createEquipmentDto);
         return CreatedAtAction(nameof(GetEquipmentById), new { id = equipment.Id }, equipment);
+    }
+
+    /// <summary>
+    /// Создает несколько единиц оборудования
+    /// </summary>
+    /// <param name="createEquipmentBulkDto">Данные для создания оборудования</param>
+    /// <returns>Список созданного оборудования</returns>
+    /// <response code="201">Оборудование успешно создано</response>
+    /// <response code="400">Некорректные данные</response>
+    [HttpPost("bulk")]
+    public async Task<ActionResult<IEnumerable<EquipmentDto>>> CreateEquipmentBulk(CreateEquipmentBulkDto createEquipmentBulkDto)
+    {
+        var equipment = await _equipmentService.CreateBulkAsync(createEquipmentBulkDto);
+        return CreatedAtAction(nameof(GetAllEquipment), equipment);
     }
 
     /// <summary>
@@ -69,7 +83,7 @@ public class EquipmentController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<EquipmentDto>> UpdateEquipment(Guid id, UpdateEquipmentDto updateEquipmentDto)
     {
-        var equipment = await _equipmentServiceservice.UpdateAsync(id, updateEquipmentDto);
+        var equipment = await _equipmentService.UpdateAsync(id, updateEquipmentDto);
         if (equipment == null)
             return NotFound();
         return Ok(equipment);
@@ -85,7 +99,7 @@ public class EquipmentController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteEquipment(Guid id)
     {
-        await _equipmentServiceservice.DeleteAsync(id);
+        await _equipmentService.DeleteAsync(id);
         return NoContent();
     }
 
@@ -100,7 +114,7 @@ public class EquipmentController : ControllerBase
     [HttpGet("{equipmentId}/components/{componentId}")]
     public async Task<ActionResult<EquipmentDto>> GetComponent(Guid equipmentId, Guid componentId)
     {
-        var component = await _equipmentServiceservice.GetComponentAsync(equipmentId, componentId);
+        var component = await _equipmentService.GetComponentAsync(equipmentId, componentId);
         if (component == null)
             return NotFound();
         return Ok(component);
@@ -118,7 +132,7 @@ public class EquipmentController : ControllerBase
     [HttpPost("{equipmentId}/components")]
     public async Task<ActionResult<EquipmentDto>> AddComponent(Guid equipmentId, CreateEquipmentDto componentDto)
     {
-        var equipment = await _equipmentServiceservice.AddComponentAsync(equipmentId, componentDto);
+        var equipment = await _equipmentService.AddComponentAsync(equipmentId, componentDto);
         if (equipment == null)
             return NotFound();
         return Ok(equipment);
@@ -137,7 +151,7 @@ public class EquipmentController : ControllerBase
     [HttpPut("{equipmentId}/components/{componentId}")]
     public async Task<ActionResult<EquipmentDto>> UpdateComponent(Guid equipmentId, Guid componentId, UpdateEquipmentDto componentDto)
     {
-        var equipment = await _equipmentServiceservice.UpdateComponentAsync(equipmentId, componentId, componentDto);
+        var equipment = await _equipmentService.UpdateComponentAsync(equipmentId, componentId, componentDto);
         if (equipment == null)
             return NotFound();
         return Ok(equipment);
@@ -154,7 +168,7 @@ public class EquipmentController : ControllerBase
     [HttpDelete("{equipmentId}/components/{componentId}")]
     public async Task<IActionResult> RemoveComponent(Guid equipmentId, Guid componentId)
     {
-        var result = await _equipmentServiceservice.RemoveComponentAsync(equipmentId, componentId);
+        var result = await _equipmentService.RemoveComponentAsync(equipmentId, componentId);
         if (!result)
             return NotFound();
         return NoContent();

@@ -17,4 +17,6 @@ public interface IEquipmentRepository
     Task<Equipment?> UpdateComponentAsync(Guid equipmentId, Guid componentId, Equipment component);
     Task<bool> RemoveComponentAsync(Guid equipmentId, Guid componentId);
     Task<Equipment?> GetComponentAsync(Guid equipmentId, Guid componentId);
+
+    Task<List<Guid>> CreateBulkAsync(IEnumerable<Equipment> equipment);
 }

@@ -134,4 +134,16 @@ public class EquipmentRepository : IEquipmentRepository
 
         return equipment?.Components?.FirstOrDefault(c => c.Id == componentId);
     }
+
+    public async Task<List<Guid>> CreateBulkAsync(IEnumerable<Equipment> equipment)
+    {
+        foreach (var equipmentEntity in equipment)
+        {
+            equipmentEntity.CreatedAt = DateTime.UtcNow;
+            await _context.Equipment.AddAsync(equipmentEntity);
+        }
+        await _context.SaveChangesAsync();
+        List<Guid> ids = await _context.Equipment.Select(e => e.Id).ToListAsync();
+        return ids;
+    }
 }

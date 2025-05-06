@@ -47,6 +47,23 @@ public class EquipmentService : IEquipmentService
         return EquipmentDto.FromEquipment(equipment);
     }
 
+    public async Task<IEnumerable<EquipmentDto>> CreateBulkAsync(CreateEquipmentBulkDto createEquipmentBulkDto)
+    {
+        var equipmentList = createEquipmentBulkDto.Equipment.Select(dto => new Equipment
+        {
+            Id = Guid.NewGuid(),
+            Name = dto.Name,
+            Model = dto.Model,
+            SerialNumber = dto.SerialNumber,
+            Manufacturer = dto.Manufacturer,
+            Quantity = dto.Quantity,
+            Description = dto.Description
+        }).ToList();
+
+        await _equipmentRepository.CreateBulkAsync(equipmentList);
+        return equipmentList.Select(EquipmentDto.FromEquipment);
+    }
+
     public async Task<EquipmentDto?> UpdateAsync(Guid id, UpdateEquipmentDto updateEquipmentDto)
     {
         var equipment = await _equipmentRepository.GetByIdAsync(id);

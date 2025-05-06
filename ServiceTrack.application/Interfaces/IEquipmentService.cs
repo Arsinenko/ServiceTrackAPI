@@ -8,6 +8,7 @@ public interface IEquipmentService
     Task<EquipmentDto?> GetByNameAsync(string name);
     Task<IEnumerable<EquipmentDto>> GetAllAsync();
     Task<EquipmentDto> CreateAsync(CreateEquipmentDto createEquipmentDto);
+    Task<IEnumerable<EquipmentDto>> CreateBulkAsync(CreateEquipmentBulkDto createEquipmentBulkDto);
     Task<EquipmentDto?> UpdateAsync(Guid id, UpdateEquipmentDto updateEquipmentDto);
     Task DeleteAsync(Guid id);
 

@@ -47,3 +47,8 @@ public class CreateEquipmentDto
 }
 
 public class UpdateEquipmentDto : CreateEquipmentDto;
+
+public class CreateEquipmentBulkDto
+{
+    public List<CreateEquipmentDto> Equipment;
+}
