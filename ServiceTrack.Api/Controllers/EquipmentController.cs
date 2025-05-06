@@ -88,7 +88,14 @@ public class EquipmentController : ControllerBase
             return NotFound();
         return Ok(equipment);
     }
-
+    /// <summary>
+    /// Обновляет список оборудования.
+    /// </summary>
+    /// <param name="updateEquipmentBulkDto">Данные для обновления оборудования</param>
+    /// <returns>Обновленное оборудование</returns>
+    /// <response code="200">Оборудование успешно обновлено</response>
+    /// <response code="400">Некорректные данные</response>
+    /// <response code="404">Оборудование не найдено</response>
     [HttpPut("bulk")]
     public async Task<ActionResult<IEnumerable<EquipmentDto>>> UpdateEquipmentBulk(
         UpdateEquipmentBulkDto updateEquipmentBulkDto)
