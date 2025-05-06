@@ -50,6 +50,22 @@ public class EquipmentRepository : IEquipmentRepository
         return equipment.Id;
     }
 
+    public async Task<List<Guid>?> UpdateBulkAsync(IEnumerable<Equipment> equipment)
+    {
+        var equipmentList = equipment.ToList();
+        foreach (var equipmentEntity in equipmentList)
+        {
+            equipmentEntity.UpdatedAt = DateTime.UtcNow;
+        }
+        
+        await _context.BulkUpdateAsync(equipmentList, options => 
+        {
+            options.AutoMapOutputDirection = false;
+        });
+        
+        return equipmentList.Select(e => e.Id).ToList();
+    }
+
     public async Task DeleteAsync(Guid id)
     {
         var equipment = await _context.Equipment.FindAsync(id);
@@ -137,13 +153,16 @@ public class EquipmentRepository : IEquipmentRepository
 
     public async Task<List<Guid>> CreateBulkAsync(IEnumerable<Equipment> equipment)
     {
-        foreach (var equipmentEntity in equipment)
+        var equipmentList = equipment.ToList();
+        foreach (var equipmentEntity in equipmentList)
         {
             equipmentEntity.CreatedAt = DateTime.UtcNow;
-            await _context.Equipment.AddAsync(equipmentEntity);
         }
-        await _context.SaveChangesAsync();
-        List<Guid> ids = await _context.Equipment.Select(e => e.Id).ToListAsync();
-        return ids;
+        
+        await _context.BulkInsertAsync(equipmentList, options => 
+        {
+            options.AutoMapOutputDirection = false;
+        });
+        return equipmentList.Select(e => e.Id).ToList();
     }
 }

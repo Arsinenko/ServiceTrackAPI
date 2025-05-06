@@ -50,5 +50,15 @@ public class UpdateEquipmentDto : CreateEquipmentDto;
 
 public class CreateEquipmentBulkDto
 {
-    public List<CreateEquipmentDto> Equipment;
+    public required ICollection<CreateEquipmentDto> Equipment { get; set; }
+}
+
+public class UpdateEquipmentBulkItemDto : CreateEquipmentDto
+{
+    public required Guid Id { get; set; }
+}
+
+public class UpdateEquipmentBulkDto
+{
+    public required ICollection<UpdateEquipmentBulkItemDto> Equipment { get; set; }
 }

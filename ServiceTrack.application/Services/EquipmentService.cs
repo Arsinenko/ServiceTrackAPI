@@ -82,6 +82,42 @@ public class EquipmentService : IEquipmentService
         return EquipmentDto.FromEquipment(equipment);
     }
 
+    public async Task<List<EquipmentDto>?> UpdateBulkAsync(UpdateEquipmentBulkDto updateEquipmentBulkDto)
+    {
+        var equipmentList = new List<Equipment>();
+        
+        foreach (var item in updateEquipmentBulkDto.Equipment)
+        {
+            var equipment = new Equipment
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Model = item.Model,
+                SerialNumber = item.SerialNumber,
+                Manufacturer = item.Manufacturer,
+                Quantity = item.Quantity,
+                Description = item.Description
+            };
+            equipmentList.Add(equipment);
+        }
+
+        var updatedIds = await _equipmentRepository.UpdateBulkAsync(equipmentList);
+        if (updatedIds == null)
+            return null;
+
+        var updatedEquipment = new List<EquipmentDto>();
+        foreach (var id in updatedIds)
+        {
+            var equipment = await _equipmentRepository.GetByIdAsync(id);
+            if (equipment != null)
+            {
+                updatedEquipment.Add(EquipmentDto.FromEquipment(equipment));
+            }
+        }
+
+        return updatedEquipment;
+    }
+
     public async Task DeleteAsync(Guid id)
     {
         await _equipmentRepository.DeleteAsync(id); 

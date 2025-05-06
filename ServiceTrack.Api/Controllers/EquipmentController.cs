@@ -89,6 +89,16 @@ public class EquipmentController : ControllerBase
         return Ok(equipment);
     }
 
+    [HttpPut("bulk")]
+    public async Task<ActionResult<IEnumerable<EquipmentDto>>> UpdateEquipmentBulk(
+        UpdateEquipmentBulkDto updateEquipmentBulkDto)
+    {
+        var equipment = await _equipmentService.UpdateBulkAsync(updateEquipmentBulkDto);
+        if (equipment == null)
+            return NotFound();
+        return Ok(equipment);
+    }
+
     /// <summary>
     /// Удаляет оборудование
     /// </summary>
