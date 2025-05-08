@@ -8,6 +8,7 @@ public interface IJobTypeService
     Task<JobTypeDto?> GetBeyNameAsync(string name);
     Task<IEnumerable<JobTypeDto>>  GetAllAsync();
     Task<JobTypeDto> CreateAsync(CreateJobTypeDto jobTypeDto);
+    Task<IEnumerable<JobTypeDto>> CreateBulkAsync(CreateJobTypeBulkDto jobTypeBulkDto);
     Task<JobTypeDto?> UpdateAsync(Guid id,  UpdateJobTypeDto jobTypeDto);
     Task DeleteAsync(Guid id);
 }

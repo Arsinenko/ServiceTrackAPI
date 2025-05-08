@@ -79,6 +79,23 @@ public class JobTypeController : ControllerBase
         var jobType = await _jobTypeService.CreateAsync(jobTypeDto);
         return CreatedAtAction(nameof(GetById), new { id = jobType.Id }, jobType);
     }
+    
+    /// <summary>
+    /// Создает несколько типов работы
+    /// </summary>
+    /// <param name="jobTypeDto">Данные для создания типов работы</param>
+    /// <returns>Созданный тип работы</returns>
+    /// <response code="201">Типы работы успешно созданы</response>
+    /// <response code="400">Некорректные данные</response>
+    /// <response code="401">Требуется авторизация</response>
+    /// <response code="403">Нет прав доступа (требуется роль Admin)</response>
+    [Authorize(Roles = "Admin")]
+    [HttpPost("bulk")]
+    public async Task<ActionResult<IEnumerable<JobTypeDto>>> CreateBulkAsync(CreateJobTypeBulkDto jobTypeBulkDto)
+    {
+        var jobTypes = await _jobTypeService.CreateBulkAsync(jobTypeBulkDto);
+        return CreatedAtAction(nameof(GetAll), jobTypes);
+    }
 
     /// <summary>
     /// Обновляет существующий тип работы

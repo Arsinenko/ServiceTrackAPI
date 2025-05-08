@@ -30,3 +30,8 @@ public class CreateJobTypeDto
 }
 
 public class UpdateJobTypeDto : CreateJobTypeDto;
+
+public class CreateJobTypeBulkDto
+{
+    public ICollection<CreateJobTypeDto> JobTypes { get; set; }
+}

@@ -8,6 +8,7 @@ public interface IJobTypeRepository
     Task<JobType?> GetByNameAsync(string name);
     Task<IEnumerable<JobType>> GetAllAsync();
     Task<Guid> CreateAsync(JobType jobType);
+    Task<List<Guid>> CreateBulkAsync(IEnumerable<JobType> jobTypes);
     Task<Guid> UpdateAsync(JobType jobType);
     Task DeleteAsync(Guid id);
     

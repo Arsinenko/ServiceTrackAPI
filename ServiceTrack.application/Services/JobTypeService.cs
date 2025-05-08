@@ -43,6 +43,18 @@ public class JobTypeService : IJobTypeService
         return JobTypeDto.FromJobType(jobType);
     }
 
+    public async Task<IEnumerable<JobTypeDto>> CreateBulkAsync(CreateJobTypeBulkDto jobTypeBulkDto)
+    {
+        var jobTypes = jobTypeBulkDto.JobTypes.Select(dto => new JobType
+        {
+            Id = Guid.NewGuid(),
+            Name = dto.Name,
+            Description = dto.Description
+        }).ToList();
+        await _jobTypeRepository.CreateBulkAsync(jobTypes);
+        return jobTypes.Select(JobTypeDto.FromJobType);
+    }
+
     public async Task<JobTypeDto?> UpdateAsync(Guid id, UpdateJobTypeDto jobTypeDto)
     {
         var jobType = await _jobTypeRepository.GetByIdAsync(id);

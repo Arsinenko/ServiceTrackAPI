@@ -36,6 +36,22 @@ public class JobTypeRepository :  IJobTypeRepository
         return jobType.Id;
     }
 
+    public async Task<List<Guid>> CreateBulkAsync(IEnumerable<JobType> jobTypes)
+    {
+        var jobTypesList = jobTypes.ToList();
+        foreach (var jobType in jobTypesList)
+        {
+            jobType.CreatedAt = DateTime.UtcNow;
+        }
+        await _context.BulkInsertAsync(jobTypesList, options =>
+        {
+            options.AutoMapOutputDirection = false;
+        });
+        return jobTypesList.Select(jobType => jobType.Id).ToList();
+        
+    }
+
+
     public async Task<Guid> UpdateAsync(JobType jobType)
     {
         jobType.UpdatedAt = DateTime.UtcNow;
