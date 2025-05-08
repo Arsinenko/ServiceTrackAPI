@@ -23,4 +23,9 @@ public class InitialEquipmentAssignmentDto
 {
     public Guid EquipmentId { get; set; }
     public string? Notes { get; set; }
-} 
+}
+
+public class CreateServiceRequestBulkDto
+{
+    public required ICollection<CreateServiceRequestDto> ServiceRequests { get; set; }
+}

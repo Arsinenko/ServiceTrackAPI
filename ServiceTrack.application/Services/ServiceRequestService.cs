@@ -96,6 +96,68 @@ public class ServiceRequestService : IServiceRequestService
         return ServiceRequestDto.FromServiceRequest(request);
     }
 
+    public async Task<List<ServiceRequestDto>> CreateBulkAsync(CreateServiceRequestBulkDto createDto)
+    {
+        var requests = new List<ServiceRequest>();
+        
+        foreach (var requestDto in createDto.ServiceRequests)
+        {
+            var jobType = await _jobTypeRepository.GetByIdAsync(requestDto.JobTypeId);
+            if (jobType == null)
+                throw new ArgumentException($"Invalid job type ID for request: {requestDto.Description}");
+
+            var request = new ServiceRequest
+            {
+                ContractId = requestDto.ContractId,
+                Customer = requestDto.Customer,
+                Description = requestDto.Description,
+                JobTypeId = requestDto.JobTypeId,
+                JobType = jobType,
+                CreatedAt = DateTime.UtcNow,
+                IsCompleted = false,
+                UserServiceRequests = new List<UserServiceRequest>(),
+                ServiceRequestEquipments = new List<ServiceRequestEquipment>()
+            };
+
+            // Add initial user assignments
+            foreach (var assignment in requestDto.InitialAssignments)
+            {
+                var user = await _userRepository.GetByIdAsync(assignment.UserId);
+                if (user != null)
+                {
+                    request.UserServiceRequests.Add(new UserServiceRequest
+                    {
+                        UserId = user.Id,
+                        ServiceRequestId = request.Id,
+                        AssignedAt = DateTime.UtcNow,
+                        IsPrimaryAssignee = assignment.IsPrimaryAssignee
+                    });
+                }
+            }
+
+            // Add initial equipment assignments
+            foreach (var equipment in requestDto.InitialEquipment)
+            {
+                var eq = await _equipmentRepository.GetByIdAsync(equipment.EquipmentId);
+                if (eq != null)
+                {
+                    request.ServiceRequestEquipments.Add(new ServiceRequestEquipment
+                    {
+                        EquipmentId = eq.Id,
+                        ServiceRequestId = request.Id,
+                        AddedAt = DateTime.UtcNow,
+                        Notes = equipment.Notes
+                    });
+                }
+            }
+
+            requests.Add(request);
+        }
+
+        var createdIds = await _serviceRequestRepository.CreateBulkAsync(requests);
+        return requests.Select(ServiceRequestDto.FromServiceRequest).ToList();
+    }
+
     public async Task<ServiceRequestDto?> UpdateAsync(int id, UpdateServiceRequestDto updateDto)
     {
         var request = await _serviceRequestRepository.GetByIdAsync(id);

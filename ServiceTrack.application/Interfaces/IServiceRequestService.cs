@@ -8,6 +8,7 @@ public interface IServiceRequestService
     Task<IEnumerable<ServiceRequestDto>> GetAllAsync();
     Task<IEnumerable<ServiceRequestDto>> GetByUserIdAsync(Guid userId);
     Task<ServiceRequestDto> CreateAsync(CreateServiceRequestDto createDto);
+    Task<List<ServiceRequestDto>> CreateBulkAsync(CreateServiceRequestBulkDto createDto);
     Task<ServiceRequestDto?> UpdateAsync(int id, UpdateServiceRequestDto updateDto);
     Task<bool> DeleteAsync(int id);
     Task<ServiceRequestDto?> AssignUserAsync(int requestId, Guid userId, bool isPrimary = false);

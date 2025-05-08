@@ -50,6 +50,22 @@ public class ServiceRequestRepository : IServiceRequestRepository
         return request.Id;
     }
 
+    public async Task<List<int>> CreateBulkAsync(IEnumerable<ServiceRequest> requests)
+    {
+        var requestList = requests.ToList();
+        foreach (var request in requestList)
+        {
+            request.CreatedAt = DateTime.UtcNow;
+        }
+
+        await _context.BulkInsertAsync(requestList, options =>
+        {
+            options.AutoMapOutputDirection = false;
+        });
+        return requestList.Select(sr => sr.Id).ToList();
+
+    }
+
     public async Task<int> UpdateAsync(ServiceRequest request)
     {
         request.UpdatedAt = DateTime.UtcNow;

@@ -99,6 +99,21 @@ public class ServiceRequestController : ControllerBase
         var request = await _serviceRequestService.CreateAsync(createDto);
         return CreatedAtAction(nameof(GetById), new { id = request.Id }, request);
     }
+    
+    /// <summary>
+    /// Создает заявки на обслуживание
+    /// </summary>
+    /// <param name="createDto">Данные для создания заявок</param>
+    /// <returns>Созданные заявки</returns>
+    /// <response code="201">Заявки успешно созданы</response>
+    /// <response code="400">Некорректные данные</response>
+    /// <response code="401">Требуется авторизация</response>
+    [HttpPost("bulk")]
+    public async Task<ActionResult<IEnumerable<ServiceRequestDto>>> CreateBulk(CreateServiceRequestBulkDto createDto)
+    {
+        var requests = await _serviceRequestService.CreateBulkAsync(createDto);
+        return CreatedAtAction(nameof(GetAll), requests);
+    }
 
     /// <summary>
     /// Обновляет существующую заявку

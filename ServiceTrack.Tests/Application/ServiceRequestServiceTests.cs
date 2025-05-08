@@ -215,4 +215,104 @@ public class ServiceRequestServiceTests
         // Assert
         Assert.True(result);
     }
+
+    [Fact]
+    public async Task CreateBulkAsync_WithValidData_CreatesMultipleServiceRequests()
+    {
+        // Arrange
+        var jobTypeId = Guid.NewGuid();
+        var jobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Description" };
+        
+        var createBulkDto = new CreateServiceRequestBulkDto
+        {
+            ServiceRequests = new List<CreateServiceRequestDto>
+            {
+                new()
+                {
+                    ContractId = 1,
+                    Customer = "Test Customer 1",
+                    Description = "Test Description 1",
+                    JobTypeId = jobTypeId,
+                    InitialAssignments = new List<InitialUserAssignmentDto>(),
+                    InitialEquipment = new List<InitialEquipmentAssignmentDto>()
+                },
+                new()
+                {
+                    ContractId = 2,
+                    Customer = "Test Customer 2",
+                    Description = "Test Description 2",
+                    JobTypeId = jobTypeId,
+                    InitialAssignments = new List<InitialUserAssignmentDto>(),
+                    InitialEquipment = new List<InitialEquipmentAssignmentDto>()
+                }
+            }
+        };
+
+        _jobTypeRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(jobTypeId))
+            .ReturnsAsync(jobType);
+
+        _serviceRequestRepositoryMock
+            .Setup(repo => repo.CreateBulkAsync(It.IsAny<IEnumerable<ServiceRequest>>()))
+            .ReturnsAsync(new List<int> { 1, 2 });
+
+        // Act
+        var result = await _service.CreateBulkAsync(createBulkDto);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count);
+        Assert.Contains(result, r => r.Customer == "Test Customer 1" && r.Description == "Test Description 1");
+        Assert.Contains(result, r => r.Customer == "Test Customer 2" && r.Description == "Test Description 2");
+    }
+
+    [Fact]
+    public async Task CreateBulkAsync_WithInvalidJobType_ThrowsArgumentException()
+    {
+        // Arrange
+        var jobTypeId = Guid.NewGuid();
+        var createBulkDto = new CreateServiceRequestBulkDto
+        {
+            ServiceRequests = new List<CreateServiceRequestDto>
+            {
+                new()
+                {
+                    ContractId = 1,
+                    Customer = "Test Customer",
+                    Description = "Test Description",
+                    JobTypeId = jobTypeId,
+                    InitialAssignments = new List<InitialUserAssignmentDto>(),
+                    InitialEquipment = new List<InitialEquipmentAssignmentDto>()
+                }
+            }
+        };
+
+        _jobTypeRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(jobTypeId))
+            .ReturnsAsync((JobType)null);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _service.CreateBulkAsync(createBulkDto));
+    }
+
+    [Fact]
+    public async Task CreateBulkAsync_WithEmptyList_ReturnsEmptyList()
+    {
+        // Arrange
+        var createBulkDto = new CreateServiceRequestBulkDto
+        {
+            ServiceRequests = new List<CreateServiceRequestDto>()
+        };
+
+        _serviceRequestRepositoryMock
+            .Setup(repo => repo.CreateBulkAsync(It.IsAny<IEnumerable<ServiceRequest>>()))
+            .ReturnsAsync(new List<int>());
+
+        // Act
+        var result = await _service.CreateBulkAsync(createBulkDto);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
 } 
