@@ -37,6 +37,21 @@ public class RoleRepository : IRoleRepository
         return role.Id;
     }
 
+    public async Task<List<Guid>> CreateBulkAsync(IEnumerable<Role> roles)
+    {
+        var roleList = roles.ToList();
+        foreach (var role in roleList)
+        {
+            role.CreatedAt = DateTime.UtcNow;
+        }
+
+        await _context.BulkInsertAsync(roleList, options =>
+        {
+            options.AutoMapOutputDirection = false;
+        });
+        return roleList.Select(r => r.Id).ToList();
+    }
+
     public async Task<Guid> UpdateAsync(Role role)
     {
         role.UpdatedAt = DateTime.UtcNow;

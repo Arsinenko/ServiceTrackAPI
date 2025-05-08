@@ -28,3 +28,8 @@ public class CreateRoleDto
 }
 
 public class UpdateRoleDto : CreateRoleDto;
+
+public class CreateRoleBulkDto
+{
+    public required ICollection<RoleDto> Roles;
+}

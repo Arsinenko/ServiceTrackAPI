@@ -44,6 +44,18 @@ public class RoleService : IRoleService
         return RoleDto.FromRole(role);
     }
 
+    public async Task<IEnumerable<RoleDto>> CreateBulkAsync(CreateRoleBulkDto createRoleBulkDto )
+    {
+        var roles = createRoleBulkDto.Roles.Select(dto => new Role
+        {
+            Id = Guid.NewGuid(),
+            Name = dto.Name,
+            Description = dto.Description
+        }).ToList();
+        await _roleRepository.CreateBulkAsync(roles);
+        return roles.Select(RoleDto.FromRole);
+    }
+
     public async Task<RoleDto?> UpdateAsync(Guid id, UpdateRoleDto updateRoleDto)
     {
         var role = await _roleRepository.GetByIdAsync(id);

@@ -58,6 +58,23 @@ public class RoleController : ControllerBase
         var role = await _roleService.CreateAsync(createRoleDto);
         return CreatedAtAction(nameof(GetById), new { id = role.Id }, role);
     }
+
+    /// <summary>
+    /// Создает роли
+    /// </summary>
+    /// <param name="">Данные для создания ролей</param>
+    /// <param name="createRoleBulkDto"></param>
+    /// <returns>Созданная роль</returns>
+    /// <response code="201">Роли успешно созданы</response>
+    /// <response code="401">Требуется авторизация</response>
+    /// <response code="403">Нет прав доступа</response>
+    [Authorize(Roles = "Admin")]
+    [HttpPost("bulk")]
+    public async Task<ActionResult<List<RoleDto>>> CreateBulkAsync(CreateRoleBulkDto createRoleBulkDto)
+    {
+        var roles = await _roleService.CreateBulkAsync(createRoleBulkDto);
+        return CreatedAtAction(nameof(GetAll), roles);
+    }
     
     /// <summary>
     /// Обновляет существующую роль

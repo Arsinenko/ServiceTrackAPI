@@ -237,4 +237,54 @@ public class JobTypeServiceTests
         // Assert
         _jobTypeRepositoryMock.Verify(repo => repo.DeleteAsync(jobTypeId), Times.Once);
     }
+
+    [Fact]
+    public async Task CreateBulkAsync_ValidData_CreatesAndReturnsJobTypeDtos()
+    {
+        // Arrange
+        var createBulkDto = new CreateJobTypeBulkDto
+        {
+            JobTypes = new List<CreateJobTypeDto>
+            {
+                new() { Name = "Job Type 1", Description = "Description 1" },
+                new() { Name = "Job Type 2", Description = "Description 2" },
+                new() { Name = "Job Type 3", Description = "Description 3" }
+            }
+        };
+
+        _jobTypeRepositoryMock
+            .Setup(repo => repo.CreateBulkAsync(It.IsAny<IEnumerable<JobType>>()))
+            .ReturnsAsync(new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() });
+
+        // Act
+        var result = await _service.CreateBulkAsync(createBulkDto);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(3, result.Count());
+        Assert.Contains(result, jt => jt.Name == "Job Type 1" && jt.Description == "Description 1");
+        Assert.Contains(result, jt => jt.Name == "Job Type 2" && jt.Description == "Description 2");
+        Assert.Contains(result, jt => jt.Name == "Job Type 3" && jt.Description == "Description 3");
+    }
+
+    [Fact]
+    public async Task CreateBulkAsync_EmptyList_ReturnsEmptyCollection()
+    {
+        // Arrange
+        var createBulkDto = new CreateJobTypeBulkDto
+        {
+            JobTypes = new List<CreateJobTypeDto>()
+        };
+
+        _jobTypeRepositoryMock
+            .Setup(repo => repo.CreateBulkAsync(It.IsAny<IEnumerable<JobType>>()))
+            .ReturnsAsync(new List<Guid>());
+
+        // Act
+        var result = await _service.CreateBulkAsync(createBulkDto);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
 } 

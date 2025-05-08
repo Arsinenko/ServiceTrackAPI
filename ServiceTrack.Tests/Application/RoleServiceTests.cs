@@ -246,4 +246,54 @@ public class RoleServiceTests
         // Assert
         _roleRepositoryMock.Verify(repo => repo.DeleteAsync(roleId), Times.Once);
     }
+
+    [Fact]
+    public async Task CreateBulkAsync_ValidData_CreatesAndReturnsRoleDtos()
+    {
+        // Arrange
+        var createBulkDto = new CreateRoleBulkDto
+        {
+            Roles = new List<RoleDto>
+            {
+                new() { Name = "Role 1", Description = "Description 1" },
+                new() { Name = "Role 2", Description = "Description 2" },
+                new() { Name = "Role 3", Description = "Description 3" }
+            }
+        };
+
+        _roleRepositoryMock
+            .Setup(repo => repo.CreateBulkAsync(It.IsAny<IEnumerable<Role>>()))
+            .ReturnsAsync(new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() });
+
+        // Act
+        var result = await _service.CreateBulkAsync(createBulkDto);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(3, result.Count());
+        Assert.Contains(result, r => r.Name == "Role 1" && r.Description == "Description 1");
+        Assert.Contains(result, r => r.Name == "Role 2" && r.Description == "Description 2");
+        Assert.Contains(result, r => r.Name == "Role 3" && r.Description == "Description 3");
+    }
+
+    [Fact]
+    public async Task CreateBulkAsync_EmptyList_ReturnsEmptyCollection()
+    {
+        // Arrange
+        var createBulkDto = new CreateRoleBulkDto
+        {
+            Roles = new List<RoleDto>()
+        };
+
+        _roleRepositoryMock
+            .Setup(repo => repo.CreateBulkAsync(It.IsAny<IEnumerable<Role>>()))
+            .ReturnsAsync(new List<Guid>());
+
+        // Act
+        var result = await _service.CreateBulkAsync(createBulkDto);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
 } 
