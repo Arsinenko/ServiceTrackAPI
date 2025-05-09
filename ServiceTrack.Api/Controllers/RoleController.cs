@@ -96,6 +96,23 @@ public class RoleController : ControllerBase
 
         return Ok(role);
     }
+
+    /// <summary>
+    /// Обновляет существующие роли
+    /// </summary>
+    /// <param name="updateRoleBulkDto">Данные для обновления</param>
+    /// <returns>Обновленные роли</returns>
+    /// <response code="200">Роль успешно обновлена</response>
+    /// <response code="401">Требуется авторизация</response>
+    /// <response code="403">Нет прав доступа</response>
+    /// <response code="404">Роль не найдена</response>
+    [Authorize(Roles = "Admin")]
+    [HttpPut("bulk")]
+    public async Task<ActionResult<List<RoleDto>>> UpdateBulkAsync(UpdateRoleBulkDto updateRoleBulkDto)
+    {
+        var roles = await _roleService.UpdateBulkAsync(updateRoleBulkDto);
+        return Ok(roles);
+    }
     
     /// <summary>
     /// Удаляет роль

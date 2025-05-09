@@ -69,6 +69,33 @@ public class RoleService : IRoleService
         return RoleDto.FromRole(role);
     }
 
+    public async Task<List<RoleDto>?> UpdateBulkAsync(UpdateRoleBulkDto updateRoleBulkDto)
+    {
+        var roles = new List<Role>();
+        foreach (var roleDto in updateRoleBulkDto.Roles)
+        {
+            var role = new Role
+            {
+                Id = roleDto.Id,
+                Name = roleDto.Name,
+                Description = roleDto.Description
+            };
+            roles.Add(role);
+        }
+        var ids = await _roleRepository.UpdateBulkAsync(roles);
+        if  (ids == null)
+            return null;
+        var updatedRoles = new List<Role>();
+        foreach (var id in ids)
+        {
+            var role = await _roleRepository.GetByIdAsync(id);
+            if (role == null)
+                return null;
+            updatedRoles.Add(role);
+        }
+        return updatedRoles.Select(RoleDto.FromRole).ToList();
+    }
+
     public async Task DeleteAsync(Guid id)
     {
         await _roleRepository.DeleteAsync(id);

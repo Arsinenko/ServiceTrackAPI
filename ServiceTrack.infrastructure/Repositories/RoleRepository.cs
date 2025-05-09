@@ -60,6 +60,20 @@ public class RoleRepository : IRoleRepository
         return role.Id;
     }
 
+    public async Task<List<Guid>> UpdateBulkAsync(IEnumerable<Role> roles)
+    {
+        var roleList = roles.ToList();
+        foreach (var role in roleList)
+        {
+            role.UpdatedAt = DateTime.UtcNow;
+        }
+        await _context.BulkUpdateAsync(roleList, options =>
+        {
+            options.AutoMapOutputDirection = false;
+        }); 
+        return roleList.Select(r => r.Id).ToList();
+    }
+
     public async Task DeleteAsync(Guid id)
     {
         var role = await _context.Roles.FindAsync(id);

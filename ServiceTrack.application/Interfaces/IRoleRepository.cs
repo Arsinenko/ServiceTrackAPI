@@ -10,5 +10,6 @@ public interface IRoleRepository
     Task<Guid> CreateAsync(Role role);
     Task<List<Guid>> CreateBulkAsync(IEnumerable<Role> roles);
     Task<Guid> UpdateAsync(Role role);
+    Task<List<Guid>> UpdateBulkAsync(IEnumerable<Role> roles);
     Task DeleteAsync(Guid id);
 } 

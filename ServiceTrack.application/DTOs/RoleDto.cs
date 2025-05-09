@@ -33,3 +33,13 @@ public class CreateRoleBulkDto
 {
     public required ICollection<RoleDto> Roles;
 }
+
+public class UpdateRoleBulkItemDto : CreateRoleDto
+{
+    public required Guid Id { get; set; }
+}
+
+public class UpdateRoleBulkDto
+{
+    public required ICollection<RoleDto> Roles;
+} 
