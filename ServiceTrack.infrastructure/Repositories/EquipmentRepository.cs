@@ -50,7 +50,7 @@ public class EquipmentRepository : IEquipmentRepository
         return equipment.Id;
     }
 
-    public async Task<List<Guid>?> UpdateBulkAsync(IEnumerable<Equipment> equipment)
+    public async Task<List<Equipment>?> UpdateBulkAsync(IEnumerable<Equipment> equipment)
     {
         var equipmentList = equipment.ToList();
         foreach (var equipmentEntity in equipmentList)
@@ -62,8 +62,8 @@ public class EquipmentRepository : IEquipmentRepository
         {
             options.AutoMapOutputDirection = false;
         });
-        
-        return equipmentList.Select(e => e.Id).ToList();
+
+        return equipmentList;
     }
 
     public async Task DeleteAsync(Guid id)

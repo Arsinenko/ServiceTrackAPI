@@ -10,7 +10,7 @@ public interface IEquipmentRepository
     Task<IEnumerable<Equipment>> GetAllAsync();
     Task<Guid> CreateAsync(Equipment equipment);
     Task<Guid?> UpdateAsync(Equipment equipment);
-    Task<List<Guid>?> UpdateBulkAsync(IEnumerable<Equipment> equipment);
+    Task<List<Equipment>?> UpdateBulkAsync(IEnumerable<Equipment> equipment);
     Task DeleteAsync(Guid id);
     
     // Component management methods

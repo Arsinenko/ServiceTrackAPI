@@ -101,21 +101,10 @@ public class EquipmentService : IEquipmentService
             equipmentList.Add(equipment);
         }
 
-        var updatedIds = await _equipmentRepository.UpdateBulkAsync(equipmentList);
-        if (updatedIds == null)
+        var result = await _equipmentRepository.UpdateBulkAsync(equipmentList);
+        if (result == null)
             return null;
-
-        var updatedEquipment = new List<EquipmentDto>();
-        foreach (var id in updatedIds)
-        {
-            var equipment = await _equipmentRepository.GetByIdAsync(id);
-            if (equipment != null)
-            {
-                updatedEquipment.Add(EquipmentDto.FromEquipment(equipment));
-            }
-        }
-
-        return updatedEquipment;
+        return result.Select(EquipmentDto.FromEquipment).ToList();
     }
 
     public async Task DeleteAsync(Guid id)
