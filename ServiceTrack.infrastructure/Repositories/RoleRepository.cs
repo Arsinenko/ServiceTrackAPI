@@ -52,15 +52,15 @@ public class RoleRepository : IRoleRepository
         return roleList.Select(r => r.Id).ToList();
     }
 
-    public async Task<Guid> UpdateAsync(Role role)
+    public async Task<Role> UpdateAsync(Role role)
     {
         role.UpdatedAt = DateTime.UtcNow;
         _context.Roles.Update(role);
         await _context.SaveChangesAsync();
-        return role.Id;
+        return role;
     }
 
-    public async Task<List<Guid>> UpdateBulkAsync(IEnumerable<Role> roles)
+    public async Task<List<Role>> UpdateBulkAsync(IEnumerable<Role> roles)
     {
         var roleList = roles.ToList();
         foreach (var role in roleList)
@@ -70,8 +70,8 @@ public class RoleRepository : IRoleRepository
         await _context.BulkUpdateAsync(roleList, options =>
         {
             options.AutoMapOutputDirection = false;
-        }); 
-        return roleList.Select(r => r.Id).ToList();
+        });
+        return roleList;
     }
 
     public async Task DeleteAsync(Guid id)
