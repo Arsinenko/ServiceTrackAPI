@@ -62,9 +62,8 @@ public class RoleController : ControllerBase
     /// <summary>
     /// Создает роли
     /// </summary>
-    /// <param name="">Данные для создания ролей</param>
-    /// <param name="createRoleBulkDto"></param>
-    /// <returns>Созданная роль</returns>
+    /// <param name="createRoleBulkDto">Данные для создания ролей</param>
+    /// <returns>Созданные роли</returns>
     /// <response code="201">Роли успешно созданы</response>
     /// <response code="401">Требуется авторизация</response>
     /// <response code="403">Нет прав доступа</response>

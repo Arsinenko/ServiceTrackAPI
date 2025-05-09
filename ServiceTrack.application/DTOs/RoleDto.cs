@@ -31,7 +31,7 @@ public class UpdateRoleDto : CreateRoleDto;
 
 public class CreateRoleBulkDto
 {
-    public required ICollection<RoleDto> Roles;
+    public required ICollection<RoleDto> Roles { get; set; }
 }
 
 public class UpdateRoleBulkItemDto : CreateRoleDto
@@ -41,5 +41,5 @@ public class UpdateRoleBulkItemDto : CreateRoleDto
 
 public class UpdateRoleBulkDto
 {
-    public required ICollection<RoleDto> Roles;
+    public required ICollection<UpdateRoleBulkItemDto> Roles { get; set; }
 } 
