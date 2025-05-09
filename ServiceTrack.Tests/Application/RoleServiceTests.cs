@@ -253,7 +253,7 @@ public class RoleServiceTests
         // Arrange
         var createBulkDto = new CreateRoleBulkDto
         {
-            Roles = new List<RoleDto>
+            Roles = new List<CreateRoleDto>
             {
                 new() { Name = "Role 1", Description = "Description 1" },
                 new() { Name = "Role 2", Description = "Description 2" },
@@ -280,7 +280,7 @@ public class RoleServiceTests
     public async Task CreateBulkAsync_EmptyList_ReturnsEmptyCollection()
     {
         // Arrange
-        var createBulkDto = new CreateRoleBulkDto { Roles = new List<RoleDto>() };
+        var createBulkDto = new CreateRoleBulkDto { Roles = new List<CreateRoleDto>() };
 
         // Act
         var result = await _service.CreateBulkAsync(createBulkDto);

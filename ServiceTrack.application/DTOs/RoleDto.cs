@@ -31,7 +31,7 @@ public class UpdateRoleDto : CreateRoleDto;
 
 public class CreateRoleBulkDto
 {
-    public required ICollection<RoleDto> Roles { get; set; }
+    public required ICollection<CreateRoleDto> Roles { get; set; }
 }
 
 public class UpdateRoleBulkItemDto : CreateRoleDto
