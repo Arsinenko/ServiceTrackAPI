@@ -473,4 +473,70 @@ public class EquipmentServiceTests
         Assert.Equal("Test Model", result.Model);
         Assert.Equal("Test Manufacturer", result.Manufacturer);
     }
+
+    [Fact]
+    public async Task CreateBulkAsync_ValidData_CreatesAndReturnsEquipmentDtos()
+    {
+        // Arrange
+        var createBulkDto = new CreateEquipmentBulkDto
+        {
+            Equipment = new List<CreateEquipmentDto>
+            {
+                new() { Name = "Equipment 1", Model = "Model 1", SerialNumber = "SN1", Manufacturer = "Manufacturer 1", Quantity = 1 },
+                new() { Name = "Equipment 2", Model = "Model 2", SerialNumber = "SN2", Manufacturer = "Manufacturer 2", Quantity = 2 }
+            }
+        };
+
+        _equipmentRepositoryMock
+            .Setup(repo => repo.CreateBulkAsync(It.IsAny<IEnumerable<Equipment>>()))
+            .ReturnsAsync(new List<Guid> { Guid.NewGuid(), Guid.NewGuid() });
+
+        // Act
+        var result = await _service.CreateBulkAsync(createBulkDto);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count());
+        Assert.Contains(result, e => e.Name == "Equipment 1" && e.Model == "Model 1");
+        Assert.Contains(result, e => e.Name == "Equipment 2" && e.Model == "Model 2");
+    }
+
+    [Fact]
+    public async Task UpdateBulkAsync_ValidData_UpdatesAndReturnsEquipmentDtos()
+    {
+        // Arrange
+        var updateBulkDto = new UpdateEquipmentBulkDto
+        {
+            Equipment = new List<UpdateEquipmentBulkItemDto>
+            {
+                new() { Id = Guid.NewGuid(), Name = "Updated Equipment 1", Model = "Updated Model 1", SerialNumber = "USN1", Manufacturer = "Updated Manufacturer 1", Quantity = 1 },
+                new() { Id = Guid.NewGuid(), Name = "Updated Equipment 2", Model = "Updated Model 2", SerialNumber = "USN2", Manufacturer = "Updated Manufacturer 2", Quantity = 2 }
+            }
+        };
+
+        var updatedEquipment = updateBulkDto.Equipment.Select(dto => new Equipment
+        {
+            Id = dto.Id,
+            Name = dto.Name,
+            Model = dto.Model,
+            SerialNumber = dto.SerialNumber,
+            Manufacturer = dto.Manufacturer,
+            Quantity = dto.Quantity,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        }).ToList();
+
+        _equipmentRepositoryMock
+            .Setup(repo => repo.UpdateBulkAsync(It.IsAny<IEnumerable<Equipment>>()))
+            .ReturnsAsync(updatedEquipment);
+
+        // Act
+        var result = await _service.UpdateBulkAsync(updateBulkDto);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count);
+        Assert.Contains(result, e => e.Name == "Updated Equipment 1" && e.Model == "Updated Model 1");
+        Assert.Contains(result, e => e.Name == "Updated Equipment 2" && e.Model == "Updated Model 2");
+    }
 } 

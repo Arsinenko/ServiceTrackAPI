@@ -271,14 +271,7 @@ public class JobTypeServiceTests
     public async Task CreateBulkAsync_EmptyList_ReturnsEmptyCollection()
     {
         // Arrange
-        var createBulkDto = new CreateJobTypeBulkDto
-        {
-            JobTypes = new List<CreateJobTypeDto>()
-        };
-
-        _jobTypeRepositoryMock
-            .Setup(repo => repo.CreateBulkAsync(It.IsAny<IEnumerable<JobType>>()))
-            .ReturnsAsync(new List<Guid>());
+        var createBulkDto = new CreateJobTypeBulkDto { JobTypes = new List<CreateJobTypeDto>() };
 
         // Act
         var result = await _service.CreateBulkAsync(createBulkDto);
@@ -286,5 +279,41 @@ public class JobTypeServiceTests
         // Assert
         Assert.NotNull(result);
         Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task UpdateBulkAsync_ValidData_UpdatesAndReturnsJobTypeDtos()
+    {
+        // Arrange
+        var updateBulkDto = new UpdateJobTypeBulkDto
+        {
+            JobTypes = new List<UpdateJobTypeBulkItemDto>
+            {
+                new() { Id = Guid.NewGuid(), Name = "Updated Job Type 1", Description = "Updated Description 1" },
+                new() { Id = Guid.NewGuid(), Name = "Updated Job Type 2", Description = "Updated Description 2" }
+            }
+        };
+
+        var updatedJobTypes = updateBulkDto.JobTypes.Select(dto => new JobType
+        {
+            Id = dto.Id,
+            Name = dto.Name,
+            Description = dto.Description,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        }).ToList();
+
+        _jobTypeRepositoryMock
+            .Setup(repo => repo.UpdateBulkAsync(It.IsAny<IEnumerable<JobType>>()))
+            .ReturnsAsync(updatedJobTypes);
+
+        // Act
+        var result = await _service.UpdateBulkAsync(updateBulkDto);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count());
+        Assert.Contains(result, jt => jt.Name == "Updated Job Type 1" && jt.Description == "Updated Description 1");
+        Assert.Contains(result, jt => jt.Name == "Updated Job Type 2" && jt.Description == "Updated Description 2");
     }
 } 

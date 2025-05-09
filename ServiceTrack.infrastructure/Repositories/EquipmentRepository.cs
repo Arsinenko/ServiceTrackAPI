@@ -87,7 +87,7 @@ public class EquipmentRepository : IEquipmentRepository
 
         component.CreatedAt = DateTime.UtcNow;
         component.UpdatedAt = DateTime.UtcNow;
-        component.ParentId = equipment;
+        component.ParentId = equipmentId;
 
         if (equipment.Components == null)
             equipment.Components = new List<Equipment>();

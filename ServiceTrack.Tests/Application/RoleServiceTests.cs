@@ -201,7 +201,7 @@ public class RoleServiceTests
 
         _roleRepositoryMock
             .Setup(repo => repo.UpdateAsync(It.IsAny<Role>()))
-            .ReturnsAsync(roleId);
+            .ReturnsAsync(existingRole);
 
         // Act
         var result = await _service.UpdateAsync(roleId, updateDto);
@@ -280,14 +280,7 @@ public class RoleServiceTests
     public async Task CreateBulkAsync_EmptyList_ReturnsEmptyCollection()
     {
         // Arrange
-        var createBulkDto = new CreateRoleBulkDto
-        {
-            Roles = new List<RoleDto>()
-        };
-
-        _roleRepositoryMock
-            .Setup(repo => repo.CreateBulkAsync(It.IsAny<IEnumerable<Role>>()))
-            .ReturnsAsync(new List<Guid>());
+        var createBulkDto = new CreateRoleBulkDto { Roles = new List<RoleDto>() };
 
         // Act
         var result = await _service.CreateBulkAsync(createBulkDto);
@@ -295,5 +288,41 @@ public class RoleServiceTests
         // Assert
         Assert.NotNull(result);
         Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task UpdateBulkAsync_ValidData_UpdatesAndReturnsRoleDtos()
+    {
+        // Arrange
+        var updateBulkDto = new UpdateRoleBulkDto
+        {
+            Roles = new List<UpdateRoleBulkItemDto>
+            {
+                new() { Id = Guid.NewGuid(), Name = "Updated Role 1", Description = "Updated Description 1" },
+                new() { Id = Guid.NewGuid(), Name = "Updated Role 2", Description = "Updated Description 2" }
+            }
+        };
+
+        var updatedRoles = updateBulkDto.Roles.Select(dto => new Role
+        {
+            Id = dto.Id,
+            Name = dto.Name,
+            Description = dto.Description,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        }).ToList();
+
+        _roleRepositoryMock
+            .Setup(repo => repo.UpdateBulkAsync(It.IsAny<IEnumerable<Role>>()))
+            .ReturnsAsync(updatedRoles);
+
+        // Act
+        var result = await _service.UpdateBulkAsync(updateBulkDto);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count);
+        Assert.Contains(result, r => r.Name == "Updated Role 1" && r.Description == "Updated Description 1");
+        Assert.Contains(result, r => r.Name == "Updated Role 2" && r.Description == "Updated Description 2");
     }
 } 

@@ -10,7 +10,7 @@ public class EquipmentDto
     public string SerialNumber { get; set; }
     public string Manufacturer { get; set; }
     public int Quantity { get; set; }
-    public Equipment? ParentId { get; set; }
+    public Guid? ParentId { get; set; }
     public string? Description { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
@@ -42,7 +42,7 @@ public class CreateEquipmentDto
     public required string SerialNumber { get; set; }
     public required string Manufacturer { get; set; }
     public int Quantity { get; set; }
-    public Equipment? ParentId { get; set; }
+    public Guid? ParentId { get; set; }
     public string? Description { get; set; }
 }
 

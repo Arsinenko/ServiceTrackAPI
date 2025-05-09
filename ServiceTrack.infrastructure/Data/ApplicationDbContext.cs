@@ -118,9 +118,9 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(500);
 
             // Configure self-referencing relationship for components
-            entity.HasOne(e => e.ParentId)
+            entity.HasOne<Equipment>()
                 .WithMany(e => e.Components)
-                .HasForeignKey("ParentEquipmentId")
+                .HasForeignKey(e => e.ParentId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
         
