@@ -119,4 +119,26 @@ public class JobTypeController : ControllerBase
         }
         return Ok(jobType);
     }
+
+    /// <summary>
+    /// Обновляет существующие типы работы
+    /// </summary>
+    /// <param name="jobTypeBulkDto">Данные для обновления типов работы</param>
+    /// <returns>Обновленный тип работы</returns>
+    /// <response code="200">Типы работы успешно обновлены</response>
+    /// <response code="400">Некорректные данные</response>
+    /// <response code="401">Требуется авторизация</response>
+    /// <response code="403">Нет прав доступа (требуется роль Admin)</response>
+    /// <response code="404">Тип работы не найден</response>
+    [Authorize(Roles = "Admin")]
+    [HttpPut("bulk")]
+    public async Task<ActionResult<List<JobTypeDto>>> UpdateBulkAsync(UpdateJobTypeBulkDto jobTypeBulkDto)
+    {
+        var jobTypes = await _jobTypeService.UpdateBulkAsync(jobTypeBulkDto);
+        if (jobTypes == null)
+        {
+            return NotFound();
+        }
+        return Ok(jobTypes);
+    }
 }

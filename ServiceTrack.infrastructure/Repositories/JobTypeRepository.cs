@@ -60,6 +60,21 @@ public class JobTypeRepository :  IJobTypeRepository
         return jobType.Id;
     }
 
+    public async Task<List<JobType>?> UpdateBulkAsync(IEnumerable<JobType> jobTypes)
+    {
+        var jobTypesList = jobTypes.ToList();
+        foreach (var jobType in jobTypesList)
+        {
+            jobType.UpdatedAt = DateTime.UtcNow;
+        }
+        
+        await _context.BulkUpdateAsync(jobTypesList, options =>
+        {
+            options.AutoMapOutputDirection = false;
+        });
+        return jobTypesList;
+    }
+
     public Task DeleteAsync(Guid id)
     {
         throw new NotImplementedException();

@@ -35,3 +35,13 @@ public class CreateJobTypeBulkDto
 {
     public ICollection<CreateJobTypeDto> JobTypes { get; set; }
 }
+
+public class UpdateJobTypeBulkItemDto : CreateJobTypeDto
+{
+    public required Guid Id { get; set; }
+}
+
+public class UpdateJobTypeBulkDto
+{
+    public required ICollection<UpdateJobTypeBulkItemDto> JobTypes { get; set; }
+}

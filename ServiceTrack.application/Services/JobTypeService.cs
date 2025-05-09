@@ -68,6 +68,26 @@ public class JobTypeService : IJobTypeService
         
     }
 
+    public async Task<IEnumerable<JobTypeDto>?> UpdateBulkAsync(UpdateJobTypeBulkDto jobTypeBulkDto)
+    {
+        var jobTypes = new List<JobType>();
+        foreach (var jobTypeDto in jobTypeBulkDto.JobTypes)
+        {
+            var jobType = new JobType
+            {
+                Id = jobTypeDto.Id,
+                Name = jobTypeDto.Name,
+                Description = jobTypeDto.Description
+            };
+            jobTypes.Add(jobType);
+        }
+        var result = await _jobTypeRepository.UpdateBulkAsync(jobTypes);
+        if (result == null)
+            return null;
+        
+        return result.Select(JobTypeDto.FromJobType).ToList();
+    }
+
     public async Task DeleteAsync(Guid id)
     {
         await _jobTypeRepository.DeleteAsync(id);
