@@ -72,6 +72,103 @@ public class AuthService : IAuthService
         };
     }
 
+    public async Task<List<AuthResult>> RegisterBulkAsync(List<RegisterUserDto> registerDtos)
+    {
+        var results = new List<AuthResult>();
+        var usersToCreate = new List<User>();
+        var existingEmails = new HashSet<string>();
+
+        // First, check all emails for duplicates
+        foreach (var dto in registerDtos)
+        {
+            var existingUser = await _userRepository.GetByEmailAsync(dto.Email);
+            if (existingUser != null)
+            {
+                results.Add(new AuthResult
+                {
+                    Success = false,
+                    Message = $"Email {dto.Email} already exists",
+                    Email = dto.Email
+                });
+                existingEmails.Add(dto.Email);
+            }
+        }
+
+        // Filter out users with existing emails
+        var validDtos = registerDtos.Where(dto => !existingEmails.Contains(dto.Email)).ToList();
+
+        // Get all unique role IDs
+        var roleIds = validDtos.Select(dto => dto.RoleId).Distinct().ToList();
+        var roles = new Dictionary<Guid, Role>();
+
+        // Fetch all required roles
+        foreach (var roleId in roleIds)
+        {
+            var role = await _roleRepository.GetByIdAsync(roleId);
+            if (role == null)
+            {
+                // Add failure result for all users with this role
+                foreach (var dto in validDtos.Where(d => d.RoleId == roleId))
+                {
+                    results.Add(new AuthResult
+                    {
+                        Success = false,
+                        Message = $"Specified role not found for user {dto.Email}",
+                        Email = dto.Email
+                    });
+                }
+                continue;
+            }
+            roles[roleId] = role;
+        }
+
+        // Create users for valid DTOs with valid roles
+        foreach (var dto in validDtos)
+        {
+            if (!roles.ContainsKey(dto.RoleId))
+                continue; // Skip if role was invalid
+
+            var role = roles[dto.RoleId];
+            string passwordHash = _passwordHasher.HashPassword(dto.Password);
+
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Email = dto.Email,
+                PasswordHash = passwordHash,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                CreatedAt = DateTime.UtcNow,
+                RoleId = role.Id,
+                Role = role
+            };
+
+            usersToCreate.Add(user);
+        }
+
+        // Bulk create users if there are any valid ones
+        if (usersToCreate.Any())
+        {
+            var createdUsers = await _userRepository.CreateBulkAsync(usersToCreate);
+
+            // Generate tokens and create success results for created users
+            foreach (var user in createdUsers)
+            {
+                string token = _jwtGenerator.CreateToken(user);
+                results.Add(new AuthResult
+                {
+                    Success = true,
+                    Token = token,
+                    Email = user.Email,
+                    Message = "Registration success",
+                    User = UserDto.FromUser(user)
+                });
+            }
+        }
+
+        return results;
+    }
+
     public async Task<AuthResult> LoginAsync(LoginUserDto loginDto)
     {
         User? user = await _userRepository.GetByEmailAsync(loginDto.Email);

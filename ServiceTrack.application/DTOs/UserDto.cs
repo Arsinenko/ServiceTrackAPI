@@ -29,4 +29,4 @@ public class UserDto
             Role = user.Role != null ? RoleDto.FromRole(user.Role) : null
         };
     }
-} 
+}

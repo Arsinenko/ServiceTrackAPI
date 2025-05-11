@@ -59,4 +59,28 @@ public class AuthController : ControllerBase
         }
         return Ok(result);
     }
+
+    /// <summary>
+    /// Регистрирует массив пользователей (для регистрации подчиненных начальником)
+    /// </summary>
+    /// <param name="registerDtos">Массив данных для регистрации пользователей</param>
+    /// <returns>Результаты регистрации для каждого пользователя</returns>
+    /// <response code="200">Регистрация завершена (может содержать как успешные, так и неуспешные результаты)</response>
+    /// <response code="400">Некорректные данные</response>
+    [HttpPost("register-bulk")]
+    public async Task<ActionResult<List<AuthResult>>> RegisterBulk(List<RegisterUserDto> registerDtos)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        if (registerDtos == null || !registerDtos.Any())
+        {
+            return BadRequest("No users provided for registration");
+        }
+
+        var results = await _authService.RegisterBulkAsync(registerDtos);
+        return Ok(results);
+    }
 }

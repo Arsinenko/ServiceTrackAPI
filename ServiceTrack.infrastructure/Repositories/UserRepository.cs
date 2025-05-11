@@ -35,6 +35,21 @@ public class UserRepository : IUserRepository
         return user.Id;
     }
 
+    public async Task<List<User>> CreateBulkAsync(IEnumerable<User> users)
+    {
+        var userList = users.ToList();
+        foreach (var user in userList)
+        {
+            user.CreatedAt = DateTime.UtcNow;
+        }
+
+        await _context.BulkInsertAsync(userList, options =>
+        {
+            options.AutoMapOutputDirection = false;
+        });
+        return userList;
+    }
+
     public async Task<Guid> UpdateAsync(User user)
     {
         _context.Users.Update(user);
