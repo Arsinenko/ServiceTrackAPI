@@ -1,4 +1,5 @@
 using AuthApp.application.DTOs;
+using AuthApp.application.Exceptions;
 using AuthApp.application.Interfaces;
 using AuthApp.domain.Entities;
 
@@ -31,8 +32,32 @@ public class RoleService : IRoleService
         return roles.Select(RoleDto.FromRole);
     }
 
+    private void ValidateRoleNameAndDescription(string name, string description)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new RoleValidationException("Role name cannot be empty");
+        
+        if (name.Length > 50)
+            throw new RoleValidationException("Role name cannot be longer than 50 characters");
+        
+        if (string.IsNullOrWhiteSpace(description))
+            throw new RoleValidationException("Role description cannot be empty");
+        
+        if (description.Length > 200)
+            throw new RoleValidationException("Role description cannot be longer than 200 characters");
+    }
+
     public async Task<RoleDto> CreateAsync(CreateRoleDto createRoleDto)
     {
+        ValidateRoleNameAndDescription(createRoleDto.Name, createRoleDto.Description);
+
+        // Check if role with this name already exists
+        var existingRole = await _roleRepository.GetByNameAsync(createRoleDto.Name);
+        if (existingRole != null)
+        {
+            throw new RoleNameAlreadyExistsException($"Role with name '{createRoleDto.Name}' already exists");
+        }
+
         var role = new Role
         {
             Id = Guid.NewGuid(),
@@ -106,9 +131,21 @@ public class RoleService : IRoleService
 
     public async Task<RoleDto?> UpdateAsync(Guid id, UpdateRoleDto updateRoleDto)
     {
+        ValidateRoleNameAndDescription(updateRoleDto.Name, updateRoleDto.Description);
+
         var role = await _roleRepository.GetByIdAsync(id);
         if (role == null)
-            return null;
+            throw new RoleNotFoundException($"Role with id '{id}' not found");
+
+        // Check if we're changing the name and if the new name already exists
+        if (role.Name != updateRoleDto.Name)
+        {
+            var existingRole = await _roleRepository.GetByNameAsync(updateRoleDto.Name);
+            if (existingRole != null)
+            {
+                throw new RoleNameAlreadyExistsException($"Role with name '{updateRoleDto.Name}' already exists");
+            }
+        }
 
         role.Name = updateRoleDto.Name;
         role.Description = updateRoleDto.Description;
@@ -137,6 +174,16 @@ public class RoleService : IRoleService
 
     public async Task DeleteAsync(Guid id)
     {
+        var role = await _roleRepository.GetByIdAsync(id);
+        if (role == null)
+            throw new RoleNotFoundException($"Role with id '{id}' not found");
+
+        // Check if role is being used by any users
+        if (role.Users != null && role.Users.Any())
+        {
+            throw new RoleInUseException($"Cannot delete role '{role.Name}' because it is assigned to {role.Users.Count} users");
+        }
+
         await _roleRepository.DeleteAsync(id);
     }
 } 

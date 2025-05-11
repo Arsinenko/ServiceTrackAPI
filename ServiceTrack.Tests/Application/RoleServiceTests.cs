@@ -1,4 +1,5 @@
 using AuthApp.application.DTOs;
+using AuthApp.application.Exceptions;
 using AuthApp.application.Interfaces;
 using AuthApp.application.Services;
 using AuthApp.domain.Entities;
@@ -213,7 +214,7 @@ public class RoleServiceTests
     }
 
     [Fact]
-    public async Task UpdateAsync_WhenRoleDoesNotExist_ReturnsNull()
+    public async Task UpdateAsync_WhenRoleDoesNotExist_ThrowsRoleNotFoundException()
     {
         // Arrange
         var roleId = Guid.NewGuid();
@@ -227,11 +228,8 @@ public class RoleServiceTests
             .Setup(repo => repo.GetByIdAsync(roleId))
             .ReturnsAsync((Role)null);
 
-        // Act
-        var result = await _service.UpdateAsync(roleId, updateDto);
-
-        // Assert
-        Assert.Null(result);
+        // Act & Assert
+        await Assert.ThrowsAsync<RoleNotFoundException>(() => _service.UpdateAsync(roleId, updateDto));
     }
 
     [Fact]
@@ -324,5 +322,161 @@ public class RoleServiceTests
         Assert.Equal(2, result.Count);
         Assert.Contains(result, r => r.Name == "Updated Role 1" && r.Description == "Updated Description 1");
         Assert.Contains(result, r => r.Name == "Updated Role 2" && r.Description == "Updated Description 2");
+    }
+
+    [Fact]
+    public async Task CreateAsync_WithExistingName_ThrowsRoleNameAlreadyExistsException()
+    {
+        // Arrange
+        var createDto = new CreateRoleDto
+        {
+            Name = "Existing Role",
+            Description = "Test Description"
+        };
+
+        var existingRole = new Role
+        {
+            Id = Guid.NewGuid(),
+            Name = "Existing Role",
+            Description = "Existing Description",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _roleRepositoryMock
+            .Setup(repo => repo.GetByNameAsync(createDto.Name))
+            .ReturnsAsync(existingRole);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<RoleNameAlreadyExistsException>(() => _service.CreateAsync(createDto));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_WithExistingName_ThrowsRoleNameAlreadyExistsException()
+    {
+        // Arrange
+        var roleId = Guid.NewGuid();
+        var existingRole = new Role
+        {
+            Id = roleId,
+            Name = "Old Role",
+            Description = "Old Description",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var updateDto = new UpdateRoleDto
+        {
+            Name = "Existing Role",
+            Description = "Updated Description"
+        };
+
+        var otherExistingRole = new Role
+        {
+            Id = Guid.NewGuid(),
+            Name = "Existing Role",
+            Description = "Other Description",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _roleRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(roleId))
+            .ReturnsAsync(existingRole);
+
+        _roleRepositoryMock
+            .Setup(repo => repo.GetByNameAsync(updateDto.Name))
+            .ReturnsAsync(otherExistingRole);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<RoleNameAlreadyExistsException>(() => _service.UpdateAsync(roleId, updateDto));
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenRoleHasUsers_ThrowsRoleInUseException()
+    {
+        // Arrange
+        var roleId = Guid.NewGuid();
+        var role = new Role
+        {
+            Id = roleId,
+            Name = "Test Role",
+            Description = "Test Description",
+            CreatedAt = DateTime.UtcNow,
+            Users = new List<User>
+            {
+                new User { Id = Guid.NewGuid(), Email = "test@example.com" }
+            }
+        };
+
+        _roleRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(roleId))
+            .ReturnsAsync(role);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<RoleInUseException>(() => _service.DeleteAsync(roleId));
+    }
+
+    [Theory]
+    [InlineData("", "Description")]
+    [InlineData(null, "Description")]
+    [InlineData("Role", "")]
+    [InlineData("Role", null)]
+    [InlineData("ThisIsAVeryLongRoleNameThatExceedsTheMaximumAllowedLengthOfFiftyCharacters", "Description")]
+    [InlineData("Role", "ThisIsAVeryLongDescriptionThatExceedsTheMaximumAllowedLengthOfTwoHundredCharactersThisIsAVeryLongDescriptionThatExceedsTheMaximumAllowedLengthOfTwoHundredCharactersThisIsAVeryLongDescriptionThatExceedsTheMaximumAllowedLengthOfTwoHundredCharacters")]
+    public async Task CreateAsync_WithInvalidData_ThrowsRoleValidationException(string name, string description)
+    {
+        // Arrange
+        var createDto = new CreateRoleDto
+        {
+            Name = name,
+            Description = description
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<RoleValidationException>(() => _service.CreateAsync(createDto));
+    }
+
+    [Theory]
+    [InlineData("", "Description")]
+    [InlineData(null, "Description")]
+    [InlineData("Role", "")]
+    [InlineData("Role", null)]
+    [InlineData("ThisIsAVeryLongRoleNameThatExceedsTheMaximumAllowedLengthOfFiftyCharacters", "Description")]
+    [InlineData("Role", "ThisIsAVeryLongDescriptionThatExceedsTheMaximumAllowedLengthOfTwoHundredCharactersThisIsAVeryLongDescriptionThatExceedsTheMaximumAllowedLengthOfTwoHundredCharactersThisIsAVeryLongDescriptionThatExceedsTheMaximumAllowedLengthOfTwoHundredCharacters")]
+    public async Task UpdateAsync_WithInvalidData_ThrowsRoleValidationException(string name, string description)
+    {
+        // Arrange
+        var roleId = Guid.NewGuid();
+        var existingRole = new Role
+        {
+            Id = roleId,
+            Name = "Old Role",
+            Description = "Old Description",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var updateDto = new UpdateRoleDto
+        {
+            Name = name,
+            Description = description
+        };
+
+        _roleRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(roleId))
+            .ReturnsAsync(existingRole);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<RoleValidationException>(() => _service.UpdateAsync(roleId, updateDto));
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenRoleDoesNotExist_ThrowsRoleNotFoundException()
+    {
+        // Arrange
+        var roleId = Guid.NewGuid();
+        _roleRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(roleId))
+            .ReturnsAsync((Role)null);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<RoleNotFoundException>(() => _service.DeleteAsync(roleId));
     }
 } 

@@ -6,6 +6,7 @@ using System.Text;
 using AuthApp.infrastructure.Data;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using ServiceTrack.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -100,6 +101,10 @@ app.UseStaticFiles(); // Добавляем поддержку статичес�
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Add exception handling middleware
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.MapControllers();
 
 // Initialize database
