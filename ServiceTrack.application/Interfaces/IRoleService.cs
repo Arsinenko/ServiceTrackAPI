@@ -8,7 +8,7 @@ public interface IRoleService
     Task<RoleDto?> GetByNameAsync(string name);
     Task<IEnumerable<RoleDto>> GetAllAsync();
     Task<RoleDto> CreateAsync(CreateRoleDto createRoleDto);
-    Task<IEnumerable<RoleDto>> CreateBulkAsync(CreateRoleBulkDto createRoleBulkDto);
+    Task<CreateRoleBulkResultDto> CreateBulkAsync(CreateRoleBulkDto createRoleBulkDto);
     Task<RoleDto?> UpdateAsync(Guid id, UpdateRoleDto updateRoleDto);
     Task<List<RoleDto>?> UpdateBulkAsync(UpdateRoleBulkDto updateRoleBulkDto);
     Task DeleteAsync(Guid id);

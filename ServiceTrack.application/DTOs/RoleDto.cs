@@ -42,4 +42,11 @@ public class UpdateRoleBulkItemDto : CreateRoleDto
 public class UpdateRoleBulkDto
 {
     public required ICollection<UpdateRoleBulkItemDto> Roles { get; set; }
+}
+
+public class CreateRoleBulkResultDto
+{
+    public required ICollection<RoleDto> CreatedRoles { get; set; }
+    public required ICollection<CreateRoleDto> FailedRoles { get; set; }
+    public required ICollection<string> FailureReasons { get; set; }
 } 

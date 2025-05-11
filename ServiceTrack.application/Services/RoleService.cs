@@ -44,16 +44,64 @@ public class RoleService : IRoleService
         return RoleDto.FromRole(role);
     }
 
-    public async Task<IEnumerable<RoleDto>> CreateBulkAsync(CreateRoleBulkDto createRoleBulkDto )
+    public async Task<CreateRoleBulkResultDto> CreateBulkAsync(CreateRoleBulkDto createRoleBulkDto)
     {
-        var roles = createRoleBulkDto.Roles.Select(dto => new Role
+        var createdRoles = new List<Role>();
+        var failedRoles = new List<CreateRoleDto>();
+        var failureReasons = new List<string>();
+        var duplicateNamesInBatch = new HashSet<string>();
+
+        // First pass: Check for duplicates within the batch
+        foreach (var dto in createRoleBulkDto.Roles)
         {
-            Id = Guid.NewGuid(),
-            Name = dto.Name,
-            Description = dto.Description
-        }).ToList();
-        await _roleRepository.CreateBulkAsync(roles);
-        return roles.Select(RoleDto.FromRole);
+            if (!duplicateNamesInBatch.Add(dto.Name))
+            {
+                failedRoles.Add(dto);
+                failureReasons.Add($"Role name '{dto.Name}' is duplicated in the batch");
+            }
+        }
+
+        // Get all existing role names in a single query
+        var existingRoles = await _roleRepository.GetAllAsync();
+        var existingRoleNames = existingRoles.Select(r => r.Name).ToHashSet();
+
+        // Second pass: Check against existing roles and create valid ones
+        foreach (var dto in createRoleBulkDto.Roles)
+        {
+            // Skip roles that failed in the first pass
+            if (duplicateNamesInBatch.Contains(dto.Name))
+                continue;
+
+            // Check if role with this name already exists
+            if (existingRoleNames.Contains(dto.Name))
+            {
+                failedRoles.Add(dto);
+                failureReasons.Add($"Role with name '{dto.Name}' already exists");
+                continue;
+            }
+
+            // Create new role
+            var role = new Role
+            {
+                Id = Guid.NewGuid(),
+                Name = dto.Name,
+                Description = dto.Description
+            };
+            createdRoles.Add(role);
+        }
+
+        // Only attempt to create roles if there are any valid ones
+        if (createdRoles.Any())
+        {
+            await _roleRepository.CreateBulkAsync(createdRoles);
+        }
+
+        return new CreateRoleBulkResultDto
+        {
+            CreatedRoles = createdRoles.Select(RoleDto.FromRole).ToList(),
+            FailedRoles = failedRoles,
+            FailureReasons = failureReasons
+        };
     }
 
     public async Task<RoleDto?> UpdateAsync(Guid id, UpdateRoleDto updateRoleDto)
