@@ -5,9 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AuthApp.Api.Controllers;
 
+/// <summary>
+/// Контроллер для управления ролями пользователей
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
-
 public class RoleController : ControllerBase
 {
     private readonly IRoleService _roleService;
@@ -16,23 +18,27 @@ public class RoleController : ControllerBase
     {
         _roleService = roleService;
     }
+
     /// <summary>
-    /// Получает все роли. 
+    /// Получает список всех ролей
     /// </summary>
     /// <returns>Список ролей</returns>
     /// <response code="200">Возвращает список ролей</response>
+    /// <response code="401">Требуется авторизация</response>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<RoleDto>>> GetAll()
     {
         var roles = await _roleService.GetAllAsync();
         return Ok(roles);
     }
+
     /// <summary>
-    /// Получает роль по id
+    /// Получает роль по идентификатору
     /// </summary>
     /// <param name="id">Идентификатор роли</param>
-    /// <returns>Роль</returns>
-    /// <response code="200">Возвращает роль</response>
+    /// <returns>Информация о роли</returns>
+    /// <response code="200">Возвращает информацию о роли</response>
+    /// <response code="401">Требуется авторизация</response>
     /// <response code="404">Роль не найдена</response>
     [HttpGet("{id}")]
     public async Task<ActionResult<RoleDto>> GetById(Guid id)
@@ -43,14 +49,17 @@ public class RoleController : ControllerBase
 
         return Ok(role);
     }
+
     /// <summary>
     /// Создает новую роль
     /// </summary>
     /// <param name="createRoleDto">Данные для создания роли</param>
     /// <returns>Созданная роль</returns>
     /// <response code="201">Роль успешно создана</response>
+    /// <response code="400">Некорректные данные (пустое имя/описание, превышена максимальная длина)</response>
     /// <response code="401">Требуется авторизация</response>
-    /// <response code="403">Нет прав доступа</response>
+    /// <response code="403">Нет прав доступа (требуется роль Admin)</response>
+    /// <response code="409">Роль с таким именем уже существует</response>
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<RoleDto>> Create(CreateRoleDto createRoleDto)
@@ -60,13 +69,15 @@ public class RoleController : ControllerBase
     }
 
     /// <summary>
-    /// Создает роли
+    /// Создает несколько ролей
     /// </summary>
     /// <param name="createRoleBulkDto">Данные для создания ролей</param>
-    /// <returns>Созданные роли</returns>
-    /// <response code="201">Роли успешно созданы</response>
+    /// <returns>Результат создания ролей (успешные и неуспешные)</returns>
+    /// <response code="201">Роли успешно созданы (частично или полностью)</response>
+    /// <response code="400">Некорректные данные (пустые имена/описания, превышена максимальная длина)</response>
     /// <response code="401">Требуется авторизация</response>
-    /// <response code="403">Нет прав доступа</response>
+    /// <response code="403">Нет прав доступа (требуется роль Admin)</response>
+    /// <response code="409">Некоторые роли не созданы из-за конфликта имен</response>
     [Authorize(Roles = "Admin")]
     [HttpPost("bulk")]
     public async Task<ActionResult<CreateRoleBulkResultDto>> CreateBulkAsync(CreateRoleBulkDto createRoleBulkDto)
@@ -82,29 +93,30 @@ public class RoleController : ControllerBase
     /// <param name="updateRoleDto">Данные для обновления роли</param>
     /// <returns>Обновленная роль</returns>
     /// <response code="200">Роль успешно обновлена</response>
+    /// <response code="400">Некорректные данные (пустое имя/описание, превышена максимальная длина)</response>
     /// <response code="401">Требуется авторизация</response>
-    /// <response code="403">Нет прав доступа</response>
+    /// <response code="403">Нет прав доступа (требуется роль Admin)</response>
     /// <response code="404">Роль не найдена</response>
+    /// <response code="409">Роль с новым именем уже существует</response>
     [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<ActionResult<RoleDto>> Update(Guid id, UpdateRoleDto updateRoleDto)
     {
         var role = await _roleService.UpdateAsync(id, updateRoleDto);
-        if (role == null)
-            return NotFound();
-
         return Ok(role);
     }
 
     /// <summary>
-    /// Обновляет существующие роли
+    /// Обновляет несколько ролей
     /// </summary>
-    /// <param name="updateRoleBulkDto">Данные для обновления</param>
+    /// <param name="updateRoleBulkDto">Данные для обновления ролей</param>
     /// <returns>Обновленные роли</returns>
-    /// <response code="200">Роль успешно обновлена</response>
+    /// <response code="200">Роли успешно обновлены</response>
+    /// <response code="400">Некорректные данные (пустые имена/описания, превышена максимальная длина)</response>
     /// <response code="401">Требуется авторизация</response>
-    /// <response code="403">Нет прав доступа</response>
-    /// <response code="404">Роль не найдена</response>
+    /// <response code="403">Нет прав доступа (требуется роль Admin)</response>
+    /// <response code="404">Некоторые роли не найдены</response>
+    /// <response code="409">Некоторые роли не обновлены из-за конфликта имен</response>
     [Authorize(Roles = "Admin")]
     [HttpPut("bulk")]
     public async Task<ActionResult<List<RoleDto>>> UpdateBulkAsync(UpdateRoleBulkDto updateRoleBulkDto)
@@ -120,7 +132,9 @@ public class RoleController : ControllerBase
     /// <returns>Нет содержимого</returns>
     /// <response code="204">Роль успешно удалена</response>
     /// <response code="401">Требуется авторизация</response>
-    /// <response code="403">Нет прав доступа</response>
+    /// <response code="403">Нет прав доступа (требуется роль Admin)</response>
+    /// <response code="404">Роль не найдена</response>
+    /// <response code="409">Невозможно удалить роль, так как она используется пользователями</response>
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
