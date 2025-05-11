@@ -69,7 +69,7 @@ public class RoleController : ControllerBase
     /// <response code="403">Нет прав доступа</response>
     [Authorize(Roles = "Admin")]
     [HttpPost("bulk")]
-    public async Task<ActionResult<List<RoleDto>>> CreateBulkAsync(CreateRoleBulkDto createRoleBulkDto)
+    public async Task<ActionResult<CreateRoleBulkResultDto>> CreateBulkAsync(CreateRoleBulkDto createRoleBulkDto)
     {
         var roles = await _roleService.CreateBulkAsync(createRoleBulkDto);
         return CreatedAtAction(nameof(GetAll), roles);
