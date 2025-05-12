@@ -41,7 +41,7 @@ public class ServiceRequestServiceTests
             Customer = "Test Customer",
             Description = "Test Description",
             CreatedAt = DateTime.UtcNow,
-            JobType = new JobType { Id = Guid.NewGuid(), Name = "Test Job Type", Description = "Test Description" }
+            JobType = new JobType { Id = Guid.NewGuid(), Name = "Test Job Type", Description = "Test Job Type Description" }
         };
 
         _serviceRequestRepositoryMock
@@ -79,7 +79,7 @@ public class ServiceRequestServiceTests
     {
         // Arrange
         var jobTypeId = Guid.NewGuid();
-        var jobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Description" };
+        var jobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Job Type Description" };
         var createDto = new CreateServiceRequestDto
         {
             ContractId = 1,
@@ -165,10 +165,10 @@ public class ServiceRequestServiceTests
             CreatedAt = DateTime.UtcNow,
             UserServiceRequests = new List<UserServiceRequest>(),
             ServiceRequestEquipments = new List<ServiceRequestEquipment>(),
-            JobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Description" }
+            JobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Job Type Description" }
         };
 
-        var jobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Description" };
+        var jobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Job Type Description" };
         var updateDto = new UpdateServiceRequestDto
         {
             Customer = "New Customer",
@@ -221,7 +221,7 @@ public class ServiceRequestServiceTests
     {
         // Arrange
         var jobTypeId = Guid.NewGuid();
-        var jobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Description" };
+        var jobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Job Type Description" };
         
         var createBulkDto = new CreateServiceRequestBulkDto
         {
@@ -314,5 +314,146 @@ public class ServiceRequestServiceTests
         // Assert
         Assert.NotNull(result);
         Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task DeleteBulkAsync_WhenAllRequestsExist_DeletesAllRequests()
+    {
+        // Arrange
+        var requestIds = new List<int> { 1, 2 };
+        var requests = new List<ServiceRequest>
+        {
+            new()
+            {
+                Id = 1,
+                Customer = "Customer 1",
+                Description = "Description 1",
+                CreatedAt = DateTime.UtcNow,
+                JobType = new JobType { Id = Guid.NewGuid(), Name = "Test Job Type", Description = "Test Job Type Description" }
+            },
+            new()
+            {
+                Id = 2,
+                Customer = "Customer 2",
+                Description = "Description 2",
+                CreatedAt = DateTime.UtcNow,
+                JobType = new JobType { Id = Guid.NewGuid(), Name = "Test Job Type", Description = "Test Job Type Description" }
+            }
+        };
+
+        _serviceRequestRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(1))
+            .ReturnsAsync(requests[0]);
+        _serviceRequestRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(2))
+            .ReturnsAsync(requests[1]);
+        _serviceRequestRepositoryMock
+            .Setup(repo => repo.DeleteAsync(It.IsAny<int>()))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await _service.DeleteBulkAsync(requestIds);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.DeletedServiceRequests.Count());
+        Assert.Empty(result.FailedServiceRequestIds);
+        Assert.Empty(result.FailureReasons);
+        Assert.Contains(result.DeletedServiceRequests, r => r.Id == 1 && r.Customer == "Customer 1");
+        Assert.Contains(result.DeletedServiceRequests, r => r.Id == 2 && r.Customer == "Customer 2");
+        _serviceRequestRepositoryMock.Verify(repo => repo.DeleteAsync(1), Times.Once);
+        _serviceRequestRepositoryMock.Verify(repo => repo.DeleteAsync(2), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteBulkAsync_WhenSomeRequestsDoNotExist_ReturnsPartialSuccess()
+    {
+        // Arrange
+        var existingId = 1;
+        var nonExistentId = 2;
+        var requestIds = new List<int> { existingId, nonExistentId };
+        var existingRequest = new ServiceRequest
+        {
+            Id = existingId,
+            Customer = "Existing Customer",
+            Description = "Existing Description",
+            CreatedAt = DateTime.UtcNow,
+            JobType = new JobType { Id = Guid.NewGuid(), Name = "Test Job Type", Description = "Test Job Type Description" }
+        };
+
+        _serviceRequestRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(existingId))
+            .ReturnsAsync(existingRequest);
+        _serviceRequestRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(nonExistentId))
+            .ReturnsAsync((ServiceRequest)null);
+        _serviceRequestRepositoryMock
+            .Setup(repo => repo.DeleteAsync(existingId))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await _service.DeleteBulkAsync(requestIds);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result.DeletedServiceRequests);
+        Assert.Single(result.FailedServiceRequestIds);
+        Assert.Single(result.FailureReasons);
+        Assert.Contains(result.DeletedServiceRequests, r => r.Id == existingId && r.Customer == "Existing Customer");
+        Assert.Contains(result.FailedServiceRequestIds, id => id == nonExistentId);
+        Assert.Contains(result.FailureReasons, reason => reason == "Request not found");
+        _serviceRequestRepositoryMock.Verify(repo => repo.DeleteAsync(existingId), Times.Once);
+        _serviceRequestRepositoryMock.Verify(repo => repo.DeleteAsync(nonExistentId), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteBulkAsync_WhenDeleteOperationFails_ReportsFailure()
+    {
+        // Arrange
+        var requestId = 1;
+        var request = new ServiceRequest
+        {
+            Id = requestId,
+            Customer = "Test Customer",
+            Description = "Test Description",
+            CreatedAt = DateTime.UtcNow,
+            JobType = new JobType { Id = Guid.NewGuid(), Name = "Test Job Type", Description = "Test Job Type Description" }
+        };
+
+        _serviceRequestRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(requestId))
+            .ReturnsAsync(request);
+        _serviceRequestRepositoryMock
+            .Setup(repo => repo.DeleteAsync(requestId))
+            .ThrowsAsync(new Exception("Database error"));
+
+        // Act
+        var result = await _service.DeleteBulkAsync(new List<int> { requestId });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result.DeletedServiceRequests);
+        Assert.Single(result.FailedServiceRequestIds);
+        Assert.Single(result.FailureReasons);
+        Assert.Contains(requestId, result.FailedServiceRequestIds);
+        Assert.Contains(result.FailureReasons, reason => reason == "Database error");
+    }
+
+    [Fact]
+    public async Task DeleteBulkAsync_WhenEmptyListProvided_ReturnsEmptyResult()
+    {
+        // Arrange
+        var requestIds = new List<int>();
+
+        // Act
+        var result = await _service.DeleteBulkAsync(requestIds);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result.DeletedServiceRequests);
+        Assert.Empty(result.FailedServiceRequestIds);
+        Assert.Empty(result.FailureReasons);
+        _serviceRequestRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<int>()), Times.Never);
+        _serviceRequestRepositoryMock.Verify(repo => repo.DeleteAsync(It.IsAny<int>()), Times.Never);
     }
 } 

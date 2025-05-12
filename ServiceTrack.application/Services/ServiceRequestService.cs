@@ -229,6 +229,41 @@ public class ServiceRequestService : IServiceRequestService
         return await _serviceRequestRepository.DeleteAsync(id);
     }
 
+    public async Task<DeleteServiceRequestBulkResult> DeleteBulkAsync(IEnumerable<int> requestIds)
+    {
+        var deletedRequests = new List<ServiceRequestDto>();
+        var failedRequestIds = new List<int>();
+        var failureReasons = new List<string>();
+
+        foreach (var requestId in requestIds)
+        {
+            try
+            {
+                var request = await _serviceRequestRepository.GetByIdAsync(requestId);
+                if (request == null)
+                {
+                    failedRequestIds.Add(requestId);
+                    failureReasons.Add("Request not found");
+                    continue;   
+                }
+                await _serviceRequestRepository.DeleteAsync(requestId);
+                deletedRequests.Add(ServiceRequestDto.FromServiceRequest(request));
+            }
+            catch (Exception ex)
+            {
+                failedRequestIds.Add(requestId);
+                failureReasons.Add(ex.Message);
+            }
+        }
+
+        return new DeleteServiceRequestBulkResult
+        {
+            DeletedServiceRequests = deletedRequests,
+            FailedServiceRequestIds = failedRequestIds,
+            FailureReasons = failureReasons
+        };
+    }
+
     public async Task<ServiceRequestDto?> AssignUserAsync(int requestId, Guid userId, bool isPrimary = false)
     {
         var request = await _serviceRequestRepository.GetByIdAsync(requestId);

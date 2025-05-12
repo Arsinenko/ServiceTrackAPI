@@ -11,6 +11,7 @@ public interface IServiceRequestService
     Task<List<ServiceRequestDto>> CreateBulkAsync(CreateServiceRequestBulkDto createDto);
     Task<ServiceRequestDto?> UpdateAsync(int id, UpdateServiceRequestDto updateDto);
     Task<bool> DeleteAsync(int id);
+    Task<DeleteServiceRequestBulkResult> DeleteBulkAsync(IEnumerable<int> requestIds);
     Task<ServiceRequestDto?> AssignUserAsync(int requestId, Guid userId, bool isPrimary = false);
     Task<ServiceRequestDto?> UnassignUserAsync(int requestId, Guid userId);
     Task<ServiceRequestDto?> AssignEquipmentAsync(int requestId, Guid equipmentId, string? notes = null);

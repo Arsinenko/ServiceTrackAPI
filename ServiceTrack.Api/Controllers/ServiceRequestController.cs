@@ -153,6 +153,13 @@ public class ServiceRequestController : ControllerBase
         return NoContent();
     }
 
+    [HttpDelete("bulk")]
+    public async Task<ActionResult<DeleteEquipmentBulkResult>> DeleteBulkAsync(List<int> ids)
+    {
+        var result = await _serviceRequestService.DeleteBulkAsync(ids);
+        return Ok(result);
+    }
+
     /// <summary>
     /// Назначает пользователя на заявку
     /// </summary>
