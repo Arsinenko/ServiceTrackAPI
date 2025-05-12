@@ -47,9 +47,9 @@ public class EquipmentService : IEquipmentService
         return EquipmentDto.FromEquipment(equipment);
     }
 
-    public async Task<IEnumerable<EquipmentDto>> CreateBulkAsync(CreateEquipmentBulkDto createEquipmentBulkDto)
+    private async Task<Equipment> CreateEquipmentWithComponentsAsync(CreateEquipmentDto dto, Guid? parentId = null)
     {
-        var equipmentList = createEquipmentBulkDto.Equipment.Select(dto => new Equipment
+        var equipment = new Equipment
         {
             Id = Guid.NewGuid(),
             Name = dto.Name,
@@ -57,8 +57,33 @@ public class EquipmentService : IEquipmentService
             SerialNumber = dto.SerialNumber,
             Manufacturer = dto.Manufacturer,
             Quantity = dto.Quantity,
-            Description = dto.Description
-        }).ToList();
+            Description = dto.Description,
+            ParentId = parentId
+        };
+
+        // Create components recursively if they exist
+        if (dto.Components != null && dto.Components.Any())
+        {
+            equipment.Components = new List<Equipment>();
+            foreach (var componentDto in dto.Components)
+            {
+                var component = await CreateEquipmentWithComponentsAsync(componentDto, equipment.Id);
+                equipment.Components.Add(component);
+            }
+        }
+
+        return equipment;
+    }
+
+    public async Task<IEnumerable<EquipmentDto>> CreateBulkAsync(CreateEquipmentBulkDto createEquipmentBulkDto)
+    {
+        var equipmentList = new List<Equipment>();
+        
+        foreach (var dto in createEquipmentBulkDto.Equipment)
+        {
+            var equipment = await CreateEquipmentWithComponentsAsync(dto);
+            equipmentList.Add(equipment);
+        }
 
         await _equipmentRepository.CreateBulkAsync(equipmentList);
         return equipmentList.Select(EquipmentDto.FromEquipment);

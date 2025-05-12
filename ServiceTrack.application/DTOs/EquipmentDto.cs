@@ -44,6 +44,7 @@ public class CreateEquipmentDto
     public int Quantity { get; set; }
     public Guid? ParentId { get; set; }
     public string? Description { get; set; }
+    public ICollection<CreateEquipmentDto>? Components { get; set; }
 }
 
 public class UpdateEquipmentDto : CreateEquipmentDto;

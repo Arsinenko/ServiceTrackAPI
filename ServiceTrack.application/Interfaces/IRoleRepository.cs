@@ -5,6 +5,7 @@ namespace AuthApp.application.Interfaces;
 public interface IRoleRepository
 {
     Task<Role?> GetByIdAsync(Guid id);
+    Task<IEnumerable<Role>> GetByIdsAsync(IEnumerable<Guid> ids);
     Task<Role?> GetByNameAsync(string name);
     Task<IEnumerable<Role>> GetAllAsync();
     Task<Guid> CreateAsync(Role role);

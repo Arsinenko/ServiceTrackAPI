@@ -237,6 +237,18 @@ public class RoleServiceTests
     {
         // Arrange
         var roleId = Guid.NewGuid();
+        var role = new Role
+        {
+            Id = roleId,
+            Name = "Test Role",
+            Description = "Test Description",
+            CreatedAt = DateTime.UtcNow,
+            Users = new List<User>()
+        };
+
+        _roleRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(roleId))
+            .ReturnsAsync(role);
 
         // Act
         await _service.DeleteAsync(roleId);
@@ -259,6 +271,11 @@ public class RoleServiceTests
             }
         };
 
+        // Mock GetAllAsync to return empty list (no existing roles)
+        _roleRepositoryMock
+            .Setup(repo => repo.GetAllAsync())
+            .ReturnsAsync(new List<Role>());
+
         _roleRepositoryMock
             .Setup(repo => repo.CreateBulkAsync(It.IsAny<IEnumerable<Role>>()))
             .ReturnsAsync(new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() });
@@ -268,10 +285,12 @@ public class RoleServiceTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(3, result.Count());
-        Assert.Contains(result, r => r.Name == "Role 1" && r.Description == "Description 1");
-        Assert.Contains(result, r => r.Name == "Role 2" && r.Description == "Description 2");
-        Assert.Contains(result, r => r.Name == "Role 3" && r.Description == "Description 3");
+        Assert.Equal(3, result.CreatedRoles.Count());
+        Assert.Empty(result.FailedRoles);
+        Assert.Empty(result.FailureReasons);
+        Assert.Contains(result.CreatedRoles, r => r.Name == "Role 1" && r.Description == "Description 1");
+        Assert.Contains(result.CreatedRoles, r => r.Name == "Role 2" && r.Description == "Description 2");
+        Assert.Contains(result.CreatedRoles, r => r.Name == "Role 3" && r.Description == "Description 3");
     }
 
     [Fact]
@@ -285,7 +304,9 @@ public class RoleServiceTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Empty(result);
+        Assert.Empty(result.CreatedRoles);
+        Assert.Empty(result.FailedRoles);
+        Assert.Empty(result.FailureReasons);
     }
 
     [Fact]
@@ -478,5 +499,197 @@ public class RoleServiceTests
 
         // Act & Assert
         await Assert.ThrowsAsync<RoleNotFoundException>(() => _service.DeleteAsync(roleId));
+    }
+
+    [Fact]
+    public async Task DeleteBulkAsync_WhenAllRolesExistAndNotInUse_DeletesAllRoles()
+    {
+        // Arrange
+        var roleIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
+        var roles = new List<Role>
+        {
+            new()
+            {
+                Id = roleIds[0],
+                Name = "Role 1",
+                Description = "Description 1",
+                CreatedAt = DateTime.UtcNow,
+                Users = new List<User>()
+            },
+            new()
+            {
+                Id = roleIds[1],
+                Name = "Role 2",
+                Description = "Description 2",
+                CreatedAt = DateTime.UtcNow,
+                Users = new List<User>()
+            }
+        };
+
+        _roleRepositoryMock
+            .Setup(repo => repo.GetByIdsAsync(roleIds))
+            .ReturnsAsync(roles);
+
+        // Act
+        var result = await _service.DeleteBulkAsync(roleIds);
+
+        // Assert
+        Assert.Equal(2, result.DeletedRoles.Count);
+        Assert.Empty(result.FailedRoleIds);
+        Assert.Empty(result.FailureReasons);
+        Assert.Contains(result.DeletedRoles, r => r.Name == "Role 1");
+        Assert.Contains(result.DeletedRoles, r => r.Name == "Role 2");
+
+        foreach (var roleId in roleIds)
+        {
+            _roleRepositoryMock.Verify(repo => repo.DeleteAsync(roleId), Times.Once);
+        }
+    }
+
+    [Fact]
+    public async Task DeleteBulkAsync_WhenSomeRolesDoNotExist_ReturnsPartialSuccess()
+    {
+        // Arrange
+        var existingRoleId = Guid.NewGuid();
+        var nonExistingRoleId = Guid.NewGuid();
+        var roleIds = new List<Guid> { existingRoleId, nonExistingRoleId };
+        
+        var existingRole = new Role
+        {
+            Id = existingRoleId,
+            Name = "Existing Role",
+            Description = "Description",
+            CreatedAt = DateTime.UtcNow,
+            Users = new List<User>()
+        };
+
+        _roleRepositoryMock
+            .Setup(repo => repo.GetByIdsAsync(roleIds))
+            .ReturnsAsync(new List<Role> { existingRole });
+
+        // Act
+        var result = await _service.DeleteBulkAsync(roleIds);
+
+        // Assert
+        Assert.Single(result.DeletedRoles);
+        Assert.Single(result.FailedRoleIds);
+        Assert.Single(result.FailureReasons);
+        Assert.Contains(result.DeletedRoles, r => r.Id == existingRoleId);
+        Assert.Contains(result.FailedRoleIds, id => id == nonExistingRoleId);
+        Assert.Contains(result.FailureReasons, reason => reason.Contains(nonExistingRoleId.ToString()));
+
+        _roleRepositoryMock.Verify(repo => repo.DeleteAsync(existingRoleId), Times.Once);
+        _roleRepositoryMock.Verify(repo => repo.DeleteAsync(nonExistingRoleId), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteBulkAsync_WhenSomeRolesAreInUse_ReturnsPartialSuccess()
+    {
+        // Arrange
+        var availableRoleId = Guid.NewGuid();
+        var inUseRoleId = Guid.NewGuid();
+        var roleIds = new List<Guid> { availableRoleId, inUseRoleId };
+        
+        var roles = new List<Role>
+        {
+            new()
+            {
+                Id = availableRoleId,
+                Name = "Available Role",
+                Description = "Description",
+                CreatedAt = DateTime.UtcNow,
+                Users = new List<User>()
+            },
+            new()
+            {
+                Id = inUseRoleId,
+                Name = "In Use Role",
+                Description = "Description",
+                CreatedAt = DateTime.UtcNow,
+                Users = new List<User> { new() { Id = Guid.NewGuid(), Email = "test@example.com" } }
+            }
+        };
+
+        _roleRepositoryMock
+            .Setup(repo => repo.GetByIdsAsync(roleIds))
+            .ReturnsAsync(roles);
+
+        // Act
+        var result = await _service.DeleteBulkAsync(roleIds);
+
+        // Assert
+        Assert.Single(result.DeletedRoles);
+        Assert.Single(result.FailedRoleIds);
+        Assert.Single(result.FailureReasons);
+        Assert.Contains(result.DeletedRoles, r => r.Id == availableRoleId);
+        Assert.Contains(result.FailedRoleIds, id => id == inUseRoleId);
+        Assert.Contains(result.FailureReasons, reason => reason.Contains("assigned to 1 users"));
+
+        _roleRepositoryMock.Verify(repo => repo.DeleteAsync(availableRoleId), Times.Once);
+        _roleRepositoryMock.Verify(repo => repo.DeleteAsync(inUseRoleId), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteBulkAsync_WhenAllRolesAreInUse_ReturnsAllFailed()
+    {
+        // Arrange
+        var roleIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
+        var roles = new List<Role>
+        {
+            new()
+            {
+                Id = roleIds[0],
+                Name = "Role 1",
+                Description = "Description 1",
+                CreatedAt = DateTime.UtcNow,
+                Users = new List<User> { new() { Id = Guid.NewGuid(), Email = "user1@example.com" } }
+            },
+            new()
+            {
+                Id = roleIds[1],
+                Name = "Role 2",
+                Description = "Description 2",
+                CreatedAt = DateTime.UtcNow,
+                Users = new List<User> { new() { Id = Guid.NewGuid(), Email = "user2@example.com" } }
+            }
+        };
+
+        _roleRepositoryMock
+            .Setup(repo => repo.GetByIdsAsync(roleIds))
+            .ReturnsAsync(roles);
+
+        // Act
+        var result = await _service.DeleteBulkAsync(roleIds);
+
+        // Assert
+        Assert.Empty(result.DeletedRoles);
+        Assert.Equal(2, result.FailedRoleIds.Count);
+        Assert.Equal(2, result.FailureReasons.Count);
+        Assert.Contains(result.FailedRoleIds, id => id == roleIds[0]);
+        Assert.Contains(result.FailedRoleIds, id => id == roleIds[1]);
+        Assert.All(result.FailureReasons, reason => reason.Contains("assigned to 1 users"));
+
+        foreach (var roleId in roleIds)
+        {
+            _roleRepositoryMock.Verify(repo => repo.DeleteAsync(roleId), Times.Never);
+        }
+    }
+
+    [Fact]
+    public async Task DeleteBulkAsync_WhenEmptyListProvided_ReturnsEmptyResult()
+    {
+        // Arrange
+        var roleIds = new List<Guid>();
+
+        // Act
+        var result = await _service.DeleteBulkAsync(roleIds);
+
+        // Assert
+        Assert.Empty(result.DeletedRoles);
+        Assert.Empty(result.FailedRoleIds);
+        Assert.Empty(result.FailureReasons);
+
+        _roleRepositoryMock.Verify(repo => repo.GetByIdsAsync(It.IsAny<IEnumerable<Guid>>()), Times.Never);
+        _roleRepositoryMock.Verify(repo => repo.DeleteAsync(It.IsAny<Guid>()), Times.Never);
     }
 } 

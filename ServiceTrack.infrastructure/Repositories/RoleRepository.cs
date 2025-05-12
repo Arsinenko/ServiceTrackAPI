@@ -19,6 +19,14 @@ public class RoleRepository : IRoleRepository
         return await _context.Roles.FindAsync(id);
     }
 
+    public async Task<IEnumerable<Role>> GetByIdsAsync(IEnumerable<Guid> ids)
+    {
+        return await _context.Roles
+            .Include(r => r.Users)
+            .Where(r => ids.Contains(r.Id))
+            .ToListAsync();
+    }
+
     public async Task<Role?> GetByNameAsync(string name)
     {
         return await _context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == name.ToLower());

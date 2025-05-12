@@ -12,4 +12,5 @@ public interface IRoleService
     Task<RoleDto?> UpdateAsync(Guid id, UpdateRoleDto updateRoleDto);
     Task<List<RoleDto>?> UpdateBulkAsync(UpdateRoleBulkDto updateRoleBulkDto);
     Task DeleteAsync(Guid id);
+    Task<DeleteRoleBulkResultDto> DeleteBulkAsync(IEnumerable<Guid> roleIds);
 } 

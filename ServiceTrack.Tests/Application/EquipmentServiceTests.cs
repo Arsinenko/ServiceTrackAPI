@@ -539,4 +539,93 @@ public class EquipmentServiceTests
         Assert.Contains(result, e => e.Name == "Updated Equipment 1" && e.Model == "Updated Model 1");
         Assert.Contains(result, e => e.Name == "Updated Equipment 2" && e.Model == "Updated Model 2");
     }
+
+    [Fact]
+    public async Task CreateBulkAsync_WithComponents_CreatesAndReturnsEquipmentWithComponents()
+    {
+        // Arrange
+        var createBulkDto = new CreateEquipmentBulkDto
+        {
+            Equipment = new List<CreateEquipmentDto>
+            {
+                new()
+                {
+                    Name = "Main Equipment",
+                    Model = "Model A",
+                    SerialNumber = "SN001",
+                    Manufacturer = "Manufacturer X",
+                    Quantity = 1,
+                    Description = "Main equipment description",
+                    Components = new List<CreateEquipmentDto>
+                    {
+                        new()
+                        {
+                            Name = "Component 1",
+                            Model = "Model B",
+                            SerialNumber = "SN002",
+                            Manufacturer = "Manufacturer Y",
+                            Quantity = 2,
+                            Description = "Component 1 description",
+                            Components = new List<CreateEquipmentDto>
+                            {
+                                new()
+                                {
+                                    Name = "Sub-component 1.1",
+                                    Model = "Model C",
+                                    SerialNumber = "SN003",
+                                    Manufacturer = "Manufacturer Z",
+                                    Quantity = 1,
+                                    Description = "Sub-component description"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        _equipmentRepositoryMock
+            .Setup(repo => repo.CreateBulkAsync(It.IsAny<IEnumerable<Equipment>>()))
+            .ReturnsAsync(new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() });
+
+        // Act
+        var result = await _service.CreateBulkAsync(createBulkDto);
+
+        // Assert
+        Assert.NotNull(result);
+        var equipmentList = result.ToList();
+        Assert.Single(equipmentList);
+        
+        var mainEquipment = equipmentList[0];
+        Assert.Equal("Main Equipment", mainEquipment.Name);
+        Assert.Equal("Model A", mainEquipment.Model);
+        Assert.Equal("SN001", mainEquipment.SerialNumber);
+        Assert.Equal("Manufacturer X", mainEquipment.Manufacturer);
+        Assert.Equal(1, mainEquipment.Quantity);
+        Assert.Equal("Main equipment description", mainEquipment.Description);
+        
+        Assert.NotNull(mainEquipment.Components);
+        var components = mainEquipment.Components.ToList();
+        Assert.Single(components);
+        
+        var component = components[0];
+        Assert.Equal("Component 1", component.Name);
+        Assert.Equal("Model B", component.Model);
+        Assert.Equal("SN002", component.SerialNumber);
+        Assert.Equal("Manufacturer Y", component.Manufacturer);
+        Assert.Equal(2, component.Quantity);
+        Assert.Equal("Component 1 description", component.Description);
+        
+        Assert.NotNull(component.Components);
+        var subComponents = component.Components.ToList();
+        Assert.Single(subComponents);
+        
+        var subComponent = subComponents[0];
+        Assert.Equal("Sub-component 1.1", subComponent.Name);
+        Assert.Equal("Model C", subComponent.Model);
+        Assert.Equal("SN003", subComponent.SerialNumber);
+        Assert.Equal("Manufacturer Z", subComponent.Manufacturer);
+        Assert.Equal(1, subComponent.Quantity);
+        Assert.Equal("Sub-component description", subComponent.Description);
+    }
 } 

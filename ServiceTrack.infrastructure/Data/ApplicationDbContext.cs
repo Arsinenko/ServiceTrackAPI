@@ -121,7 +121,7 @@ public class ApplicationDbContext : DbContext
             entity.HasOne<Equipment>()
                 .WithMany(e => e.Components)
                 .HasForeignKey(e => e.ParentId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
         });
         
         modelBuilder.Entity<JobType>(entity =>

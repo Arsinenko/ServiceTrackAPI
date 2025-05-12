@@ -74,12 +74,21 @@ public class RoleService : IRoleService
         var createdRoles = new List<Role>();
         var failedRoles = new List<CreateRoleDto>();
         var failureReasons = new List<string>();
-        var duplicateNamesInBatch = new HashSet<string>();
+        var seenNames = new HashSet<string>();
+        var duplicateNames = new HashSet<string>();
 
         // First pass: Check for duplicates within the batch
         foreach (var dto in createRoleBulkDto.Roles)
         {
-            if (!duplicateNamesInBatch.Add(dto.Name))
+            if (!seenNames.Add(dto.Name))
+            {
+                duplicateNames.Add(dto.Name);
+            }
+        }
+        // Add all duplicates to failedRoles/failureReasons
+        foreach (var dto in createRoleBulkDto.Roles)
+        {
+            if (duplicateNames.Contains(dto.Name))
             {
                 failedRoles.Add(dto);
                 failureReasons.Add($"Role name '{dto.Name}' is duplicated in the batch");
@@ -94,7 +103,7 @@ public class RoleService : IRoleService
         foreach (var dto in createRoleBulkDto.Roles)
         {
             // Skip roles that failed in the first pass
-            if (duplicateNamesInBatch.Contains(dto.Name))
+            if (duplicateNames.Contains(dto.Name))
                 continue;
 
             // Check if role with this name already exists
@@ -186,4 +195,61 @@ public class RoleService : IRoleService
 
         await _roleRepository.DeleteAsync(id);
     }
-} 
+
+    public async Task<DeleteRoleBulkResultDto> DeleteBulkAsync(IEnumerable<Guid> roleIds)
+    {
+        var roleIdsList = roleIds.ToList();
+        if (!roleIdsList.Any())
+        {
+            return new DeleteRoleBulkResultDto
+            {
+                DeletedRoles = new List<RoleDto>(),
+                FailedRoleIds = new List<Guid>(),
+                FailureReasons = new List<string>()
+            };
+        }
+
+        var deletedRoles = new List<RoleDto>();
+        var failedRoles = new List<Guid>();
+        var failureReasons = new List<string>();
+
+        // Get all roles in a single query
+        var roles = await _roleRepository.GetByIdsAsync(roleIdsList);
+        var rolesDict = roles.ToDictionary(r => r.Id);
+
+        foreach (var roleId in roleIdsList)
+        {
+            if (!rolesDict.TryGetValue(roleId, out var role))
+            {
+                failedRoles.Add(roleId);
+                failureReasons.Add($"Role with id '{roleId}' not found");
+                continue;
+            }
+
+            if (role.Users != null && role.Users.Any())
+            {
+                failedRoles.Add(roleId);
+                failureReasons.Add($"Cannot delete role '{role.Name}' because it is assigned to {role.Users.Count} users");
+                continue;
+            }
+
+            try
+            {
+                await _roleRepository.DeleteAsync(roleId);
+                deletedRoles.Add(RoleDto.FromRole(role));
+            }
+            catch (Exception ex)
+            {
+                failedRoles.Add(roleId);
+                failureReasons.Add($"Failed to delete role '{role.Name}': {ex.Message}");
+            }
+        }
+
+        return new DeleteRoleBulkResultDto
+        {
+            DeletedRoles = deletedRoles,
+            FailedRoleIds = failedRoles,
+            FailureReasons = failureReasons
+        };
+    }
+}

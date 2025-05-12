@@ -49,4 +49,11 @@ public class CreateRoleBulkResultDto
     public required ICollection<RoleDto> CreatedRoles { get; set; }
     public required ICollection<CreateRoleDto> FailedRoles { get; set; }
     public required ICollection<string> FailureReasons { get; set; }
+}
+
+public class DeleteRoleBulkResultDto
+{
+    public required ICollection<RoleDto> DeletedRoles { get; set; }
+    public required ICollection<Guid> FailedRoleIds { get; set; }
+    public required ICollection<string> FailureReasons { get; set; }
 } 
