@@ -628,4 +628,159 @@ public class EquipmentServiceTests
         Assert.Equal(1, subComponent.Quantity);
         Assert.Equal("Sub-component description", subComponent.Description);
     }
+
+    [Fact]
+    public async Task DeleteBulkAsync_WhenAllEquipmentExists_DeletesAllAndReturnsSuccess()
+    {
+        // Arrange
+        var equipmentIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
+        var equipment = new List<Equipment>
+        {
+            new()
+            {
+                Id = equipmentIds[0],
+                Name = "Equipment 1",
+                Model = "Model 1",
+                SerialNumber = "SN1",
+                Manufacturer = "Manufacturer 1",
+                Quantity = 1,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new()
+            {
+                Id = equipmentIds[1],
+                Name = "Equipment 2",
+                Model = "Model 2",
+                SerialNumber = "SN2",
+                Manufacturer = "Manufacturer 2",
+                Quantity = 2,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            }
+        };
+
+        _equipmentRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(equipmentIds[0]))
+            .ReturnsAsync(equipment[0]);
+        _equipmentRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(equipmentIds[1]))
+            .ReturnsAsync(equipment[1]);
+        _equipmentRepositoryMock
+            .Setup(repo => repo.DeleteAsync(It.IsAny<Guid>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _service.DeleteBulkAsync(equipmentIds);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.DeletedEquipment.Count);
+        Assert.Empty(result.FailedEquipmentIds);
+        Assert.Empty(result.FailureReasons);
+        Assert.Contains(result.DeletedEquipment, e => e.Id == equipmentIds[0] && e.Name == "Equipment 1");
+        Assert.Contains(result.DeletedEquipment, e => e.Id == equipmentIds[1] && e.Name == "Equipment 2");
+        _equipmentRepositoryMock.Verify(repo => repo.DeleteAsync(equipmentIds[0]), Times.Once);
+        _equipmentRepositoryMock.Verify(repo => repo.DeleteAsync(equipmentIds[1]), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteBulkAsync_WhenSomeEquipmentDoesNotExist_DeletesExistingAndReportsFailures()
+    {
+        // Arrange
+        var existingId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
+        var equipmentIds = new List<Guid> { existingId, nonExistentId };
+        var equipment = new Equipment
+        {
+            Id = existingId,
+            Name = "Existing Equipment",
+            Model = "Model 1",
+            SerialNumber = "SN1",
+            Manufacturer = "Manufacturer 1",
+            Quantity = 1,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        _equipmentRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(existingId))
+            .ReturnsAsync(equipment);
+        _equipmentRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(nonExistentId))
+            .ReturnsAsync((Equipment)null);
+        _equipmentRepositoryMock
+            .Setup(repo => repo.DeleteAsync(existingId))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _service.DeleteBulkAsync(equipmentIds);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result.DeletedEquipment);
+        Assert.Single(result.FailedEquipmentIds);
+        Assert.Single(result.FailureReasons);
+        Assert.Contains(result.DeletedEquipment, e => e.Id == existingId && e.Name == "Existing Equipment");
+        Assert.Contains(nonExistentId, result.FailedEquipmentIds);
+        Assert.Contains($"Equipment with ID {nonExistentId} not found", result.FailureReasons);
+        _equipmentRepositoryMock.Verify(repo => repo.DeleteAsync(existingId), Times.Once);
+        _equipmentRepositoryMock.Verify(repo => repo.DeleteAsync(nonExistentId), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteBulkAsync_WhenDeleteOperationFails_ReportsFailure()
+    {
+        // Arrange
+        var equipmentId = Guid.NewGuid();
+        var equipment = new Equipment
+        {
+            Id = equipmentId,
+            Name = "Equipment",
+            Model = "Model 1",
+            SerialNumber = "SN1",
+            Manufacturer = "Manufacturer 1",
+            Quantity = 1,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        _equipmentRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(equipmentId))
+            .ReturnsAsync(equipment);
+        _equipmentRepositoryMock
+            .Setup(repo => repo.DeleteAsync(equipmentId))
+            .ThrowsAsync(new Exception("Database error"));
+
+        // Act
+        var result = await _service.DeleteBulkAsync(new List<Guid> { equipmentId });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result.DeletedEquipment);
+        Assert.Single(result.FailedEquipmentIds);
+        Assert.Single(result.FailureReasons);
+        Assert.Contains(equipmentId, result.FailedEquipmentIds);
+        var failureReason = result.FailureReasons.First();
+        Assert.Contains("Failed to delete equipment with ID", failureReason);
+        Assert.Contains("Database error", failureReason);
+    }
+
+    [Fact]
+    public async Task DeleteBulkAsync_WhenEmptyListProvided_ReturnsEmptyResult()
+    {
+        // Arrange
+        var equipmentIds = new List<Guid>();
+
+        // Act
+        var result = await _service.DeleteBulkAsync(equipmentIds);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result.DeletedEquipment);
+        Assert.Empty(result.FailedEquipmentIds);
+        Assert.Empty(result.FailureReasons);
+        _equipmentRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<Guid>()), Times.Never);
+        _equipmentRepositoryMock.Verify(repo => repo.DeleteAsync(It.IsAny<Guid>()), Times.Never);
+    }
 } 

@@ -12,6 +12,8 @@ public interface IEquipmentService
     Task<EquipmentDto?> UpdateAsync(Guid id, UpdateEquipmentDto updateEquipmentDto);
     Task<List<EquipmentDto>?> UpdateBulkAsync(UpdateEquipmentBulkDto updateEquipmentBulkDto);
     Task DeleteAsync(Guid id);
+    
+    Task<DeleteEquipmentBulkResult> DeleteBulkAsync(IEnumerable<Guid> equipmentIds);
 
     // Component management methods
     Task<EquipmentDto?> AddComponentAsync(Guid equipmentId, CreateEquipmentDto componentDto);

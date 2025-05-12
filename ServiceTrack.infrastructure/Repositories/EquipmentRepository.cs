@@ -20,6 +20,11 @@ public class EquipmentRepository : IEquipmentRepository
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
+    public async Task<IEnumerable<Equipment>> GetByIdsAsync(IEnumerable<Guid> ids)
+    {
+        return await _context.Equipment.Where(e => ids.Contains(e.Id)).ToListAsync();   
+    }
+
     public async Task<Equipment?> GetByNameAsync(string name)
     {
         return await _context.Equipment

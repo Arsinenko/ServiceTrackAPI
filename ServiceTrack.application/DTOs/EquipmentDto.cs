@@ -63,3 +63,10 @@ public class UpdateEquipmentBulkDto
 {
     public required ICollection<UpdateEquipmentBulkItemDto> Equipment { get; set; }
 }
+
+public class DeleteEquipmentBulkResult
+{
+    public required ICollection<EquipmentDto> DeletedEquipment { get; set; }
+    public required ICollection<Guid> FailedEquipmentIds { get; set; }
+    public required ICollection<string> FailureReasons { get; set; }
+}

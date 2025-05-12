@@ -137,6 +137,42 @@ public class EquipmentService : IEquipmentService
         await _equipmentRepository.DeleteAsync(id); 
     }
 
+    public async Task<DeleteEquipmentBulkResult> DeleteBulkAsync(IEnumerable<Guid> equipmentIds)
+    {
+        var deletedEquipment = new List<EquipmentDto>();
+        var failedEquipmentIds = new List<Guid>();
+        var failureReasons = new List<string>();
+
+        foreach (var id in equipmentIds)
+        {
+            try
+            {
+                var equipment = await _equipmentRepository.GetByIdAsync(id);
+                if (equipment == null)
+                {
+                    failedEquipmentIds.Add(id);
+                    failureReasons.Add($"Equipment with ID {id} not found");
+                    continue;
+                }
+
+                await _equipmentRepository.DeleteAsync(id);
+                deletedEquipment.Add(EquipmentDto.FromEquipment(equipment));
+            }
+            catch (Exception ex)
+            {
+                failedEquipmentIds.Add(id);
+                failureReasons.Add($"Failed to delete equipment with ID {id}: {ex.Message}");
+            }
+        }
+
+        return new DeleteEquipmentBulkResult
+        {
+            DeletedEquipment = deletedEquipment,
+            FailedEquipmentIds = failedEquipmentIds,
+            FailureReasons = failureReasons
+        };
+    }
+
     public async Task<EquipmentDto?> AddComponentAsync(Guid equipmentId, CreateEquipmentDto componentDto)
     {
         var component = new Equipment

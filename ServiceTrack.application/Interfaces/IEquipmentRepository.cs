@@ -6,6 +6,7 @@ namespace AuthApp.application.Interfaces;
 public interface IEquipmentRepository
 {
     Task<Equipment?> GetByIdAsync(Guid id);
+    Task<IEnumerable<Equipment>> GetByIdsAsync(IEnumerable<Guid> ids);
     Task<Equipment?> GetByNameAsync(string name);
     Task<IEnumerable<Equipment>> GetAllAsync();
     Task<Guid> CreateAsync(Equipment equipment);

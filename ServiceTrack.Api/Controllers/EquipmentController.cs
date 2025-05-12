@@ -121,6 +121,23 @@ public class EquipmentController : ControllerBase
     }
 
     /// <summary>
+    /// Удаляет список оборудования
+    /// </summary>
+    /// <param name="equipmentIds">Список идентификаторов оборудования для удаления</param>
+    /// <returns>Результат удаления с информацией об успешных и неудачных операциях</returns>
+    /// <response code="200">Операция завершена</response>
+    /// <response code="400">Некорректные данные</response>
+    [HttpDelete("bulk")]
+    public async Task<ActionResult<DeleteEquipmentBulkResult>> DeleteEquipmentBulk([FromBody] IEnumerable<Guid> equipmentIds)
+    {
+        if (equipmentIds == null || !equipmentIds.Any())
+            return BadRequest("No equipment IDs provided");
+
+        var result = await _equipmentService.DeleteBulkAsync(equipmentIds);
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Получает компонент оборудования
     /// </summary>
     /// <param name="equipmentId">Идентификатор оборудования</param>
@@ -190,4 +207,6 @@ public class EquipmentController : ControllerBase
             return NotFound();
         return NoContent();
     }
+    // [HttpDelete("bulk")]
+    // public async Task<IActionResult<
 }
