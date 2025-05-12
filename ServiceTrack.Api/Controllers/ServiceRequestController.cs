@@ -153,8 +153,15 @@ public class ServiceRequestController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Удаляет несколько заявок на обслуживание
+    /// </summary>
+    /// <param name="ids">Список идентификаторов заявок для удаления</param>
+    /// <returns>Результат массового удаления, содержащий информацию об успешно удаленных заявках и ошибках</returns>
+    /// <response code="200">Возвращает результат операции с информацией об успешных удалениях и ошибках</response>
+    /// <response code="401">Требуется авторизация</response>
     [HttpDelete("bulk")]
-    public async Task<ActionResult<DeleteEquipmentBulkResult>> DeleteBulkAsync(List<int> ids)
+    public async Task<ActionResult<DeleteServiceRequestBulkResult>> DeleteBulkAsync(List<int> ids)
     {
         var result = await _serviceRequestService.DeleteBulkAsync(ids);
         return Ok(result);
