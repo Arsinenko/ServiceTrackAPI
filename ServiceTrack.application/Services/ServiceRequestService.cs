@@ -98,6 +98,28 @@ public class ServiceRequestService : IServiceRequestService
 
     public async Task<List<ServiceRequestDto>> CreateBulkAsync(CreateServiceRequestBulkDto createDto)
     {
+        // Check for duplicate ContractIds in the input
+        var contractIds = createDto.ServiceRequests.Select(r => r.ContractId).ToList();
+        var duplicateContractIds = contractIds.GroupBy(x => x)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+
+        if (duplicateContractIds.Any())
+        {
+            throw new ArgumentException($"Duplicate ContractIds found: {string.Join(", ", duplicateContractIds)}");
+        }
+
+        // Check for existing ContractIds in the database
+        var existingRequests = await _serviceRequestRepository.GetAllAsync();
+        var existingContractIds = existingRequests.Select(r => r.ContractId).ToList();
+        var conflictingContractIds = contractIds.Intersect(existingContractIds).ToList();
+
+        if (conflictingContractIds.Any())
+        {
+            throw new ArgumentException($"ContractIds already exist in the database: {string.Join(", ", conflictingContractIds)}");
+        }
+
         var requests = new List<ServiceRequest>();
         
         foreach (var requestDto in createDto.ServiceRequests)
@@ -155,7 +177,19 @@ public class ServiceRequestService : IServiceRequestService
         }
 
         var createdIds = await _serviceRequestRepository.CreateBulkAsync(requests);
-        return requests.Select(ServiceRequestDto.FromServiceRequest).ToList();
+        
+        // Load the created requests with their related entities
+        var createdRequests = new List<ServiceRequest>();
+        foreach (var id in createdIds)
+        {
+            var request = await _serviceRequestRepository.GetByIdAsync(id);
+            if (request != null)
+            {
+                createdRequests.Add(request);
+            }
+        }
+        
+        return createdRequests.Select(ServiceRequestDto.FromServiceRequest).ToList();
     }
 
     public async Task<ServiceRequestDto?> UpdateAsync(int id, UpdateServiceRequestDto updateDto)

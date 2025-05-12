@@ -34,17 +34,34 @@ public class ExceptionHandlingMiddleware
         
         var (statusCode, message) = exception switch
         {
+            // Role-related exceptions (most specific)
             RoleValidationException => (HttpStatusCode.BadRequest, exception.Message),
             RoleNameAlreadyExistsException => (HttpStatusCode.Conflict, exception.Message),
             RoleNotFoundException => (HttpStatusCode.NotFound, exception.Message),
             RoleInUseException => (HttpStatusCode.Conflict, exception.Message),
-            _ => (HttpStatusCode.InternalServerError, "An unexpected error occurred")
+            
+            // Validation exceptions (more specific to general)
+            ArgumentNullException => (HttpStatusCode.BadRequest, exception.Message),
+            InvalidOperationException => (HttpStatusCode.BadRequest, exception.Message),
+            ArgumentException => (HttpStatusCode.BadRequest, exception.Message),
+            
+            // Not found exceptions
+            KeyNotFoundException => (HttpStatusCode.NotFound, exception.Message),
+            
+            // Default case (most general)
+            _ => (HttpStatusCode.InternalServerError, "An unexpected error occurred. Please try again later.")
         };
 
-        _logger.LogError(exception, "An error occurred: {Message}", exception.Message);
+        var logLevel = statusCode == HttpStatusCode.InternalServerError ? LogLevel.Error : LogLevel.Warning;
+        _logger.Log(logLevel, exception, "An error occurred: {Message}", exception.Message);
         
         response.StatusCode = (int)statusCode;
-        var result = JsonSerializer.Serialize(new { error = message });
+        var result = JsonSerializer.Serialize(new 
+        { 
+            error = message,
+            statusCode = (int)statusCode,
+            timestamp = DateTime.UtcNow
+        });
         await response.WriteAsync(result);
     }
 } 

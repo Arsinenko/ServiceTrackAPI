@@ -2,16 +2,19 @@ using AuthApp.application.Interfaces;
 using AuthApp.domain.Entities;
 using AuthApp.infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace AuthApp.infrastructure.Repositories;
 
 public class EquipmentRepository : IEquipmentRepository
 {
     private readonly ApplicationDbContext _context;
+    private readonly ILogger<EquipmentRepository> _logger;
 
-    public EquipmentRepository(ApplicationDbContext context)
+    public EquipmentRepository(ApplicationDbContext context, ILogger<EquipmentRepository> logger)
     {
         _context = context;
+        _logger = logger;
     }
     public async Task<Equipment?> GetByIdAsync(Guid id)
     {
@@ -159,15 +162,79 @@ public class EquipmentRepository : IEquipmentRepository
     public async Task<List<Guid>> CreateBulkAsync(IEnumerable<Equipment> equipment)
     {
         var equipmentList = equipment.ToList();
-        foreach (var equipmentEntity in equipmentList)
+        try
         {
-            equipmentEntity.CreatedAt = DateTime.UtcNow;
+            _logger.LogInformation("Starting bulk insert of {Count} equipment items", equipmentList.Count);
+            
+            // Flatten the hierarchy to include all equipment items
+            var flattenedEquipment = new List<Equipment>();
+            foreach (var item in equipmentList)
+            {
+                flattenedEquipment.Add(item);
+                if (item.Components != null)
+                {
+                    FlattenEquipmentHierarchy(item.Components, flattenedEquipment);
+                }
+            }
+            
+            _logger.LogInformation("Flattened hierarchy contains {Count} total equipment items", flattenedEquipment.Count);
+            
+            // Log the flattened equipment structure
+            foreach (var item in flattenedEquipment)
+            {
+                LogEquipmentStructure(item);
+            }
+
+            foreach (var equipmentEntity in flattenedEquipment)
+            {
+                equipmentEntity.CreatedAt = DateTime.UtcNow;
+            }
+            
+            _logger.LogInformation("Executing bulk insert with EF Core Bulk Extensions");
+            await _context.BulkInsertAsync(flattenedEquipment, options => 
+            {
+                options.AutoMapOutputDirection = false;
+                options.UseRowsAffected = true;
+                options.BatchSize = 100; // Process in smaller batches to avoid timeouts
+            });
+            
+            var ids = flattenedEquipment.Select(e => e.Id).ToList();
+            _logger.LogInformation("Bulk insert completed. Created {Count} items with IDs: {Ids}", 
+                ids.Count, string.Join(", ", ids));
+            
+            return ids;
         }
-        
-        await _context.BulkInsertAsync(equipmentList, options => 
+        catch (Exception ex)
         {
-            options.AutoMapOutputDirection = false;
-        });
-        return equipmentList.Select(e => e.Id).ToList();
+            _logger.LogError(ex, "Error during bulk equipment insert");
+            throw;
+        }
+    }
+
+    private void FlattenEquipmentHierarchy(IEnumerable<Equipment> components, List<Equipment> flattenedList)
+    {
+        foreach (var component in components)
+        {
+            flattenedList.Add(component);
+            if (component.Components != null)
+            {
+                FlattenEquipmentHierarchy(component.Components, flattenedList);
+            }
+        }
+    }
+
+    private void LogEquipmentStructure(Equipment equipment, int depth = 0)
+    {
+        var indent = new string(' ', depth * 2);
+        _logger.LogInformation("{Indent}Equipment: {Name} (ID: {Id}, ParentId: {ParentId})", 
+            indent, equipment.Name, equipment.Id, equipment.ParentId);
+        
+        if (equipment.Components != null)
+        {
+            foreach (var component in equipment.Components)
+            {
+                LogEquipmentStructure(component, depth + 1);
+            }
+        }
     }
 }

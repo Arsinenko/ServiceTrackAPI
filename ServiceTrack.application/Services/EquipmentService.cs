@@ -1,17 +1,19 @@
 using AuthApp.application.DTOs;
 using AuthApp.application.Interfaces;
 using AuthApp.domain.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace AuthApp.application.Services;
 
 public class EquipmentService : IEquipmentService
 {
     private readonly IEquipmentRepository _equipmentRepository;
+    private readonly ILogger<EquipmentService> _logger;
 
-
-    public EquipmentService(IEquipmentRepository equipmentRepository)
+    public EquipmentService(IEquipmentRepository equipmentRepository, ILogger<EquipmentService> logger)
     {
         _equipmentRepository = equipmentRepository;
+        _logger = logger;
     }
     public async Task<EquipmentDto?> GetByIdAsync(Guid id)
     {
@@ -79,14 +81,48 @@ public class EquipmentService : IEquipmentService
     {
         var equipmentList = new List<Equipment>();
         
-        foreach (var dto in createEquipmentBulkDto.Equipment)
+        try
         {
-            var equipment = await CreateEquipmentWithComponentsAsync(dto);
-            equipmentList.Add(equipment);
-        }
+            _logger.LogInformation("Starting bulk equipment creation with {Count} main items", createEquipmentBulkDto.Equipment.Count);
+            
+            foreach (var dto in createEquipmentBulkDto.Equipment)
+            {
+                _logger.LogInformation("Creating equipment: {Name} with {ComponentCount} components", 
+                    dto.Name, dto.Components?.Count ?? 0);
+                
+                var equipment = await CreateEquipmentWithComponentsAsync(dto);
+                equipmentList.Add(equipment);
+                
+                // Log the created equipment structure
+                LogEquipmentStructure(equipment);
+            }
 
-        await _equipmentRepository.CreateBulkAsync(equipmentList);
-        return equipmentList.Select(EquipmentDto.FromEquipment);
+            _logger.LogInformation("Attempting to save {Count} equipment items to database", equipmentList.Count);
+            var ids = await _equipmentRepository.CreateBulkAsync(equipmentList);
+            _logger.LogInformation("Successfully saved equipment with IDs: {Ids}", string.Join(", ", ids));
+            
+            return equipmentList.Select(EquipmentDto.FromEquipment);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during bulk equipment creation");
+            throw;
+        }
+    }
+
+    private void LogEquipmentStructure(Equipment equipment, int depth = 0)
+    {
+        var indent = new string(' ', depth * 2);
+        _logger.LogInformation("{Indent}Equipment: {Name} (ID: {Id}, ParentId: {ParentId})", 
+            indent, equipment.Name, equipment.Id, equipment.ParentId);
+        
+        if (equipment.Components != null)
+        {
+            foreach (var component in equipment.Components)
+            {
+                LogEquipmentStructure(component, depth + 1);
+            }
+        }
     }
 
     public async Task<EquipmentDto?> UpdateAsync(Guid id, UpdateEquipmentDto updateEquipmentDto)

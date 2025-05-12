@@ -20,6 +20,8 @@ public class ServiceRequestRepository : IServiceRequestRepository
             .Include(sr => sr.JobType)
             .Include(sr => sr.UserServiceRequests)
                 .ThenInclude(usr => usr.User)
+            .Include(sr => sr.ServiceRequestEquipments)
+                .ThenInclude(sre => sre.Equipment)
             .FirstOrDefaultAsync(sr => sr.Id == id);
     }
 
@@ -29,6 +31,8 @@ public class ServiceRequestRepository : IServiceRequestRepository
             .Include(sr => sr.JobType)
             .Include(sr => sr.UserServiceRequests)
                 .ThenInclude(usr => usr.User)
+            .Include(sr => sr.ServiceRequestEquipments)
+                .ThenInclude(sre => sre.Equipment)
             .ToListAsync();
     }
 
@@ -38,6 +42,8 @@ public class ServiceRequestRepository : IServiceRequestRepository
             .Include(sr => sr.JobType)
             .Include(sr => sr.UserServiceRequests)
                 .ThenInclude(usr => usr.User)
+            .Include(sr => sr.ServiceRequestEquipments)
+                .ThenInclude(sre => sre.Equipment)
             .Where(sr => sr.UserServiceRequests.Any(usr => usr.UserId == userId))
             .ToListAsync();
     }

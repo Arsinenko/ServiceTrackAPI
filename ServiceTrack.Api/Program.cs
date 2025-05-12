@@ -7,6 +7,7 @@ using AuthApp.infrastructure.Data;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using ServiceTrack.Api.Middleware;
+using ServiceTrack.Api.Middleware.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -92,13 +93,16 @@ if (app.Environment.IsDevelopment())
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Auth API V1");
         c.RoutePrefix = "swagger";
-        // Добавляем CSS для кнопки авторизации, чтобы она была заметнее
         c.InjectStylesheet("/swagger-custom.css");
     });
 }
 
-app.UseStaticFiles(); // Добавляем поддержку статических файлов
+app.UseStaticFiles();
 app.UseHttpsRedirection();
+
+// Add request-response logging middleware before authentication
+app.UseRequestResponseLogging();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

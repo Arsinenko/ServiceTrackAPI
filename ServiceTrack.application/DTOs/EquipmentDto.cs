@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using AuthApp.domain.Entities;
 
 namespace AuthApp.application.DTOs;
@@ -37,10 +38,15 @@ public class EquipmentDto
 
 public class CreateEquipmentDto
 {
+    [Required(ErrorMessage = "Name is required")]
     public required string Name { get; set; }
+    [Required(ErrorMessage = "Model is required")]
     public required string Model { get; set; }
+    [Required(ErrorMessage = "SerialNumber is required")]
     public required string SerialNumber { get; set; }
+    [Required(ErrorMessage = "Manufacturer is required")]
     public required string Manufacturer { get; set; }
+    [Required(ErrorMessage = "Quantity is required")]
     public int Quantity { get; set; }
     public string? Description { get; set; }
     public ICollection<CreateEquipmentDto>? Components { get; set; }
