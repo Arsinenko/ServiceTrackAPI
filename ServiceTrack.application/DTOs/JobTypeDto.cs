@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using AuthApp.domain.Entities;
 
 namespace AuthApp.application.DTOs;
@@ -25,7 +26,9 @@ public class JobTypeDto
 
 public class CreateJobTypeDto
 {
+    [Required(ErrorMessage = "Name field is requred!")]
     public required string Name { get; set; }
+    [Required(ErrorMessage = "Description field is required!")]
     public required string Description { get; set; }
 }
 
