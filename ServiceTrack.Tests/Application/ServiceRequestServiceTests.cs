@@ -248,6 +248,36 @@ public class ServiceRequestServiceTests
             }
         };
 
+        var createdRequests = new List<ServiceRequest>
+        {
+            new()
+            {
+                Id = 1,
+                ContractId = 1,
+                Customer = "Test Customer 1",
+                Description = "Test Description 1",
+                JobTypeId = jobTypeId,
+                JobType = jobType,
+                CreatedAt = DateTime.UtcNow,
+                IsCompleted = false,
+                UserServiceRequests = new List<UserServiceRequest>(),
+                ServiceRequestEquipments = new List<ServiceRequestEquipment>()
+            },
+            new()
+            {
+                Id = 2,
+                ContractId = 2,
+                Customer = "Test Customer 2",
+                Description = "Test Description 2",
+                JobTypeId = jobTypeId,
+                JobType = jobType,
+                CreatedAt = DateTime.UtcNow,
+                IsCompleted = false,
+                UserServiceRequests = new List<UserServiceRequest>(),
+                ServiceRequestEquipments = new List<ServiceRequestEquipment>()
+            }
+        };
+
         _jobTypeRepositoryMock
             .Setup(repo => repo.GetByIdAsync(jobTypeId))
             .ReturnsAsync(jobType);
@@ -255,6 +285,14 @@ public class ServiceRequestServiceTests
         _serviceRequestRepositoryMock
             .Setup(repo => repo.CreateBulkAsync(It.IsAny<IEnumerable<ServiceRequest>>()))
             .ReturnsAsync(new List<int> { 1, 2 });
+
+        _serviceRequestRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(1))
+            .ReturnsAsync(createdRequests[0]);
+
+        _serviceRequestRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(2))
+            .ReturnsAsync(createdRequests[1]);
 
         // Act
         var result = await _service.CreateBulkAsync(createBulkDto);

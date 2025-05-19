@@ -75,3 +75,10 @@ public class DeleteEquipmentBulkResult
     public required ICollection<Guid> FailedEquipmentIds { get; set; }
     public required ICollection<string> FailureReasons { get; set; }
 }
+
+public class UpdateEquipmentBulkResult
+{
+    public required ICollection<EquipmentDto> UpdatedEquipment { get; set; }
+    public required ICollection<Guid> FailedEquipmentIds { get; set; }
+    public required ICollection<string> FailureReasons { get; set; }
+}

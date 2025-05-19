@@ -43,6 +43,12 @@ public class ServiceRequestService : IServiceRequestService
 
     public async Task<ServiceRequestDto> CreateAsync(CreateServiceRequestDto createDto)
     {
+        // Проверка на дублирующийся ContractId
+        var existingRequest = (await _serviceRequestRepository.GetAllAsync())
+            .FirstOrDefault(r => r.ContractId == createDto.ContractId);
+        if (existingRequest != null)
+            throw new ArgumentException($"ContractId {createDto.ContractId} already exists");
+
         var jobType = await _jobTypeRepository.GetByIdAsync(createDto.JobTypeId);
         if (jobType == null)
             throw new ArgumentException("Invalid job type ID");

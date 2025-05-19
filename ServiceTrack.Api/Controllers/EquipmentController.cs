@@ -92,18 +92,25 @@ public class EquipmentController : ControllerBase
     /// Обновляет список оборудования.
     /// </summary>
     /// <param name="updateEquipmentBulkDto">Данные для обновления оборудования</param>
-    /// <returns>Обновленное оборудование</returns>
+    /// <returns>Результат обновления оборудования</returns>
     /// <response code="200">Оборудование успешно обновлено</response>
     /// <response code="400">Некорректные данные</response>
-    /// <response code="404">Оборудование не найдено</response>
     [HttpPut("bulk")]
-    public async Task<ActionResult<IEnumerable<EquipmentDto>>> UpdateEquipmentBulk(
+    public async Task<ActionResult<UpdateEquipmentBulkResult>> UpdateEquipmentBulk(
         UpdateEquipmentBulkDto updateEquipmentBulkDto)
     {
-        var equipment = await _equipmentService.UpdateBulkAsync(updateEquipmentBulkDto);
-        if (equipment == null)
-            return NotFound();
-        return Ok(equipment);
+        var result = await _equipmentService.UpdateBulkAsync(updateEquipmentBulkDto);
+        
+        if (!result.UpdatedEquipment.Any() && result.FailedEquipmentIds.Any())
+        {
+            return BadRequest(new { 
+                Message = "Failed to update any equipment",
+                FailedIds = result.FailedEquipmentIds,
+                Reasons = result.FailureReasons
+            });
+        }
+        
+        return Ok(result);
     }
 
     /// <summary>

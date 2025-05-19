@@ -2,6 +2,7 @@ using AuthApp.application.DTOs;
 using AuthApp.application.Interfaces;
 using AuthApp.application.Services;
 using AuthApp.domain.Entities;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace ServiceTrack.Tests.Application;
@@ -9,12 +10,14 @@ namespace ServiceTrack.Tests.Application;
 public class EquipmentServiceTests
 {
     private readonly Mock<IEquipmentRepository> _equipmentRepositoryMock;
+    private readonly Mock<ILogger<EquipmentService>> _loggerMock;
     private readonly EquipmentService _service;
 
     public EquipmentServiceTests()
     {
         _equipmentRepositoryMock = new Mock<IEquipmentRepository>();
-        _service = new EquipmentService(_equipmentRepositoryMock.Object);
+        _loggerMock = new Mock<ILogger<EquipmentService>>();
+        _service = new EquipmentService(_equipmentRepositoryMock.Object, _loggerMock.Object);
     }
 
     [Fact]
@@ -505,39 +508,176 @@ public class EquipmentServiceTests
     public async Task UpdateBulkAsync_ValidData_UpdatesAndReturnsEquipmentDtos()
     {
         // Arrange
+        var equipmentIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
+        var existingEquipment = new List<Equipment>
+        {
+            new()
+            {
+                Id = equipmentIds[0],
+                Name = "Original Equipment 1",
+                Model = "Original Model 1",
+                SerialNumber = "OSN1",
+                Manufacturer = "Original Manufacturer 1",
+                Quantity = 1,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new()
+            {
+                Id = equipmentIds[1],
+                Name = "Original Equipment 2",
+                Model = "Original Model 2",
+                SerialNumber = "OSN2",
+                Manufacturer = "Original Manufacturer 2",
+                Quantity = 2,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            }
+        };
+
         var updateBulkDto = new UpdateEquipmentBulkDto
         {
             Equipment = new List<UpdateEquipmentBulkItemDto>
             {
-                new() { Id = Guid.NewGuid(), Name = "Updated Equipment 1", Model = "Updated Model 1", SerialNumber = "USN1", Manufacturer = "Updated Manufacturer 1", Quantity = 1 },
-                new() { Id = Guid.NewGuid(), Name = "Updated Equipment 2", Model = "Updated Model 2", SerialNumber = "USN2", Manufacturer = "Updated Manufacturer 2", Quantity = 2 }
+                new() { Id = equipmentIds[0], Name = "Updated Equipment 1", Model = "Updated Model 1", SerialNumber = "USN1", Manufacturer = "Updated Manufacturer 1", Quantity = 1 },
+                new() { Id = equipmentIds[1], Name = "Updated Equipment 2", Model = "Updated Model 2", SerialNumber = "USN2", Manufacturer = "Updated Manufacturer 2", Quantity = 2 }
             }
         };
 
-        var updatedEquipment = updateBulkDto.Equipment.Select(dto => new Equipment
-        {
-            Id = dto.Id,
-            Name = dto.Name,
-            Model = dto.Model,
-            SerialNumber = dto.SerialNumber,
-            Manufacturer = dto.Manufacturer,
-            Quantity = dto.Quantity,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        }).ToList();
+        _equipmentRepositoryMock
+            .Setup(repo => repo.GetByIdsAsync(It.IsAny<IEnumerable<Guid>>()))
+            .ReturnsAsync(existingEquipment);
 
         _equipmentRepositoryMock
             .Setup(repo => repo.UpdateBulkAsync(It.IsAny<IEnumerable<Equipment>>()))
-            .ReturnsAsync(updatedEquipment);
+            .ReturnsAsync(existingEquipment);
 
         // Act
         var result = await _service.UpdateBulkAsync(updateBulkDto);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(2, result.Count);
-        Assert.Contains(result, e => e.Name == "Updated Equipment 1" && e.Model == "Updated Model 1");
-        Assert.Contains(result, e => e.Name == "Updated Equipment 2" && e.Model == "Updated Model 2");
+        Assert.Equal(2, result.UpdatedEquipment.Count);
+        Assert.Empty(result.FailedEquipmentIds);
+        Assert.Empty(result.FailureReasons);
+        Assert.Contains(result.UpdatedEquipment, e => e.Name == "Updated Equipment 1" && e.Model == "Updated Model 1");
+        Assert.Contains(result.UpdatedEquipment, e => e.Name == "Updated Equipment 2" && e.Model == "Updated Model 2");
+    }
+
+    [Fact]
+    public async Task UpdateBulkAsync_WhenSomeEquipmentDoesNotExist_UpdatesExistingAndReportsFailures()
+    {
+        // Arrange
+        var existingId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
+        var existingEquipment = new Equipment
+        {
+            Id = existingId,
+            Name = "Original Equipment",
+            Model = "Original Model",
+            SerialNumber = "OSN",
+            Manufacturer = "Original Manufacturer",
+            Quantity = 1,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        var updateBulkDto = new UpdateEquipmentBulkDto
+        {
+            Equipment = new List<UpdateEquipmentBulkItemDto>
+            {
+                new() { Id = existingId, Name = "Updated Equipment", Model = "Updated Model", SerialNumber = "USN", Manufacturer = "Updated Manufacturer", Quantity = 1 },
+                new() { Id = nonExistentId, Name = "Non-existent Equipment", Model = "Non-existent Model", SerialNumber = "NSN", Manufacturer = "Non-existent Manufacturer", Quantity = 1 }
+            }
+        };
+
+        _equipmentRepositoryMock
+            .Setup(repo => repo.GetByIdsAsync(It.IsAny<IEnumerable<Guid>>()))
+            .ReturnsAsync(new List<Equipment> { existingEquipment });
+
+        _equipmentRepositoryMock
+            .Setup(repo => repo.UpdateBulkAsync(It.IsAny<IEnumerable<Equipment>>()))
+            .ReturnsAsync(new List<Equipment> { existingEquipment });
+
+        // Act
+        var result = await _service.UpdateBulkAsync(updateBulkDto);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result.UpdatedEquipment);
+        Assert.Single(result.FailedEquipmentIds);
+        Assert.Single(result.FailureReasons);
+        Assert.Contains(result.UpdatedEquipment, e => e.Id == existingId && e.Name == "Updated Equipment");
+        Assert.Contains(nonExistentId, result.FailedEquipmentIds);
+        Assert.Contains($"Equipment with ID {nonExistentId} not found", result.FailureReasons);
+    }
+
+    [Fact]
+    public async Task UpdateBulkAsync_WhenUpdateOperationFails_ReportsFailure()
+    {
+        // Arrange
+        var equipmentId = Guid.NewGuid();
+        var existingEquipment = new Equipment
+        {
+            Id = equipmentId,
+            Name = "Original Equipment",
+            Model = "Original Model",
+            SerialNumber = "OSN",
+            Manufacturer = "Original Manufacturer",
+            Quantity = 1,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        var updateBulkDto = new UpdateEquipmentBulkDto
+        {
+            Equipment = new List<UpdateEquipmentBulkItemDto>
+            {
+                new() { Id = equipmentId, Name = "Updated Equipment", Model = "Updated Model", SerialNumber = "USN", Manufacturer = "Updated Manufacturer", Quantity = 1 }
+            }
+        };
+
+        _equipmentRepositoryMock
+            .Setup(repo => repo.GetByIdsAsync(It.IsAny<IEnumerable<Guid>>()))
+            .ReturnsAsync(new List<Equipment> { existingEquipment });
+
+        _equipmentRepositoryMock
+            .Setup(repo => repo.UpdateBulkAsync(It.IsAny<IEnumerable<Equipment>>()))
+            .ThrowsAsync(new Exception("Database error"));
+
+        // Act
+        var result = await _service.UpdateBulkAsync(updateBulkDto);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result.UpdatedEquipment);
+        Assert.Single(result.FailedEquipmentIds);
+        Assert.Single(result.FailureReasons);
+        Assert.Contains(equipmentId, result.FailedEquipmentIds);
+        var failureReason = result.FailureReasons.First();
+        Assert.Contains("Failed to update equipment with ID", failureReason);
+        Assert.Contains("Database error", failureReason);
+    }
+
+    [Fact]
+    public async Task UpdateBulkAsync_WhenEmptyListProvided_ReturnsEmptyResult()
+    {
+        // Arrange
+        var updateBulkDto = new UpdateEquipmentBulkDto
+        {
+            Equipment = new List<UpdateEquipmentBulkItemDto>()
+        };
+
+        // Act
+        var result = await _service.UpdateBulkAsync(updateBulkDto);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result.UpdatedEquipment);
+        Assert.Empty(result.FailedEquipmentIds);
+        Assert.Empty(result.FailureReasons);
+        _equipmentRepositoryMock.Verify(repo => repo.GetByIdsAsync(It.IsAny<IEnumerable<Guid>>()), Times.Never);
+        _equipmentRepositoryMock.Verify(repo => repo.UpdateBulkAsync(It.IsAny<IEnumerable<Equipment>>()), Times.Never);
     }
 
     [Fact]

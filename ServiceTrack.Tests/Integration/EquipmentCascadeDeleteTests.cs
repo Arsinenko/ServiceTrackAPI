@@ -3,6 +3,7 @@ using AuthApp.domain.Entities;
 using AuthApp.infrastructure.Data;
 using AuthApp.infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace ServiceTrack.Tests.Integration;
@@ -12,6 +13,8 @@ public class EquipmentCascadeDeleteTests : IDisposable
     private readonly ApplicationDbContext _context;
     private readonly EquipmentService _service;
     private readonly EquipmentRepository _repository;
+    private readonly ILogger<EquipmentRepository> _repositoryLogger;
+    private readonly ILogger<EquipmentService> _serviceLogger;
 
     public EquipmentCascadeDeleteTests()
     {
@@ -21,8 +24,10 @@ public class EquipmentCascadeDeleteTests : IDisposable
             .Options;
 
         _context = new ApplicationDbContext(options);
-        _repository = new EquipmentRepository(_context);
-        _service = new EquipmentService(_repository);
+        _repositoryLogger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<EquipmentRepository>();
+        _serviceLogger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<EquipmentService>();
+        _repository = new EquipmentRepository(_context, _repositoryLogger);
+        _service = new EquipmentService(_repository, _serviceLogger);
     }
 
     [Fact]

@@ -143,29 +143,83 @@ public class EquipmentService : IEquipmentService
         return EquipmentDto.FromEquipment(equipment);
     }
 
-    public async Task<List<EquipmentDto>?> UpdateBulkAsync(UpdateEquipmentBulkDto updateEquipmentBulkDto)
+    public async Task<UpdateEquipmentBulkResult> UpdateBulkAsync(UpdateEquipmentBulkDto updateEquipmentBulkDto)
     {
-        var equipmentList = new List<Equipment>();
-        
-        foreach (var item in updateEquipmentBulkDto.Equipment)
+        if (!updateEquipmentBulkDto.Equipment.Any())
         {
-            var equipment = new Equipment
+            return new UpdateEquipmentBulkResult
             {
-                Id = item.Id,
-                Name = item.Name,
-                Model = item.Model,
-                SerialNumber = item.SerialNumber,
-                Manufacturer = item.Manufacturer,
-                Quantity = item.Quantity,
-                Description = item.Description
+                UpdatedEquipment = new List<EquipmentDto>(),
+                FailedEquipmentIds = new List<Guid>(),
+                FailureReasons = new List<string>()
             };
-            equipmentList.Add(equipment);
         }
 
-        var result = await _equipmentRepository.UpdateBulkAsync(equipmentList);
-        if (result == null)
-            return null;
-        return result.Select(EquipmentDto.FromEquipment).ToList();
+        var updatedEquipment = new List<EquipmentDto>();
+        var failedEquipmentIds = new List<Guid>();
+        var failureReasons = new List<string>();
+
+        // Get all existing equipment in one query
+        var equipmentIds = updateEquipmentBulkDto.Equipment.Select(e => e.Id).ToList();
+        var existingEquipment = (await _equipmentRepository.GetByIdsAsync(equipmentIds)).ToDictionary(e => e.Id);
+
+        var equipmentToUpdate = new List<Equipment>();
+
+        foreach (var item in updateEquipmentBulkDto.Equipment)
+        {
+            try
+            {
+                if (!existingEquipment.TryGetValue(item.Id, out var existing))
+                {
+                    failedEquipmentIds.Add(item.Id);
+                    failureReasons.Add($"Equipment with ID {item.Id} not found");
+                    continue;
+                }
+
+                // Update only the fields that are provided in the DTO
+                existing.Name = item.Name;
+                existing.Model = item.Model;
+                existing.SerialNumber = item.SerialNumber;
+                existing.Manufacturer = item.Manufacturer;
+                existing.Quantity = item.Quantity;
+                existing.Description = item.Description;
+                
+                equipmentToUpdate.Add(existing);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error preparing equipment {Id} for update", item.Id);
+                failedEquipmentIds.Add(item.Id);
+                failureReasons.Add($"Failed to prepare equipment with ID {item.Id} for update: {ex.Message}");
+            }
+        }
+
+        if (equipmentToUpdate.Any())
+        {
+            try
+            {
+                var result = await _equipmentRepository.UpdateBulkAsync(equipmentToUpdate);
+                if (result != null)
+                {
+                    updatedEquipment.AddRange(result.Select(EquipmentDto.FromEquipment));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during bulk update of equipment");
+                // Add all equipment IDs that were being updated to the failed list
+                failedEquipmentIds.AddRange(equipmentToUpdate.Select(e => e.Id));
+                failureReasons.AddRange(equipmentToUpdate.Select(e => 
+                    $"Failed to update equipment with ID {e.Id}: {ex.Message}"));
+            }
+        }
+
+        return new UpdateEquipmentBulkResult
+        {
+            UpdatedEquipment = updatedEquipment,
+            FailedEquipmentIds = failedEquipmentIds,
+            FailureReasons = failureReasons
+        };
     }
 
     public async Task DeleteAsync(Guid id)

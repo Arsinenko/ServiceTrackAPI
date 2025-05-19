@@ -89,7 +89,7 @@ public class JobTypeController : ControllerBase
     /// <response code="400">Некорректные данные</response>
     /// <response code="401">Требуется авторизация</response>
     /// <response code="403">Нет прав доступа (требуется роль Admin)</response>
-    [Authorize(Roles = "Admin")]
+    /*[Authorize(Roles = "Admin")]*/ //TODO
     [HttpPost("bulk")]
     public async Task<ActionResult<IEnumerable<JobTypeDto>>> CreateBulkAsync(CreateJobTypeBulkDto jobTypeBulkDto)
     {
@@ -108,7 +108,7 @@ public class JobTypeController : ControllerBase
     /// <response code="401">Требуется авторизация</response>
     /// <response code="403">Нет прав доступа (требуется роль Admin)</response>
     /// <response code="404">Тип работы не найден</response>
-    [Authorize(Roles = "Admin")]
+    // [Authorize(Roles = "Admin")] TODO
     [HttpPut("{id}")]
     public async Task<ActionResult<JobTypeDto>> Update(Guid id, UpdateJobTypeDto jobTypeDto)
     {
