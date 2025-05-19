@@ -48,7 +48,23 @@ public class ServiceRequestDto
                     Model = sre.Equipment.Model,
                     SerialNumber = sre.Equipment.SerialNumber,
                     AddedAt = sre.AddedAt,
-                    Notes = sre.Notes
+                    Notes = sre.Notes,
+                    Components = sre.Equipment.Components?
+                        .Select(c => new EquipmentDto
+                        {
+                            Id = c.Id,
+                            Name = c.Name,
+                            Model = c.Model,
+                            SerialNumber = c.SerialNumber,
+                            Manufacturer = c.Manufacturer,
+                            Quantity = c.Quantity,
+                            ParentId = c.ParentId,
+                            Description = c.Description,
+                            CreatedAt = c.CreatedAt,
+                            UpdatedAt = c.UpdatedAt,
+                            Components = c.Components?.Select(comp => EquipmentDto.FromEquipment(comp)).ToList()
+                        })
+                        .ToList() ?? new List<EquipmentDto>()
                 })
                 .ToList() ?? new List<AssignedEquipmentDto>()
         };
@@ -69,6 +85,7 @@ public class AssignedEquipmentDto
     public string Name { get; set; }
     public string Model { get; set; }
     public string SerialNumber { get; set; }
+    public List<EquipmentDto> Components { get; set; }
     public DateTime AddedAt { get; set; }
     public string? Notes { get; set; }
 }

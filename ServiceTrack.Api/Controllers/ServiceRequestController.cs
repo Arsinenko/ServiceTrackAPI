@@ -11,7 +11,6 @@ namespace AuthApp.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class ServiceRequestController : ControllerBase
 {
     private readonly IServiceRequestService _serviceRequestService;

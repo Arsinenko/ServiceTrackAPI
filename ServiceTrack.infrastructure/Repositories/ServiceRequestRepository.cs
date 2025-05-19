@@ -22,6 +22,7 @@ public class ServiceRequestRepository : IServiceRequestRepository
                 .ThenInclude(usr => usr.User)
             .Include(sr => sr.ServiceRequestEquipments)
                 .ThenInclude(sre => sre.Equipment)
+                    .ThenInclude(e => e.Components)
             .FirstOrDefaultAsync(sr => sr.Id == id);
     }
 
@@ -33,6 +34,7 @@ public class ServiceRequestRepository : IServiceRequestRepository
                 .ThenInclude(usr => usr.User)
             .Include(sr => sr.ServiceRequestEquipments)
                 .ThenInclude(sre => sre.Equipment)
+                    .ThenInclude(e => e.Components)
             .ToListAsync();
     }
 
@@ -44,32 +46,151 @@ public class ServiceRequestRepository : IServiceRequestRepository
                 .ThenInclude(usr => usr.User)
             .Include(sr => sr.ServiceRequestEquipments)
                 .ThenInclude(sre => sre.Equipment)
+                    .ThenInclude(e => e.Components)
             .Where(sr => sr.UserServiceRequests.Any(usr => usr.UserId == userId))
             .ToListAsync();
     }
 
     public async Task<int> CreateAsync(ServiceRequest request)
     {
-        request.CreatedAt = DateTime.UtcNow;
-        _context.ServiceRequests.Add(request);
-        await _context.SaveChangesAsync();
-        return request.Id;
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            request.CreatedAt = DateTime.UtcNow;
+            
+            // Add the main entity first
+            _context.ServiceRequests.Add(request);
+            await _context.SaveChangesAsync(); // This will generate the Id
+
+            // Now that we have the Id, we can properly set up the relationships
+            if (request.UserServiceRequests != null)
+            {
+                // Get existing assignments for this request
+                var existingAssignments = await _context.UserServiceRequests
+                    .Where(usr => usr.ServiceRequestId == request.Id)
+                    .ToListAsync();
+
+                foreach (var userRequest in request.UserServiceRequests)
+                {
+                    // Skip if this assignment already exists
+                    if (existingAssignments.Any(ea => 
+                        ea.UserId == userRequest.UserId && 
+                        ea.ServiceRequestId == request.Id))
+                    {
+                        continue;
+                    }
+
+                    userRequest.ServiceRequestId = request.Id;
+                    _context.UserServiceRequests.Add(userRequest);
+                }
+            }
+
+            if (request.ServiceRequestEquipments != null)
+            {
+                // Get existing equipment assignments for this request
+                var existingEquipment = await _context.ServiceRequestEquipments
+                    .Where(sre => sre.ServiceRequestId == request.Id)
+                    .ToListAsync();
+
+                foreach (var equipment in request.ServiceRequestEquipments)
+                {
+                    // Skip if this equipment is already assigned
+                    if (existingEquipment.Any(ee => 
+                        ee.EquipmentId == equipment.EquipmentId && 
+                        ee.ServiceRequestId == request.Id))
+                    {
+                        continue;
+                    }
+
+                    equipment.ServiceRequestId = request.Id;
+                    _context.ServiceRequestEquipments.Add(equipment);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return request.Id;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task<List<int>> CreateBulkAsync(IEnumerable<ServiceRequest> requests)
     {
         var requestList = requests.ToList();
-        foreach (var request in requestList)
+        var createdIds = new List<int>();
+
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
-            request.CreatedAt = DateTime.UtcNow;
+            foreach (var request in requestList)
+            {
+                request.CreatedAt = DateTime.UtcNow;
+                
+                // Add the main entity
+                _context.ServiceRequests.Add(request);
+                await _context.SaveChangesAsync(); // This will generate the Id
+                createdIds.Add(request.Id);
+
+                // Now that we have the Id, we can properly set up the relationships
+                if (request.UserServiceRequests != null)
+                {
+                    // Get existing assignments for this request
+                    var existingAssignments = await _context.UserServiceRequests
+                        .Where(usr => usr.ServiceRequestId == request.Id)
+                        .ToListAsync();
+
+                    foreach (var userRequest in request.UserServiceRequests)
+                    {
+                        // Skip if this assignment already exists
+                        if (existingAssignments.Any(ea => 
+                            ea.UserId == userRequest.UserId && 
+                            ea.ServiceRequestId == request.Id))
+                        {
+                            continue;
+                        }
+
+                        userRequest.ServiceRequestId = request.Id;
+                        _context.UserServiceRequests.Add(userRequest);
+                    }
+                }
+
+                if (request.ServiceRequestEquipments != null)
+                {
+                    // Get existing equipment assignments for this request
+                    var existingEquipment = await _context.ServiceRequestEquipments
+                        .Where(sre => sre.ServiceRequestId == request.Id)
+                        .ToListAsync();
+
+                    foreach (var equipment in request.ServiceRequestEquipments)
+                    {
+                        // Skip if this equipment is already assigned
+                        if (existingEquipment.Any(ee => 
+                            ee.EquipmentId == equipment.EquipmentId && 
+                            ee.ServiceRequestId == request.Id))
+                        {
+                            continue;
+                        }
+
+                        equipment.ServiceRequestId = request.Id;
+                        _context.ServiceRequestEquipments.Add(equipment);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+            }
+
+            await transaction.CommitAsync();
+            return createdIds;
         }
-
-        await _context.BulkInsertAsync(requestList, options =>
+        catch
         {
-            options.AutoMapOutputDirection = false;
-        });
-        return requestList.Select(sr => sr.Id).ToList();
-
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task<int> UpdateAsync(ServiceRequest request)
