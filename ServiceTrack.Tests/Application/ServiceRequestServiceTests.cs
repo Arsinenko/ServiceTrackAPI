@@ -13,6 +13,7 @@ public class ServiceRequestServiceTests
     private readonly Mock<IUserRepository> _userRepositoryMock;
     private readonly Mock<IEquipmentRepository> _equipmentRepositoryMock;
     private readonly Mock<IJobTypeRepository> _jobTypeRepositoryMock;
+    private readonly Mock<ICustomerRepository> _customerRepositoryMock;
     private readonly ServiceRequestService _service;
 
     public ServiceRequestServiceTests()
@@ -21,12 +22,14 @@ public class ServiceRequestServiceTests
         _userRepositoryMock = new Mock<IUserRepository>();
         _equipmentRepositoryMock = new Mock<IEquipmentRepository>();
         _jobTypeRepositoryMock = new Mock<IJobTypeRepository>();
+        _customerRepositoryMock = new Mock<ICustomerRepository>();
         
         _service = new ServiceRequestService(
             _serviceRequestRepositoryMock.Object,
             _userRepositoryMock.Object,
             _equipmentRepositoryMock.Object,
-            _jobTypeRepositoryMock.Object
+            _jobTypeRepositoryMock.Object,
+            _customerRepositoryMock.Object
         );
     }
 
@@ -35,10 +38,13 @@ public class ServiceRequestServiceTests
     {
         // Arrange
         var requestId = 1;
+        var customerId = 1;
+        var customer = new Customer { Id = customerId, Name = "Test Customer" };
         var serviceRequest = new ServiceRequest
         {
             Id = requestId,
-            Customer = "Test Customer",
+            CustomerId = customerId,
+            Customer = customer,
             Description = "Test Description",
             CreatedAt = DateTime.UtcNow,
             JobType = new JobType { Id = Guid.NewGuid(), Name = "Test Job Type", Description = "Test Job Type Description" }
@@ -54,7 +60,8 @@ public class ServiceRequestServiceTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(requestId, result.Id);
-        Assert.Equal(serviceRequest.Customer, result.Customer);
+        Assert.Equal(customerId, result.Customer.Id);
+        Assert.Equal(customer.Name, result.Customer.Name);
         Assert.Equal(serviceRequest.Description, result.Description);
     }
 
@@ -79,11 +86,13 @@ public class ServiceRequestServiceTests
     {
         // Arrange
         var jobTypeId = Guid.NewGuid();
+        var customerId = 1;
         var jobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Job Type Description" };
+        var customer = new Customer { Id = customerId, Name = "Test Customer" };
         var createDto = new CreateServiceRequestDto
         {
             ContractId = 1,
-            Customer = "Test Customer",
+            CustomerId = customerId,
             Description = "Test Description",
             JobTypeId = jobTypeId,
             InitialAssignments = new List<InitialUserAssignmentDto>(),
@@ -94,11 +103,16 @@ public class ServiceRequestServiceTests
             .Setup(repo => repo.GetByIdAsync(jobTypeId))
             .ReturnsAsync(jobType);
 
+        _customerRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(customerId))
+            .ReturnsAsync(customer);
+
         var createdRequest = new ServiceRequest
         {
             Id = 1,
             ContractId = createDto.ContractId,
-            Customer = createDto.Customer,
+            CustomerId = customerId,
+            Customer = customer,
             Description = createDto.Description,
             JobTypeId = jobTypeId,
             JobType = jobType,
@@ -121,7 +135,8 @@ public class ServiceRequestServiceTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(createDto.Customer, result.Customer);
+        Assert.Equal(customerId, result.Customer.Id);
+        Assert.Equal(customer.Name, result.Customer.Name);
         Assert.Equal(createDto.Description, result.Description);
         Assert.Equal(jobTypeId, result.JobType.Id);
         Assert.False(result.IsCompleted);
@@ -132,10 +147,11 @@ public class ServiceRequestServiceTests
     {
         // Arrange
         var jobTypeId = Guid.NewGuid();
+        var customerId = 1;
         var createDto = new CreateServiceRequestDto
         {
             ContractId = 1,
-            Customer = "Test Customer",
+            CustomerId = customerId,
             Description = "Test Description",
             JobTypeId = jobTypeId,
             InitialAssignments = new List<InitialUserAssignmentDto>(),
@@ -151,27 +167,59 @@ public class ServiceRequestServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_WithInvalidCustomer_ThrowsArgumentException()
+    {
+        // Arrange
+        var jobTypeId = Guid.NewGuid();
+        var customerId = 1;
+        var jobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Job Type Description" };
+        var createDto = new CreateServiceRequestDto
+        {
+            ContractId = 1,
+            CustomerId = customerId,
+            Description = "Test Description",
+            JobTypeId = jobTypeId,
+            InitialAssignments = new List<InitialUserAssignmentDto>(),
+            InitialEquipment = new List<InitialEquipmentAssignmentDto>()
+        };
+
+        _jobTypeRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(jobTypeId))
+            .ReturnsAsync(jobType);
+
+        _customerRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(customerId))
+            .ReturnsAsync((Customer)null);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _service.CreateAsync(createDto));
+    }
+
+    [Fact]
     public async Task UpdateAsync_WithValidData_UpdatesServiceRequest()
     {
         // Arrange
         var requestId = 1;
+        var customerId = 1;
         var jobTypeId = Guid.NewGuid();
+        var customer = new Customer { Id = customerId, Name = "Test Customer" };
+        var jobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Job Type Description" };
         var existingRequest = new ServiceRequest
         {
             Id = requestId,
-            Customer = "Old Customer",
+            CustomerId = customerId,
+            Customer = customer,
             Description = "Old Description",
             JobTypeId = jobTypeId,
+            JobType = jobType,
             CreatedAt = DateTime.UtcNow,
             UserServiceRequests = new List<UserServiceRequest>(),
-            ServiceRequestEquipments = new List<ServiceRequestEquipment>(),
-            JobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Job Type Description" }
+            ServiceRequestEquipments = new List<ServiceRequestEquipment>()
         };
 
-        var jobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Job Type Description" };
         var updateDto = new UpdateServiceRequestDto
         {
-            Customer = "New Customer",
+            CustomerId = customerId,
             Description = "New Description",
             JobTypeId = jobTypeId,
             IsCompleted = true
@@ -185,6 +233,10 @@ public class ServiceRequestServiceTests
             .Setup(repo => repo.GetByIdAsync(jobTypeId))
             .ReturnsAsync(jobType);
 
+        _customerRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(customerId))
+            .ReturnsAsync(customer);
+
         _serviceRequestRepositoryMock
             .Setup(repo => repo.UpdateAsync(It.IsAny<ServiceRequest>()))
             .ReturnsAsync(requestId);
@@ -194,7 +246,8 @@ public class ServiceRequestServiceTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(updateDto.Customer, result.Customer);
+        Assert.Equal(customerId, result.Customer.Id);
+        Assert.Equal(customer.Name, result.Customer.Name);
         Assert.Equal(updateDto.Description, result.Description);
         Assert.Equal(jobTypeId, result.JobType.Id);
         Assert.Equal(updateDto.IsCompleted, result.IsCompleted);
@@ -221,7 +274,9 @@ public class ServiceRequestServiceTests
     {
         // Arrange
         var jobTypeId = Guid.NewGuid();
+        var customerId = 1;
         var jobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Job Type Description" };
+        var customer = new Customer { Id = customerId, Name = "Test Customer" };
         
         var createBulkDto = new CreateServiceRequestBulkDto
         {
@@ -230,7 +285,7 @@ public class ServiceRequestServiceTests
                 new()
                 {
                     ContractId = 1,
-                    Customer = "Test Customer 1",
+                    CustomerId = customerId,
                     Description = "Test Description 1",
                     JobTypeId = jobTypeId,
                     InitialAssignments = new List<InitialUserAssignmentDto>(),
@@ -239,7 +294,7 @@ public class ServiceRequestServiceTests
                 new()
                 {
                     ContractId = 2,
-                    Customer = "Test Customer 2",
+                    CustomerId = customerId,
                     Description = "Test Description 2",
                     JobTypeId = jobTypeId,
                     InitialAssignments = new List<InitialUserAssignmentDto>(),
@@ -254,7 +309,8 @@ public class ServiceRequestServiceTests
             {
                 Id = 1,
                 ContractId = 1,
-                Customer = "Test Customer 1",
+                CustomerId = customerId,
+                Customer = customer,
                 Description = "Test Description 1",
                 JobTypeId = jobTypeId,
                 JobType = jobType,
@@ -267,7 +323,8 @@ public class ServiceRequestServiceTests
             {
                 Id = 2,
                 ContractId = 2,
-                Customer = "Test Customer 2",
+                CustomerId = customerId,
+                Customer = customer,
                 Description = "Test Description 2",
                 JobTypeId = jobTypeId,
                 JobType = jobType,
@@ -281,6 +338,10 @@ public class ServiceRequestServiceTests
         _jobTypeRepositoryMock
             .Setup(repo => repo.GetByIdAsync(jobTypeId))
             .ReturnsAsync(jobType);
+
+        _customerRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(customerId))
+            .ReturnsAsync(customer);
 
         _serviceRequestRepositoryMock
             .Setup(repo => repo.CreateBulkAsync(It.IsAny<IEnumerable<ServiceRequest>>()))
@@ -300,8 +361,8 @@ public class ServiceRequestServiceTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(2, result.Count);
-        Assert.Contains(result, r => r.Customer == "Test Customer 1" && r.Description == "Test Description 1");
-        Assert.Contains(result, r => r.Customer == "Test Customer 2" && r.Description == "Test Description 2");
+        Assert.Contains(result, r => r.Customer.Id == customerId && r.Description == "Test Description 1");
+        Assert.Contains(result, r => r.Customer.Id == customerId && r.Description == "Test Description 2");
     }
 
     [Fact]
@@ -309,6 +370,7 @@ public class ServiceRequestServiceTests
     {
         // Arrange
         var jobTypeId = Guid.NewGuid();
+        var customerId = 1;
         var createBulkDto = new CreateServiceRequestBulkDto
         {
             ServiceRequests = new List<CreateServiceRequestDto>
@@ -316,7 +378,7 @@ public class ServiceRequestServiceTests
                 new()
                 {
                     ContractId = 1,
-                    Customer = "Test Customer",
+                    CustomerId = customerId,
                     Description = "Test Description",
                     JobTypeId = jobTypeId,
                     InitialAssignments = new List<InitialUserAssignmentDto>(),
@@ -328,6 +390,41 @@ public class ServiceRequestServiceTests
         _jobTypeRepositoryMock
             .Setup(repo => repo.GetByIdAsync(jobTypeId))
             .ReturnsAsync((JobType)null);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _service.CreateBulkAsync(createBulkDto));
+    }
+
+    [Fact]
+    public async Task CreateBulkAsync_WithInvalidCustomer_ThrowsArgumentException()
+    {
+        // Arrange
+        var jobTypeId = Guid.NewGuid();
+        var customerId = 1;
+        var jobType = new JobType { Id = jobTypeId, Name = "Test Job Type", Description = "Test Job Type Description" };
+        var createBulkDto = new CreateServiceRequestBulkDto
+        {
+            ServiceRequests = new List<CreateServiceRequestDto>
+            {
+                new()
+                {
+                    ContractId = 1,
+                    CustomerId = customerId,
+                    Description = "Test Description",
+                    JobTypeId = jobTypeId,
+                    InitialAssignments = new List<InitialUserAssignmentDto>(),
+                    InitialEquipment = new List<InitialEquipmentAssignmentDto>()
+                }
+            }
+        };
+
+        _jobTypeRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(jobTypeId))
+            .ReturnsAsync(jobType);
+
+        _customerRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(customerId))
+            .ReturnsAsync((Customer)null);
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() => _service.CreateBulkAsync(createBulkDto));
@@ -359,12 +456,15 @@ public class ServiceRequestServiceTests
     {
         // Arrange
         var requestIds = new List<int> { 1, 2 };
+        var customerId = 1;
+        var customer = new Customer { Id = customerId, Name = "Test Customer" };
         var requests = new List<ServiceRequest>
         {
             new()
             {
                 Id = 1,
-                Customer = "Customer 1",
+                CustomerId = customerId,
+                Customer = customer,
                 Description = "Description 1",
                 CreatedAt = DateTime.UtcNow,
                 JobType = new JobType { Id = Guid.NewGuid(), Name = "Test Job Type", Description = "Test Job Type Description" }
@@ -372,7 +472,8 @@ public class ServiceRequestServiceTests
             new()
             {
                 Id = 2,
-                Customer = "Customer 2",
+                CustomerId = customerId,
+                Customer = customer,
                 Description = "Description 2",
                 CreatedAt = DateTime.UtcNow,
                 JobType = new JobType { Id = Guid.NewGuid(), Name = "Test Job Type", Description = "Test Job Type Description" }
@@ -397,8 +498,8 @@ public class ServiceRequestServiceTests
         Assert.Equal(2, result.DeletedServiceRequests.Count());
         Assert.Empty(result.FailedServiceRequestIds);
         Assert.Empty(result.FailureReasons);
-        Assert.Contains(result.DeletedServiceRequests, r => r.Id == 1 && r.Customer == "Customer 1");
-        Assert.Contains(result.DeletedServiceRequests, r => r.Id == 2 && r.Customer == "Customer 2");
+        Assert.Contains(result.DeletedServiceRequests, r => r.Id == 1 && r.Customer.Id == customerId);
+        Assert.Contains(result.DeletedServiceRequests, r => r.Id == 2 && r.Customer.Id == customerId);
         _serviceRequestRepositoryMock.Verify(repo => repo.DeleteAsync(1), Times.Once);
         _serviceRequestRepositoryMock.Verify(repo => repo.DeleteAsync(2), Times.Once);
     }
@@ -410,10 +511,13 @@ public class ServiceRequestServiceTests
         var existingId = 1;
         var nonExistentId = 2;
         var requestIds = new List<int> { existingId, nonExistentId };
+        var customerId = 1;
+        var customer = new Customer { Id = customerId, Name = "Test Customer" };
         var existingRequest = new ServiceRequest
         {
             Id = existingId,
-            Customer = "Existing Customer",
+            CustomerId = customerId,
+            Customer = customer,
             Description = "Existing Description",
             CreatedAt = DateTime.UtcNow,
             JobType = new JobType { Id = Guid.NewGuid(), Name = "Test Job Type", Description = "Test Job Type Description" }
@@ -437,7 +541,7 @@ public class ServiceRequestServiceTests
         Assert.Single(result.DeletedServiceRequests);
         Assert.Single(result.FailedServiceRequestIds);
         Assert.Single(result.FailureReasons);
-        Assert.Contains(result.DeletedServiceRequests, r => r.Id == existingId && r.Customer == "Existing Customer");
+        Assert.Contains(result.DeletedServiceRequests, r => r.Id == existingId && r.Customer.Id == customerId);
         Assert.Contains(result.FailedServiceRequestIds, id => id == nonExistentId);
         Assert.Contains(result.FailureReasons, reason => reason == "Request not found");
         _serviceRequestRepositoryMock.Verify(repo => repo.DeleteAsync(existingId), Times.Once);
@@ -449,10 +553,13 @@ public class ServiceRequestServiceTests
     {
         // Arrange
         var requestId = 1;
+        var customerId = 1;
+        var customer = new Customer { Id = customerId, Name = "Test Customer" };
         var request = new ServiceRequest
         {
             Id = requestId,
-            Customer = "Test Customer",
+            CustomerId = customerId,
+            Customer = customer,
             Description = "Test Description",
             CreatedAt = DateTime.UtcNow,
             JobType = new JobType { Id = Guid.NewGuid(), Name = "Test Job Type", Description = "Test Job Type Description" }

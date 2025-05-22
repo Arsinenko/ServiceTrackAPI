@@ -28,6 +28,7 @@ public static class DependencyInjection
         services.AddScoped<IEquipmentRepository, EquipmentRepository>();
         services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
         services.AddScoped<IJobTypeRepository, JobTypeRepository>();
+        services.AddScoped<ICustomerRepository, CustomerRepository>();
 
         // Register services
         services.AddScoped<IAuthService, AuthService>();

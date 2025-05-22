@@ -118,25 +118,47 @@ public class CustomerService : ICustomerService
     public async Task<List<CustomerDto>> UpdateBulkAsync(UpdateCustomerBulkDto updateCustomers)
     {
         var customers = new List<Customer>();
+        var updatedCustomers = new List<CustomerDto>();
+        var failureReasons = new List<string>();
+
         foreach (var customerDto in updateCustomers.Customers)
         {
-            var customer = new Customer
+            var existingCustomer = await _customerRepository.GetByIdAsync(customerDto.Id);
+            if (existingCustomer == null)
             {
-                Name = customerDto.Name
-            };
-            customers.Add(customer);
+                failureReasons.Add($"Customer with id {customerDto.Id} does not exist.");
+                continue;
+            }
+
+            if (existingCustomer.Name != customerDto.Name)
+            {
+                var customerWithSameName = await _customerRepository.GetByNameAsync(customerDto.Name);
+                if (customerWithSameName != null)
+                {
+                    failureReasons.Add($"Customer with name {customerDto.Name} already exists.");
+                    continue;
+                }
+            }
+
+            existingCustomer.Name = customerDto.Name;
+            customers.Add(existingCustomer);
         }
-        var result = await _customerRepository.UpdateBulkAsync(customers);
-        return customers.Select(CustomerDto.FromCustomer).ToList();
+
+        if (customers.Any())
+        {
+            var result = await _customerRepository.UpdateBulkAsync(customers);
+            updatedCustomers.AddRange(result.Select(CustomerDto.FromCustomer));
+        }
+
+        return updatedCustomers;
     }
 
     public async Task<CustomerDto?> DeleteAsync(DeleteCustomerDto dto)
     {
-        var customer = _customerRepository.GetByIdAsync(dto.Id);
+        var customer = await _customerRepository.GetByIdAsync(dto.Id);
         if (customer == null)
             throw new CustomerNotFoundException($"Customer with id {dto.Id} does not exist.");
         var result = await _customerRepository.DeleteAsync(dto.Id);
-        
         return CustomerDto.FromCustomer(result);
     }
 
