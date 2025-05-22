@@ -18,6 +18,7 @@ public class ServiceRequestRepository : IServiceRequestRepository
     {
         return await _context.ServiceRequests
             .Include(sr => sr.JobType)
+            .Include(sr => sr.Customer)
             .Include(sr => sr.UserServiceRequests)
                 .ThenInclude(usr => usr.User)
             .Include(sr => sr.ServiceRequestEquipments)
@@ -30,6 +31,7 @@ public class ServiceRequestRepository : IServiceRequestRepository
     {
         return await _context.ServiceRequests
             .Include(sr => sr.JobType)
+            .Include(sr => sr.Customer)
             .Include(sr => sr.UserServiceRequests)
                 .ThenInclude(usr => usr.User)
             .Include(sr => sr.ServiceRequestEquipments)
@@ -42,6 +44,7 @@ public class ServiceRequestRepository : IServiceRequestRepository
     {
         return await _context.ServiceRequests
             .Include(sr => sr.JobType)
+            .Include(sr => sr.Customer)
             .Include(sr => sr.UserServiceRequests)
                 .ThenInclude(usr => usr.User)
             .Include(sr => sr.ServiceRequestEquipments)

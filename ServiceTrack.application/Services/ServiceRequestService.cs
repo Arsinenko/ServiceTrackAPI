@@ -10,17 +10,20 @@ public class ServiceRequestService : IServiceRequestService
     private readonly IUserRepository _userRepository;
     private readonly IEquipmentRepository _equipmentRepository;
     private readonly IJobTypeRepository _jobTypeRepository;
+    private readonly ICustomerRepository _customerRepository;
 
     public ServiceRequestService(
         IServiceRequestRepository serviceRequestRepository,
         IUserRepository userRepository,
         IEquipmentRepository equipmentRepository,
-        IJobTypeRepository jobTypeRepository)
+        IJobTypeRepository jobTypeRepository,
+        ICustomerRepository customerRepository)
     {
         _serviceRequestRepository = serviceRequestRepository;
         _userRepository = userRepository;
         _equipmentRepository = equipmentRepository;
         _jobTypeRepository = jobTypeRepository;
+        _customerRepository = customerRepository;
     }
 
     public async Task<ServiceRequestDto?> GetByIdAsync(int id)
@@ -53,10 +56,15 @@ public class ServiceRequestService : IServiceRequestService
         if (jobType == null)
             throw new ArgumentException("Invalid job type ID");
 
+        var customer = await _customerRepository.GetByIdAsync(createDto.CustomerId);
+        if (customer == null)
+            throw new ArgumentException("Invalid customer ID");
+
         var request = new ServiceRequest
         {
             ContractId = createDto.ContractId,
-            Customer = createDto.Customer,
+            CustomerId = createDto.CustomerId,
+            Customer = customer,
             Description = createDto.Description,
             JobTypeId = createDto.JobTypeId,
             JobType = jobType,
@@ -134,10 +142,15 @@ public class ServiceRequestService : IServiceRequestService
             if (jobType == null)
                 throw new ArgumentException($"Invalid job type ID for request: {requestDto.Description}");
 
+            var customer = await _customerRepository.GetByIdAsync(requestDto.CustomerId);
+            if (customer == null)
+                throw new ArgumentException($"Invalid customer ID for request: {requestDto.Description}");
+
             var request = new ServiceRequest
             {
                 ContractId = requestDto.ContractId,
-                Customer = requestDto.Customer,
+                CustomerId = requestDto.CustomerId,
+                Customer = customer,
                 Description = requestDto.Description,
                 JobTypeId = requestDto.JobTypeId,
                 JobType = jobType,
@@ -208,7 +221,12 @@ public class ServiceRequestService : IServiceRequestService
         if (jobType == null)
             throw new ArgumentException("Invalid job type ID");
 
-        request.Customer = updateDto.Customer;
+        var customer = await _customerRepository.GetByIdAsync(updateDto.CustomerId);
+        if (customer == null)
+            throw new ArgumentException("Invalid customer ID");
+
+        request.CustomerId = updateDto.CustomerId;
+        request.Customer = customer;
         request.Description = updateDto.Description;
         request.IsCompleted = updateDto.IsCompleted;
         request.JobTypeId = updateDto.JobTypeId;

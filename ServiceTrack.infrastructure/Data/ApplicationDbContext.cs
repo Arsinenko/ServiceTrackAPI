@@ -54,7 +54,7 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.ContractId).IsRequired();
-            entity.Property(e => e.Customer).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.CustomerId).IsRequired();
             entity.Property(e => e.Description).IsRequired();
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.UpdatedAt);
@@ -67,6 +67,11 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.JobType)
                 .WithMany()
                 .HasForeignKey(e => e.JobTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Customer)
+                .WithMany()
+                .HasForeignKey(e => e.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

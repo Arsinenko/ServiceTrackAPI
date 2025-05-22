@@ -8,7 +8,7 @@ public class ServiceRequestDto
 {
     public int Id { get; set; }
     public int ContractId { get; set; }
-    public string Customer { get; set; }
+    public CustomerDto Customer { get; set; }
     public string Description { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
@@ -24,7 +24,7 @@ public class ServiceRequestDto
         {
             Id = request.Id,
             ContractId = request.ContractId,
-            Customer = request.Customer,
+            Customer = request.Customer != null ? CustomerDto.FromCustomer(request.Customer) : null,
             Description = request.Description,
             CreatedAt = request.CreatedAt,
             UpdatedAt = request.UpdatedAt,

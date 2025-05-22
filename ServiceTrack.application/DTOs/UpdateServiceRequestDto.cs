@@ -5,7 +5,7 @@ namespace AuthApp.application.DTOs;
 
 public class UpdateServiceRequestDto
 {
-    public string Customer { get; set; }
+    public int CustomerId { get; set; }
     public string Description { get; set; }
     public bool IsCompleted { get; set; }
     public Guid JobTypeId { get; set; }

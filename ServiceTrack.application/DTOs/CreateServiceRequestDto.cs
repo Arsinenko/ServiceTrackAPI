@@ -8,8 +8,8 @@ public class CreateServiceRequestDto
 {
     [Required(ErrorMessage = "ContractId is required!")]
     public required int ContractId { get; set; }
-    [Required(ErrorMessage = "Customer field is required!")]
-    public required string Customer { get; set; }
+    [Required(ErrorMessage = "CustomerId is required!")]
+    public required int CustomerId { get; set; }
     [Required(ErrorMessage = "Description is required")]
     public required string Description { get; set; }
     [Required(ErrorMessage = "JobType is requred!")]
