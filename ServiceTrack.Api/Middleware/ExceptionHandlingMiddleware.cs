@@ -40,6 +40,12 @@ public class ExceptionHandlingMiddleware
             RoleNotFoundException => (HttpStatusCode.NotFound, exception.Message),
             RoleInUseException => (HttpStatusCode.Conflict, exception.Message),
             
+            //Customer-related exceptions
+            CustomerValidationException => (HttpStatusCode.BadRequest, exception.Message),
+            CustomerNotFoundException => (HttpStatusCode.NotFound, exception.Message),
+            CustomerInUseException => (HttpStatusCode.Conflict, exception.Message),
+            CustomerAlreadyExistsException => (HttpStatusCode.Conflict, exception.Message),
+            
             // Validation exceptions (more specific to general)
             ArgumentNullException => (HttpStatusCode.BadRequest, exception.Message),
             InvalidOperationException => (HttpStatusCode.BadRequest, exception.Message),

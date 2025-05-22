@@ -13,6 +13,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<JobType> JobTypes { get; set; }
     public DbSet<UserServiceRequest> UserServiceRequests { get; set; }
     public DbSet<ServiceRequestEquipment> ServiceRequestEquipments { get; set; }
+    public DbSet<Customer> Customers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -131,6 +132,15 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(500).IsRequired();
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.UpdatedAt);
+        });
+        modelBuilder.Entity<Customer>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.UpdatedAt);
+            
+            entity.HasIndex(e => e.Name).IsUnique();
         });
 
     }

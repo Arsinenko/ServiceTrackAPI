@@ -31,6 +31,13 @@ public class CreateCustomerBulkDto
     public required ICollection<CreateCustomerDto> Customers { get; set; }
 }
 
+public class CreateCustomerBulkResultDto
+{
+    public required ICollection<CustomerDto> CreatedCustomers { get; set; }
+    public required ICollection<CreateCustomerDto> FiledCustomers { get; set; }
+    public required ICollection<string> FailureReasons { get; set; }
+}
+
 public class UpdateCustomerDto : CreateCustomerDto
 {
     public required int Id { get; set; }
