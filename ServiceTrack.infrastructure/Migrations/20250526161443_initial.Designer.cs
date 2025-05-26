@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AuthApp.infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250502180559_AddComponentHierarchy")]
-    partial class AddComponentHierarchy
+    [Migration("20250526161443_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,62 +25,52 @@ namespace AuthApp.infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("AuthApp.domain.Entities.Customer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Customers");
+                });
+
             modelBuilder.Entity("AuthApp.domain.Entities.Equipment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Manufacturer")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("Model")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<int>("Quantity")
+                    b.Property<int>("Category")
                         .HasColumnType("integer");
-
-                    b.Property<string>("SerialNumber")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Equipment");
-                });
-
-            modelBuilder.Entity("AuthApp.domain.Entities.EquipmentComponent", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<Guid>("EquipmentId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("Executor")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Manufacturer")
                         .IsRequired()
@@ -97,11 +87,15 @@ namespace AuthApp.infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<Guid?>("ParentComponentId")
+                    b.Property<Guid?>("ParentId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
+
+                    b.Property<string>("SZZ")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("SerialNumber")
                         .IsRequired()
@@ -113,11 +107,9 @@ namespace AuthApp.infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EquipmentId");
+                    b.HasIndex("ParentId");
 
-                    b.HasIndex("ParentComponentId");
-
-                    b.ToTable("EquipmentComponents");
+                    b.ToTable("Equipment");
                 });
 
             modelBuilder.Entity("AuthApp.domain.Entities.JobType", b =>
@@ -194,10 +186,8 @@ namespace AuthApp.infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Customer")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -216,6 +206,8 @@ namespace AuthApp.infrastructure.Migrations
 
                     b.HasIndex("ContractId")
                         .IsUnique();
+
+                    b.HasIndex("CustomerId");
 
                     b.HasIndex("JobTypeId");
 
@@ -315,31 +307,167 @@ namespace AuthApp.infrastructure.Migrations
                     b.ToTable("UserServiceRequests");
                 });
 
-            modelBuilder.Entity("AuthApp.domain.Entities.EquipmentComponent", b =>
+            modelBuilder.Entity("EquipmentAttachment", b =>
                 {
-                    b.HasOne("AuthApp.domain.Entities.Equipment", "Equipment")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("EquipmentID")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<double>("FileSize")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("FileType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("UploadDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EquipmentID");
+
+                    b.ToTable("EquipmentAttachments");
+                });
+
+            modelBuilder.Entity("EquipmentInspectionMethod", b =>
+                {
+                    b.Property<Guid>("EquipmentID")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("InspectionMethodId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("EquipmentID", "InspectionMethodId");
+
+                    b.HasIndex("InspectionMethodId");
+
+                    b.ToTable("EquipmentInspectionMethods");
+                });
+
+            modelBuilder.Entity("EquipmentSecurityLevel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EquipmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SecurityLevelId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EquipmentId");
+
+                    b.HasIndex("SecurityLevelId");
+
+                    b.ToTable("EquipmentSecurityLevels");
+                });
+
+            modelBuilder.Entity("InspectionMethod", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsAlive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("InspectionMethods");
+                });
+
+            modelBuilder.Entity("SecurityLevel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsAlive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SecurityLevels");
+                });
+
+            modelBuilder.Entity("AuthApp.domain.Entities.Equipment", b =>
+                {
+                    b.HasOne("AuthApp.domain.Entities.Equipment", null)
                         .WithMany("Components")
-                        .HasForeignKey("EquipmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AuthApp.domain.Entities.EquipmentComponent", "ParentComponent")
-                        .WithMany("ChildComponents")
-                        .HasForeignKey("ParentComponentId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Equipment");
-
-                    b.Navigation("ParentComponent");
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("AuthApp.domain.Entities.ServiceRequest", b =>
                 {
+                    b.HasOne("AuthApp.domain.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("AuthApp.domain.Entities.JobType", "JobType")
                         .WithMany()
                         .HasForeignKey("JobTypeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Customer");
 
                     b.Navigation("JobType");
                 });
@@ -393,16 +521,66 @@ namespace AuthApp.infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("AuthApp.domain.Entities.Equipment", b =>
+            modelBuilder.Entity("EquipmentAttachment", b =>
                 {
-                    b.Navigation("Components");
+                    b.HasOne("AuthApp.domain.Entities.Equipment", "Equipment")
+                        .WithMany("Attachments")
+                        .HasForeignKey("EquipmentID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("ServiceRequestEquipments");
+                    b.Navigation("Equipment");
                 });
 
-            modelBuilder.Entity("AuthApp.domain.Entities.EquipmentComponent", b =>
+            modelBuilder.Entity("EquipmentInspectionMethod", b =>
                 {
-                    b.Navigation("ChildComponents");
+                    b.HasOne("AuthApp.domain.Entities.Equipment", "Equipment")
+                        .WithMany("InspectionMethods")
+                        .HasForeignKey("EquipmentID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("InspectionMethod", "InspectionMethod")
+                        .WithMany()
+                        .HasForeignKey("InspectionMethodId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Equipment");
+
+                    b.Navigation("InspectionMethod");
+                });
+
+            modelBuilder.Entity("EquipmentSecurityLevel", b =>
+                {
+                    b.HasOne("AuthApp.domain.Entities.Equipment", "Equipment")
+                        .WithMany("SecurityLevels")
+                        .HasForeignKey("EquipmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SecurityLevel", "SecurityLevel")
+                        .WithMany()
+                        .HasForeignKey("SecurityLevelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Equipment");
+
+                    b.Navigation("SecurityLevel");
+                });
+
+            modelBuilder.Entity("AuthApp.domain.Entities.Equipment", b =>
+                {
+                    b.Navigation("Attachments");
+
+                    b.Navigation("Components");
+
+                    b.Navigation("InspectionMethods");
+
+                    b.Navigation("SecurityLevels");
+
+                    b.Navigation("ServiceRequestEquipments");
                 });
 
             modelBuilder.Entity("AuthApp.domain.Entities.Role", b =>
