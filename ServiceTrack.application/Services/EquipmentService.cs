@@ -42,8 +42,16 @@ public class EquipmentService : IEquipmentService
             Model = createEquipmentDto.Model,
             SerialNumber = createEquipmentDto.SerialNumber,
             Manufacturer = createEquipmentDto.Manufacturer,
+            Category = createEquipmentDto.Category,
             Quantity = createEquipmentDto.Quantity,
-            Description = createEquipmentDto.Description
+            Executor = createEquipmentDto.Executor,
+            SZZ = createEquipmentDto.SZZ,
+            Description = createEquipmentDto.Description,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>(),
+            Attachments = new List<EquipmentAttachment>()
         };
         await _equipmentRepository.CreateAsync(equipment);
         return EquipmentDto.FromEquipment(equipment);
@@ -58,9 +66,17 @@ public class EquipmentService : IEquipmentService
             Model = dto.Model,
             SerialNumber = dto.SerialNumber,
             Manufacturer = dto.Manufacturer,
+            Category = dto.Category,
             Quantity = dto.Quantity,
+            Executor = dto.Executor,
+            SZZ = dto.SZZ,
             Description = dto.Description,
-            ParentId = parentId
+            ParentId = parentId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>(),
+            Attachments = new List<EquipmentAttachment>()
         };
 
         // Create components recursively if they exist
@@ -137,7 +153,10 @@ public class EquipmentService : IEquipmentService
         equipment.SerialNumber = updateEquipmentDto.SerialNumber;
         equipment.Manufacturer = updateEquipmentDto.Manufacturer;
         equipment.Quantity = updateEquipmentDto.Quantity;
+        equipment.Executor = updateEquipmentDto.Executor;
+        equipment.SZZ = updateEquipmentDto.SZZ;
         equipment.Description = updateEquipmentDto.Description;
+        equipment.UpdatedAt = DateTime.UtcNow;
         
         await _equipmentRepository.UpdateAsync(equipment);
         return EquipmentDto.FromEquipment(equipment);
@@ -182,7 +201,10 @@ public class EquipmentService : IEquipmentService
                 existing.SerialNumber = item.SerialNumber;
                 existing.Manufacturer = item.Manufacturer;
                 existing.Quantity = item.Quantity;
+                existing.Executor = item.Executor;
+                existing.SZZ = item.SZZ;
                 existing.Description = item.Description;
+                existing.UpdatedAt = DateTime.UtcNow;
                 
                 equipmentToUpdate.Add(existing);
             }
@@ -272,8 +294,16 @@ public class EquipmentService : IEquipmentService
             Model = componentDto.Model,
             SerialNumber = componentDto.SerialNumber,
             Manufacturer = componentDto.Manufacturer,
+            Category = componentDto.Category,
             Quantity = componentDto.Quantity,
-            Description = componentDto.Description
+            Executor = componentDto.Executor,
+            SZZ = componentDto.SZZ,
+            Description = componentDto.Description,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>(),
+            Attachments = new List<EquipmentAttachment>()
         };
 
         var equipment = await _equipmentRepository.AddComponentAsync(equipmentId, component);
@@ -288,8 +318,14 @@ public class EquipmentService : IEquipmentService
             Model = componentDto.Model,
             SerialNumber = componentDto.SerialNumber,
             Manufacturer = componentDto.Manufacturer,
+            Category = componentDto.Category,
             Quantity = componentDto.Quantity,
-            Description = componentDto.Description
+            Executor = componentDto.Executor,
+            SZZ = componentDto.SZZ,
+            Description = componentDto.Description,
+            UpdatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         var equipment = await _equipmentRepository.UpdateComponentAsync(equipmentId, componentId, updatedComponent);

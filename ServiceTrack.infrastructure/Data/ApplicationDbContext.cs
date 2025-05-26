@@ -14,6 +14,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<UserServiceRequest> UserServiceRequests { get; set; }
     public DbSet<ServiceRequestEquipment> ServiceRequestEquipments { get; set; }
     public DbSet<Customer> Customers { get; set; }
+    public DbSet<EquipmentAttachment> EquipmentAttachments { get; set; }
+    public DbSet<SecurityLevel> SecurityLevels { get; set; }
+    public DbSet<InspectionMethod> InspectionMethods { get; set; }
+    public DbSet<EquipmentSecurityLevel> EquipmentSecurityLevels { get; set; }
+    public DbSet<EquipmentInspectionMethod> EquipmentInspectionMethods { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -115,18 +120,39 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.Model).HasMaxLength(200);
+            entity.Property(e => e.Model).HasMaxLength(200).IsRequired();
             entity.Property(e => e.SerialNumber).HasMaxLength(100).IsRequired();
             entity.Property(e => e.Manufacturer).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Category).IsRequired();
             entity.Property(e => e.Quantity).IsRequired();
+            entity.Property(e => e.Executor).HasMaxLength(100);
+            entity.Property(e => e.SZZ).HasMaxLength(50);
             entity.Property(e => e.CreatedAt).IsRequired();
-            entity.Property(e => e.UpdatedAt);
+            entity.Property(e => e.UpdatedAt).IsRequired();
             entity.Property(e => e.Description).HasMaxLength(500);
 
             // Configure self-referencing relationship for components
             entity.HasOne<Equipment>()
                 .WithMany(e => e.Components)
                 .HasForeignKey(e => e.ParentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure many-to-many relationship with SecurityLevels
+            entity.HasMany(e => e.SecurityLevels)
+                .WithOne(esl => esl.Equipment)
+                .HasForeignKey(esl => esl.EquipmentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure many-to-many relationship with InspectionMethods
+            entity.HasMany(e => e.InspectionMethods)
+                .WithOne(eim => eim.Equipment)
+                .HasForeignKey(eim => eim.EquipmentID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure one-to-many relationship with Attachments
+            entity.HasMany(e => e.Attachments)
+                .WithOne(a => a.Equipment)
+                .HasForeignKey(a => a.EquipmentID)
                 .OnDelete(DeleteBehavior.Cascade);
         });
         
@@ -148,5 +174,61 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.Name).IsUnique();
         });
 
+        modelBuilder.Entity<EquipmentAttachment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.FileName).HasMaxLength(255).IsRequired();
+            entity.Property(e => e.FilePath).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.FileSize).IsRequired();
+            entity.Property(e => e.FileType).HasMaxLength(50);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.UploadDate).IsRequired();
+        });
+
+        modelBuilder.Entity<SecurityLevel>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Code).HasMaxLength(10).IsRequired();
+            entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.IsAlive).IsRequired();
+        });
+
+        modelBuilder.Entity<InspectionMethod>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Code).HasMaxLength(10).IsRequired();
+            entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.IsAlive).IsRequired();
+        });
+
+        modelBuilder.Entity<EquipmentSecurityLevel>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(esl => esl.Equipment)
+                .WithMany(e => e.SecurityLevels)
+                .HasForeignKey(esl => esl.EquipmentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(esl => esl.SecurityLevel)
+                .WithMany()
+                .HasForeignKey(esl => esl.SecurityLevelId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<EquipmentInspectionMethod>(entity =>
+        {
+            entity.HasKey(e => new { e.EquipmentID, e.InspectionMethodId });
+            entity.HasOne(eim => eim.Equipment)
+                .WithMany(e => e.InspectionMethods)
+                .HasForeignKey(eim => eim.EquipmentID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(eim => eim.InspectionMethod)
+                .WithMany()
+                .HasForeignKey(eim => eim.InspectionMethodId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
     }
 }

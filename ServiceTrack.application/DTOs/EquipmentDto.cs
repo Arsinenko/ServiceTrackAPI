@@ -10,12 +10,16 @@ public class EquipmentDto
     public string Model { get; set; }
     public string SerialNumber { get; set; }
     public string Manufacturer { get; set; }
+    public int Category { get; set; }
     public int Quantity { get; set; }
+    public string? Executor { get; set; }
+    public string? SZZ { get; set; }
     public Guid? ParentId { get; set; }
     public string? Description { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public ICollection<EquipmentDto>? Components { get; set; }
+    public ICollection<EquipmentAttachmentDto> Attachments { get; set; } = new List<EquipmentAttachmentDto>();
 
     public static EquipmentDto FromEquipment(Equipment equipment)
     {
@@ -26,12 +30,16 @@ public class EquipmentDto
             Model = equipment.Model,
             SerialNumber = equipment.SerialNumber,
             Manufacturer = equipment.Manufacturer,
+            Category = equipment.Category,
             Quantity = equipment.Quantity,
+            Executor = equipment.Executor,
+            SZZ = equipment.SZZ,
             ParentId = equipment.ParentId,
             Description = equipment.Description,
             CreatedAt = equipment.CreatedAt.ToLocalTime(),
             UpdatedAt = equipment.UpdatedAt.ToLocalTime(),
-            Components = equipment.Components?.Select(c => FromEquipment(c)).ToList()
+            Components = equipment.Components?.Select(c => FromEquipment(c)).ToList(),
+            Attachments = equipment.Attachments?.Select(a => EquipmentAttachmentDto.FromEquipmentAttachment(a)).ToList() ?? new List<EquipmentAttachmentDto>()
         };
     }
 }
@@ -46,8 +54,12 @@ public class CreateEquipmentDto
     public required string SerialNumber { get; set; }
     [Required(ErrorMessage = "Manufacturer is required")]
     public required string Manufacturer { get; set; }
+    [Required(ErrorMessage = "Category is required")]
+    public required int Category { get; set; }
     [Required(ErrorMessage = "Quantity is required")]
     public int Quantity { get; set; }
+    public string? Executor { get; set; }
+    public string? SZZ { get; set; }
     public string? Description { get; set; }
     public ICollection<CreateEquipmentDto>? Components { get; set; }
 }

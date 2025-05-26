@@ -12,6 +12,8 @@ public class Equipment
     public required string Manufacturer { get; set; }
     public required int Category { get; set; }
     public int Quantity { get; set; }
+    public string? Executor { get; set; }  // Исполнитель
+    public string? SZZ { get; set; }      // СЗЗ
     public Guid? ParentId { get; set; }
     public string? Description { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -20,6 +22,8 @@ public class Equipment
     public required ICollection<EquipmentSecurityLevel> SecurityLevels { get; set; } 
     
     public required ICollection<EquipmentInspectionMethod> InspectionMethods { get; set; }
+    
+    public ICollection<EquipmentAttachment> Attachments { get; set; } = new List<EquipmentAttachment>();
     
     public ICollection<Equipment>? Components { get; set; } 
     
