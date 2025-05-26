@@ -36,7 +36,7 @@ public class UpdateJobTypeDto : CreateJobTypeDto;
 
 public class CreateJobTypeBulkDto
 {
-    public ICollection<CreateJobTypeDto> JobTypes { get; set; }
+    public required ICollection<CreateJobTypeDto> JobTypes { get; set; }
 }
 
 public class UpdateJobTypeBulkItemDto : CreateJobTypeDto
