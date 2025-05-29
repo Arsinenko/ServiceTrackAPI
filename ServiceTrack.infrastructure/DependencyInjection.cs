@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
         services.AddScoped<IJobTypeRepository, JobTypeRepository>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<IInspectionMethodRepository, InspectionMethodRepository>();
 
         // Register services
         services.AddScoped<IAuthService, AuthService>();
@@ -37,6 +38,9 @@ public static class DependencyInjection
         services.AddScoped<IEquipmentService, EquipmentService>();
         services.AddScoped<IServiceRequestService, ServiceRequestService>();
         services.AddScoped<IJobTypeService, JobTypeService>();
+        services.AddScoped<ICustomerService, CustomerService>();
+        services.AddScoped<IInspectionMethodService, InspectionMethodService>();
+        
 
         // Register security services
         services.AddSingleton<IPasswordHasher, PasswordHasher>();

@@ -1,3 +1,5 @@
+namespace AuthApp.domain.Entities;
+
 public class InspectionMethod
 {
     public int Id { get; set; }
