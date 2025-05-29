@@ -53,7 +53,6 @@ public class EquipmentAttachmentService : IEquipmentAttachmentService
             FileSize = file.Length,
             FilePath = fileName,
             FileType = file.ContentType,
-            Description = description,
             UploadDate = DateTime.UtcNow,
             Equipment = null // Will be set by the database
         };

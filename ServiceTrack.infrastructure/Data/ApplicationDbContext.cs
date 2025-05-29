@@ -181,7 +181,6 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.FilePath).HasMaxLength(500).IsRequired();
             entity.Property(e => e.FileSize).IsRequired();
             entity.Property(e => e.FileType).HasMaxLength(50);
-            entity.Property(e => e.Description).HasMaxLength(500);
             entity.Property(e => e.UploadDate).IsRequired();
         });
 

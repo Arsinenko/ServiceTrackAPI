@@ -10,7 +10,6 @@ public class EquipmentAttachmentDto
     public required double FileSize { get; set; }
     public required string FilePath { get; set; }
     public string? FileType { get; set; }
-    public string? Description { get; set; }
     public required DateTime UploadDate { get; set; }
     
     public static EquipmentAttachmentDto FromEquipmentAttachment(EquipmentAttachment equipmentAttachment)
@@ -23,7 +22,6 @@ public class EquipmentAttachmentDto
             FilePath = equipmentAttachment.FilePath,
             FileSize = equipmentAttachment.FileSize,
             FileType = equipmentAttachment.FileType,
-            Description = equipmentAttachment.Description,
             UploadDate = equipmentAttachment.UploadDate
         };
     }

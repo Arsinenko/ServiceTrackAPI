@@ -72,7 +72,6 @@ public class EquipmentAttachmentServiceTests
             FileSize = fileContent.Length,
             FilePath = It.IsAny<string>(),
             FileType = "text/plain",
-            Description = "Test description",
             UploadDate = DateTime.UtcNow,
             Equipment = equipment
         };
@@ -89,7 +88,6 @@ public class EquipmentAttachmentServiceTests
         Assert.Equal(fileName, result.FileName);
         Assert.Equal(fileContent.Length, result.FileSize);
         Assert.Equal("text/plain", result.FileType);
-        Assert.Equal("Test description", result.Description);
         
         // Verify file was saved to disk
         var savedFilePath = Path.Combine(_testUploadDirectory, result.FilePath);
@@ -142,7 +140,6 @@ public class EquipmentAttachmentServiceTests
             FileSize = fileContents[i].Length,
             FilePath = It.IsAny<string>(),
             FileType = "text/plain",
-            Description = "Test description",
             UploadDate = DateTime.UtcNow,
             Equipment = equipment
         }).ToList();
@@ -163,7 +160,6 @@ public class EquipmentAttachmentServiceTests
             Assert.Equal(fileNames[i], results[i].FileName);
             Assert.Equal(fileContents[i].Length, results[i].FileSize);
             Assert.Equal("text/plain", results[i].FileType);
-            Assert.Equal("Test description", results[i].Description);
             
             // Verify file was saved to disk
             var savedFilePath = Path.Combine(_testUploadDirectory, results[i].FilePath);
@@ -206,7 +202,6 @@ public class EquipmentAttachmentServiceTests
             FilePath = filePath,
             FileSize = 100,
             FileType = "text/plain",
-            Description = "Test description",
             UploadDate = DateTime.UtcNow,
             Equipment = equipment
         };
@@ -266,7 +261,6 @@ public class EquipmentAttachmentServiceTests
                 FilePath = filePath,
                 FileSize = 100,
                 FileType = "text/plain",
-                Description = "Test description",
                 UploadDate = DateTime.UtcNow,
                 Equipment = equipment
             };
