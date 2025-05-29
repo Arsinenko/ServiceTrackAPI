@@ -1,9 +1,9 @@
-using AuthApp.domain.Entities;
+namespace AuthApp.domain.Entities;
 
 public class EquipmentAttachment
 {
     public required int Id { get; set; }
-    public required Guid EquipmentID { get; set; }
+    public required Guid EquipmentId { get; set; }
     public required string FileName { get; set; }
     public required double FileSize { get; set; }
     public required string FilePath { get; set; }

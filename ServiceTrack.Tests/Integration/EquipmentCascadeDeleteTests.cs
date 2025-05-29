@@ -41,9 +41,12 @@ public class EquipmentCascadeDeleteTests : IDisposable
             Model = "Model A",
             SerialNumber = "SN001",
             Manufacturer = "Manufacturer X",
+            Category = 1,
             Quantity = 1,
             Description = "Main equipment description",
             CreatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>(),
             Components = new List<Equipment>
             {
                 new()
@@ -53,9 +56,12 @@ public class EquipmentCascadeDeleteTests : IDisposable
                     Model = "Model B",
                     SerialNumber = "SN002",
                     Manufacturer = "Manufacturer Y",
+                    Category = 1,
                     Quantity = 2,
                     Description = "Component 1 description",
                     CreatedAt = DateTime.UtcNow,
+                    SecurityLevels = new List<EquipmentSecurityLevel>(),
+                    InspectionMethods = new List<EquipmentInspectionMethod>(),
                     Components = new List<Equipment>
                     {
                         new()
@@ -65,9 +71,12 @@ public class EquipmentCascadeDeleteTests : IDisposable
                             Model = "Model C",
                             SerialNumber = "SN003",
                             Manufacturer = "Manufacturer Z",
+                            Category = 1,
                             Quantity = 1,
                             Description = "Sub-component description",
-                            CreatedAt = DateTime.UtcNow
+                            CreatedAt = DateTime.UtcNow,
+                            SecurityLevels = new List<EquipmentSecurityLevel>(),
+                            InspectionMethods = new List<EquipmentInspectionMethod>()
                         }
                     }
                 }
@@ -102,9 +111,12 @@ public class EquipmentCascadeDeleteTests : IDisposable
             Model = "Model A",
             SerialNumber = "SN001",
             Manufacturer = "Manufacturer X",
+            Category = 1,
             Quantity = 1,
             Description = "Test description",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         // Сохраняем оборудование в базу данных
@@ -130,9 +142,12 @@ public class EquipmentCascadeDeleteTests : IDisposable
             Model = "Model A",
             SerialNumber = "SN001",
             Manufacturer = "Manufacturer X",
+            Category = 1,
             Quantity = 1,
             Description = "Main equipment description",
             CreatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>(),
             Components = new List<Equipment>
             {
                 new()
@@ -142,9 +157,12 @@ public class EquipmentCascadeDeleteTests : IDisposable
                     Model = "Model B",
                     SerialNumber = "SN002",
                     Manufacturer = "Manufacturer Y",
+                    Category = 1,
                     Quantity = 2,
                     Description = "Component 1 description",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    SecurityLevels = new List<EquipmentSecurityLevel>(),
+                    InspectionMethods = new List<EquipmentInspectionMethod>()
                 },
                 new()
                 {
@@ -153,9 +171,12 @@ public class EquipmentCascadeDeleteTests : IDisposable
                     Model = "Model C",
                     SerialNumber = "SN003",
                     Manufacturer = "Manufacturer Z",
+                    Category = 1,
                     Quantity = 1,
                     Description = "Component 2 description",
                     CreatedAt = DateTime.UtcNow,
+                    SecurityLevels = new List<EquipmentSecurityLevel>(),
+                    InspectionMethods = new List<EquipmentInspectionMethod>(),
                     Components = new List<Equipment>
                     {
                         new()
@@ -165,9 +186,12 @@ public class EquipmentCascadeDeleteTests : IDisposable
                             Model = "Model D",
                             SerialNumber = "SN004",
                             Manufacturer = "Manufacturer W",
+                            Category = 1,
                             Quantity = 1,
                             Description = "Sub-component 2.1 description",
-                            CreatedAt = DateTime.UtcNow
+                            CreatedAt = DateTime.UtcNow,
+                            SecurityLevels = new List<EquipmentSecurityLevel>(),
+                            InspectionMethods = new List<EquipmentInspectionMethod>()
                         }
                     }
                 }

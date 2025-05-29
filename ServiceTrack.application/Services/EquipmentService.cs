@@ -152,6 +152,7 @@ public class EquipmentService : IEquipmentService
         equipment.Model = updateEquipmentDto.Model;
         equipment.SerialNumber = updateEquipmentDto.SerialNumber;
         equipment.Manufacturer = updateEquipmentDto.Manufacturer;
+        equipment.Category = updateEquipmentDto.Category;
         equipment.Quantity = updateEquipmentDto.Quantity;
         equipment.Executor = updateEquipmentDto.Executor;
         equipment.SZZ = updateEquipmentDto.SZZ;

@@ -152,7 +152,7 @@ public class ApplicationDbContext : DbContext
             // Configure one-to-many relationship with Attachments
             entity.HasMany(e => e.Attachments)
                 .WithOne(a => a.Equipment)
-                .HasForeignKey(a => a.EquipmentID)
+                .HasForeignKey(a => a.EquipmentId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
         

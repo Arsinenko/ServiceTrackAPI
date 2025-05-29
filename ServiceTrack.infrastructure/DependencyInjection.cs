@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<IJobTypeRepository, JobTypeRepository>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IInspectionMethodRepository, InspectionMethodRepository>();
+        services.AddScoped<IEquipmentAttachmentRepository, EquipmentAttachmentRepository>();
 
         // Register services
         services.AddScoped<IAuthService, AuthService>();
@@ -40,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IJobTypeService, JobTypeService>();
         services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<IInspectionMethodService, InspectionMethodService>();
+        services.AddScoped<IEquipmentAttachmentService, EquipmentAttachmentService>();
         
 
         // Register security services

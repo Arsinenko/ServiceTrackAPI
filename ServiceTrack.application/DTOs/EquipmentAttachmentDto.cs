@@ -1,10 +1,11 @@
-using AuthApp.application.DTOs;
 using AuthApp.domain.Entities;
+
+namespace AuthApp.application.DTOs;
 
 public class EquipmentAttachmentDto 
 {
     public required int Id { get; set; }
-    public required Guid EquipmentID { get; set; }
+    public required Guid EquipmentId { get; set; }
     public required string FileName { get; set; }
     public required double FileSize { get; set; }
     public required string FilePath { get; set; }
@@ -17,7 +18,7 @@ public class EquipmentAttachmentDto
         return new EquipmentAttachmentDto
         {
             Id = equipmentAttachment.Id,
-            EquipmentID = equipmentAttachment.EquipmentID,
+            EquipmentId = equipmentAttachment.EquipmentId,
             FileName = equipmentAttachment.FileName,
             FilePath = equipmentAttachment.FilePath,
             FileSize = equipmentAttachment.FileSize,

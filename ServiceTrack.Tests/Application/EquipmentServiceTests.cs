@@ -34,9 +34,12 @@ public class EquipmentServiceTests
             Model = "Test Model",
             SerialNumber = "123456",
             Manufacturer = "Test Manufacturer",
+            Category = 1,
             Quantity = 1,
             CreatedAt = createdAt,
-            UpdatedAt = updatedAt
+            UpdatedAt = updatedAt,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         _equipmentRepositoryMock
@@ -53,6 +56,7 @@ public class EquipmentServiceTests
         Assert.Equal(equipment.Model, result.Model);
         Assert.Equal(equipment.SerialNumber, result.SerialNumber);
         Assert.Equal(equipment.Manufacturer, result.Manufacturer);
+        Assert.Equal(equipment.Category, result.Category);
         Assert.Equal(equipment.Quantity, result.Quantity);
         Assert.Equal(createdAt.ToLocalTime(), result.CreatedAt);
         Assert.Equal(updatedAt.ToLocalTime(), result.UpdatedAt);
@@ -87,9 +91,12 @@ public class EquipmentServiceTests
                 Model = "Model 1",
                 SerialNumber = "123456",
                 Manufacturer = "Manufacturer 1",
+                Category = 1,
                 Quantity = 1,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                SecurityLevels = new List<EquipmentSecurityLevel>(),
+                InspectionMethods = new List<EquipmentInspectionMethod>()
             },
             new()
             {
@@ -98,9 +105,12 @@ public class EquipmentServiceTests
                 Model = "Model 2",
                 SerialNumber = "789012",
                 Manufacturer = "Manufacturer 2",
+                Category = 2,
                 Quantity = 2,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                SecurityLevels = new List<EquipmentSecurityLevel>(),
+                InspectionMethods = new List<EquipmentInspectionMethod>()
             }
         };
 
@@ -128,6 +138,7 @@ public class EquipmentServiceTests
             Model = "New Model",
             SerialNumber = "123456",
             Manufacturer = "New Manufacturer",
+            Category = 1,
             Quantity = 1
         };
 
@@ -146,6 +157,7 @@ public class EquipmentServiceTests
         Assert.Equal(createDto.Model, result.Model);
         Assert.Equal(createDto.SerialNumber, result.SerialNumber);
         Assert.Equal(createDto.Manufacturer, result.Manufacturer);
+        Assert.Equal(createDto.Category, result.Category);
         Assert.Equal(createDto.Quantity, result.Quantity);
     }
 
@@ -161,9 +173,12 @@ public class EquipmentServiceTests
             Model = "Old Model",
             SerialNumber = "123456",
             Manufacturer = "Old Manufacturer",
+            Category = 1,
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         var updateDto = new UpdateEquipmentDto
@@ -172,6 +187,7 @@ public class EquipmentServiceTests
             Model = "Updated Model",
             SerialNumber = "789012",
             Manufacturer = "Updated Manufacturer",
+            Category = 2,
             Quantity = 2
         };
 
@@ -192,6 +208,7 @@ public class EquipmentServiceTests
         Assert.Equal(updateDto.Model, result.Model);
         Assert.Equal(updateDto.SerialNumber, result.SerialNumber);
         Assert.Equal(updateDto.Manufacturer, result.Manufacturer);
+        Assert.Equal(updateDto.Category, result.Category);
         Assert.Equal(updateDto.Quantity, result.Quantity);
     }
 
@@ -206,6 +223,7 @@ public class EquipmentServiceTests
             Model = "Updated Model",
             SerialNumber = "789012",
             Manufacturer = "Updated Manufacturer",
+            Category = 2,
             Quantity = 2
         };
 
@@ -266,9 +284,12 @@ public class EquipmentServiceTests
             SerialNumber = "SN123",
             Model = "Test Model",
             Manufacturer = "Test Manufacturer",
+            Category = 1,
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>(),
             Components = new List<Equipment>()
         };
 
@@ -278,7 +299,9 @@ public class EquipmentServiceTests
             Description = "Test Component Description",
             SerialNumber = "CSN123",
             Model = "Test Component Model",
-            Manufacturer = "Test Component Manufacturer"
+            Manufacturer = "Test Component Manufacturer",
+            Category = 1,
+            Quantity = 1
         };
 
         var component = new Equipment
@@ -289,9 +312,12 @@ public class EquipmentServiceTests
             SerialNumber = componentDto.SerialNumber,
             Model = componentDto.Model,
             Manufacturer = componentDto.Manufacturer,
+            Category = componentDto.Category,
             Quantity = componentDto.Quantity,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         existingEquipment.Components.Add(component);
@@ -313,6 +339,7 @@ public class EquipmentServiceTests
         Assert.Equal(componentDto.SerialNumber, resultComponent.SerialNumber);
         Assert.Equal(componentDto.Model, resultComponent.Model);
         Assert.Equal(componentDto.Manufacturer, resultComponent.Manufacturer);
+        Assert.Equal(componentDto.Category, resultComponent.Category);
     }
 
     [Fact]
@@ -329,9 +356,12 @@ public class EquipmentServiceTests
             SerialNumber = "SN123",
             Model = "Test Model",
             Manufacturer = "Test Manufacturer",
+            Category = 1,
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>(),
             Components = new List<Equipment>
             {
                 new()
@@ -341,7 +371,10 @@ public class EquipmentServiceTests
                     Description = "Old Description",
                     SerialNumber = "OldCSN",
                     Model = "Old Model",
-                    Manufacturer = "Old Manufacturer"
+                    Manufacturer = "Old Manufacturer",
+                    Category = 1,
+                    SecurityLevels = new List<EquipmentSecurityLevel>(),
+                    InspectionMethods = new List<EquipmentInspectionMethod>()
                 }
             }
         };
@@ -352,7 +385,8 @@ public class EquipmentServiceTests
             Description = "New Description",
             SerialNumber = "NewCSN",
             Model = "New Model",
-            Manufacturer = "New Manufacturer"
+            Manufacturer = "New Manufacturer",
+            Category = 2
         };
 
         var updatedEquipment = new Equipment
@@ -363,9 +397,12 @@ public class EquipmentServiceTests
             SerialNumber = "SN123",
             Model = "Test Model",
             Manufacturer = "Test Manufacturer",
+            Category = 1,
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>(),
             Components = new List<Equipment>
             {
                 new()
@@ -375,7 +412,10 @@ public class EquipmentServiceTests
                     Description = updateDto.Description,
                     SerialNumber = updateDto.SerialNumber,
                     Model = updateDto.Model,
-                    Manufacturer = updateDto.Manufacturer
+                    Manufacturer = updateDto.Manufacturer,
+                    Category = updateDto.Category,
+                    SecurityLevels = new List<EquipmentSecurityLevel>(),
+                    InspectionMethods = new List<EquipmentInspectionMethod>()
                 }
             }
         };
@@ -397,6 +437,7 @@ public class EquipmentServiceTests
         Assert.Equal(updateDto.SerialNumber, component.SerialNumber);
         Assert.Equal(updateDto.Model, component.Model);
         Assert.Equal(updateDto.Manufacturer, component.Manufacturer);
+        Assert.Equal(updateDto.Category, component.Category);
     }
 
     [Fact]
@@ -413,9 +454,12 @@ public class EquipmentServiceTests
             SerialNumber = "SN123",
             Model = "Test Model",
             Manufacturer = "Test Manufacturer",
+            Category = 1,
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>(),
             Components = new List<Equipment>
             {
                 new()
@@ -425,7 +469,10 @@ public class EquipmentServiceTests
                     Description = "Test Description",
                     SerialNumber = "CSN123",
                     Model = "Test Model",
-                    Manufacturer = "Test Manufacturer"
+                    Manufacturer = "Test Manufacturer",
+                    Category = 1,
+                    SecurityLevels = new List<EquipmentSecurityLevel>(),
+                    InspectionMethods = new List<EquipmentInspectionMethod>()
                 }
             }
         };
@@ -455,9 +502,12 @@ public class EquipmentServiceTests
             SerialNumber = "CSN123",
             Model = "Test Model",
             Manufacturer = "Test Manufacturer",
+            Category = 1,
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         _equipmentRepositoryMock
@@ -475,6 +525,7 @@ public class EquipmentServiceTests
         Assert.Equal("CSN123", result.SerialNumber);
         Assert.Equal("Test Model", result.Model);
         Assert.Equal("Test Manufacturer", result.Manufacturer);
+        Assert.Equal(1, result.Category);
     }
 
     [Fact]
@@ -485,8 +536,8 @@ public class EquipmentServiceTests
         {
             Equipment = new List<CreateEquipmentDto>
             {
-                new() { Name = "Equipment 1", Model = "Model 1", SerialNumber = "SN1", Manufacturer = "Manufacturer 1", Quantity = 1 },
-                new() { Name = "Equipment 2", Model = "Model 2", SerialNumber = "SN2", Manufacturer = "Manufacturer 2", Quantity = 2 }
+                new() { Name = "Equipment 1", Model = "Model 1", SerialNumber = "SN1", Manufacturer = "Manufacturer 1", Category = 1, Quantity = 1 },
+                new() { Name = "Equipment 2", Model = "Model 2", SerialNumber = "SN2", Manufacturer = "Manufacturer 2", Category = 2, Quantity = 2 }
             }
         };
 
@@ -518,9 +569,12 @@ public class EquipmentServiceTests
                 Model = "Original Model 1",
                 SerialNumber = "OSN1",
                 Manufacturer = "Original Manufacturer 1",
+                Category = 1,
                 Quantity = 1,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                SecurityLevels = new List<EquipmentSecurityLevel>(),
+                InspectionMethods = new List<EquipmentInspectionMethod>()
             },
             new()
             {
@@ -529,9 +583,12 @@ public class EquipmentServiceTests
                 Model = "Original Model 2",
                 SerialNumber = "OSN2",
                 Manufacturer = "Original Manufacturer 2",
+                Category = 2,
                 Quantity = 2,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                SecurityLevels = new List<EquipmentSecurityLevel>(),
+                InspectionMethods = new List<EquipmentInspectionMethod>()
             }
         };
 
@@ -539,8 +596,8 @@ public class EquipmentServiceTests
         {
             Equipment = new List<UpdateEquipmentBulkItemDto>
             {
-                new() { Id = equipmentIds[0], Name = "Updated Equipment 1", Model = "Updated Model 1", SerialNumber = "USN1", Manufacturer = "Updated Manufacturer 1", Quantity = 1 },
-                new() { Id = equipmentIds[1], Name = "Updated Equipment 2", Model = "Updated Model 2", SerialNumber = "USN2", Manufacturer = "Updated Manufacturer 2", Quantity = 2 }
+                new() { Id = equipmentIds[0], Name = "Updated Equipment 1", Model = "Updated Model 1", SerialNumber = "USN1", Manufacturer = "Updated Manufacturer 1", Category = 1, Quantity = 1 },
+                new() { Id = equipmentIds[1], Name = "Updated Equipment 2", Model = "Updated Model 2", SerialNumber = "USN2", Manufacturer = "Updated Manufacturer 2", Category = 2, Quantity = 2 }
             }
         };
 
@@ -577,17 +634,20 @@ public class EquipmentServiceTests
             Model = "Original Model",
             SerialNumber = "OSN",
             Manufacturer = "Original Manufacturer",
+            Category = 1,
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         var updateBulkDto = new UpdateEquipmentBulkDto
         {
             Equipment = new List<UpdateEquipmentBulkItemDto>
             {
-                new() { Id = existingId, Name = "Updated Equipment", Model = "Updated Model", SerialNumber = "USN", Manufacturer = "Updated Manufacturer", Quantity = 1 },
-                new() { Id = nonExistentId, Name = "Non-existent Equipment", Model = "Non-existent Model", SerialNumber = "NSN", Manufacturer = "Non-existent Manufacturer", Quantity = 1 }
+                new() { Id = existingId, Name = "Updated Equipment", Model = "Updated Model", SerialNumber = "USN", Manufacturer = "Updated Manufacturer", Category = 1, Quantity = 1 },
+                new() { Id = nonExistentId, Name = "Non-existent Equipment", Model = "Non-existent Model", SerialNumber = "NSN", Manufacturer = "Non-existent Manufacturer", Category = 1, Quantity = 1 }
             }
         };
 
@@ -624,16 +684,19 @@ public class EquipmentServiceTests
             Model = "Original Model",
             SerialNumber = "OSN",
             Manufacturer = "Original Manufacturer",
+            Category = 1,
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         var updateBulkDto = new UpdateEquipmentBulkDto
         {
             Equipment = new List<UpdateEquipmentBulkItemDto>
             {
-                new() { Id = equipmentId, Name = "Updated Equipment", Model = "Updated Model", SerialNumber = "USN", Manufacturer = "Updated Manufacturer", Quantity = 1 }
+                new() { Id = equipmentId, Name = "Updated Equipment", Model = "Updated Model", SerialNumber = "USN", Manufacturer = "Updated Manufacturer", Category = 1, Quantity = 1 }
             }
         };
 
@@ -694,6 +757,7 @@ public class EquipmentServiceTests
                     Model = "Model A",
                     SerialNumber = "SN001",
                     Manufacturer = "Manufacturer X",
+                    Category = 1,
                     Quantity = 1,
                     Description = "Main equipment description",
                     Components = new List<CreateEquipmentDto>
@@ -704,6 +768,7 @@ public class EquipmentServiceTests
                             Model = "Model B",
                             SerialNumber = "SN002",
                             Manufacturer = "Manufacturer Y",
+                            Category = 1,
                             Quantity = 2,
                             Description = "Component 1 description",
                             Components = new List<CreateEquipmentDto>
@@ -714,6 +779,7 @@ public class EquipmentServiceTests
                                     Model = "Model C",
                                     SerialNumber = "SN003",
                                     Manufacturer = "Manufacturer Z",
+                                    Category = 1,
                                     Quantity = 1,
                                     Description = "Sub-component description"
                                 }
@@ -741,6 +807,7 @@ public class EquipmentServiceTests
         Assert.Equal("Model A", mainEquipment.Model);
         Assert.Equal("SN001", mainEquipment.SerialNumber);
         Assert.Equal("Manufacturer X", mainEquipment.Manufacturer);
+        Assert.Equal(1, mainEquipment.Category);
         Assert.Equal(1, mainEquipment.Quantity);
         Assert.Equal("Main equipment description", mainEquipment.Description);
         
@@ -753,6 +820,7 @@ public class EquipmentServiceTests
         Assert.Equal("Model B", component.Model);
         Assert.Equal("SN002", component.SerialNumber);
         Assert.Equal("Manufacturer Y", component.Manufacturer);
+        Assert.Equal(1, component.Category);
         Assert.Equal(2, component.Quantity);
         Assert.Equal("Component 1 description", component.Description);
         
@@ -765,6 +833,7 @@ public class EquipmentServiceTests
         Assert.Equal("Model C", subComponent.Model);
         Assert.Equal("SN003", subComponent.SerialNumber);
         Assert.Equal("Manufacturer Z", subComponent.Manufacturer);
+        Assert.Equal(1, subComponent.Category);
         Assert.Equal(1, subComponent.Quantity);
         Assert.Equal("Sub-component description", subComponent.Description);
     }
@@ -783,9 +852,12 @@ public class EquipmentServiceTests
                 Model = "Model 1",
                 SerialNumber = "SN1",
                 Manufacturer = "Manufacturer 1",
+                Category = 1,
                 Quantity = 1,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                SecurityLevels = new List<EquipmentSecurityLevel>(),
+                InspectionMethods = new List<EquipmentInspectionMethod>()
             },
             new()
             {
@@ -794,9 +866,12 @@ public class EquipmentServiceTests
                 Model = "Model 2",
                 SerialNumber = "SN2",
                 Manufacturer = "Manufacturer 2",
+                Category = 2,
                 Quantity = 2,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                SecurityLevels = new List<EquipmentSecurityLevel>(),
+                InspectionMethods = new List<EquipmentInspectionMethod>()
             }
         };
 
@@ -838,9 +913,12 @@ public class EquipmentServiceTests
             Model = "Model 1",
             SerialNumber = "SN1",
             Manufacturer = "Manufacturer 1",
+            Category = 1,
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         _equipmentRepositoryMock
@@ -880,9 +958,12 @@ public class EquipmentServiceTests
             Model = "Model 1",
             SerialNumber = "SN1",
             Manufacturer = "Manufacturer 1",
+            Category = 1,
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
+            SecurityLevels = new List<EquipmentSecurityLevel>(),
+            InspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         _equipmentRepositoryMock
