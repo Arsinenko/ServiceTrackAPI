@@ -20,18 +20,23 @@ public class EquipmentRepository : IEquipmentRepository
     {
         return await _context.Equipment
             .Include(e => e.Components)
+            .Include(e => e.Executor)
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
     public async Task<IEnumerable<Equipment>> GetByIdsAsync(IEnumerable<Guid> ids)
     {
-        return await _context.Equipment.Where(e => ids.Contains(e.Id)).ToListAsync();   
+        return await _context.Equipment
+            .Include(e => e.Executor)
+            .Where(e => ids.Contains(e.Id))
+            .ToListAsync();   
     }
 
     public async Task<Equipment?> GetByNameAsync(string name)
     {
         return await _context.Equipment
             .Include(e => e.Components)
+            .Include(e => e.Executor)
             .FirstOrDefaultAsync(e => e.Name.ToLower() == name.ToLower());
     }
 
@@ -39,6 +44,7 @@ public class EquipmentRepository : IEquipmentRepository
     {
         return await _context.Equipment
             .Include(e => e.Components)
+            .Include(e => e.Executor)
             .ToListAsync();
     }
 

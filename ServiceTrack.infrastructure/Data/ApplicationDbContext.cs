@@ -125,11 +125,16 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Manufacturer).HasMaxLength(50).IsRequired();
             entity.Property(e => e.Category).IsRequired();
             entity.Property(e => e.Quantity).IsRequired();
-            entity.Property(e => e.Executor).HasMaxLength(100);
             entity.Property(e => e.SZZ).HasMaxLength(50);
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.UpdatedAt).IsRequired();
             entity.Property(e => e.Description).HasMaxLength(500);
+
+            // Configure relationship with User (Executor)
+            entity.HasOne(e => e.Executor)
+                .WithMany()
+                .HasForeignKey(e => e.ExecutorId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Configure self-referencing relationship for components
             entity.HasOne<Equipment>()

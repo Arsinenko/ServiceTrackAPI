@@ -44,7 +44,7 @@ public class EquipmentService : IEquipmentService
             Manufacturer = createEquipmentDto.Manufacturer,
             Category = createEquipmentDto.Category,
             Quantity = createEquipmentDto.Quantity,
-            Executor = createEquipmentDto.Executor,
+            ExecutorId = createEquipmentDto.ExecutorId,
             SZZ = createEquipmentDto.SZZ,
             Description = createEquipmentDto.Description,
             CreatedAt = DateTime.UtcNow,
@@ -68,7 +68,7 @@ public class EquipmentService : IEquipmentService
             Manufacturer = dto.Manufacturer,
             Category = dto.Category,
             Quantity = dto.Quantity,
-            Executor = dto.Executor,
+            ExecutorId = dto.ExecutorId,
             SZZ = dto.SZZ,
             Description = dto.Description,
             ParentId = parentId,
@@ -154,7 +154,7 @@ public class EquipmentService : IEquipmentService
         equipment.Manufacturer = updateEquipmentDto.Manufacturer;
         equipment.Category = updateEquipmentDto.Category;
         equipment.Quantity = updateEquipmentDto.Quantity;
-        equipment.Executor = updateEquipmentDto.Executor;
+        equipment.ExecutorId = updateEquipmentDto.ExecutorId;
         equipment.SZZ = updateEquipmentDto.SZZ;
         equipment.Description = updateEquipmentDto.Description;
         equipment.UpdatedAt = DateTime.UtcNow;
@@ -202,7 +202,7 @@ public class EquipmentService : IEquipmentService
                 existing.SerialNumber = item.SerialNumber;
                 existing.Manufacturer = item.Manufacturer;
                 existing.Quantity = item.Quantity;
-                existing.Executor = item.Executor;
+                existing.ExecutorId = item.ExecutorId;
                 existing.SZZ = item.SZZ;
                 existing.Description = item.Description;
                 existing.UpdatedAt = DateTime.UtcNow;
@@ -297,7 +297,7 @@ public class EquipmentService : IEquipmentService
             Manufacturer = componentDto.Manufacturer,
             Category = componentDto.Category,
             Quantity = componentDto.Quantity,
-            Executor = componentDto.Executor,
+            ExecutorId = componentDto.ExecutorId,
             SZZ = componentDto.SZZ,
             Description = componentDto.Description,
             CreatedAt = DateTime.UtcNow,
@@ -321,7 +321,7 @@ public class EquipmentService : IEquipmentService
             Manufacturer = componentDto.Manufacturer,
             Category = componentDto.Category,
             Quantity = componentDto.Quantity,
-            Executor = componentDto.Executor,
+            ExecutorId = componentDto.ExecutorId,
             SZZ = componentDto.SZZ,
             Description = componentDto.Description,
             UpdatedAt = DateTime.UtcNow,

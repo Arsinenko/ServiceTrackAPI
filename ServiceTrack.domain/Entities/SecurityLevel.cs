@@ -1,3 +1,5 @@
+namespace AuthApp.domain.Entities;
+
 public class SecurityLevel
 {
     public int Id { get; set; }

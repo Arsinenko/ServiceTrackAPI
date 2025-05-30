@@ -12,7 +12,8 @@ public class EquipmentDto
     public string Manufacturer { get; set; }
     public int Category { get; set; }
     public int Quantity { get; set; }
-    public string? Executor { get; set; }
+    public Guid? ExecutorId { get; set; }
+    public UserDto? Executor { get; set; }
     public string? SZZ { get; set; }
     public Guid? ParentId { get; set; }
     public string? Description { get; set; }
@@ -32,7 +33,8 @@ public class EquipmentDto
             Manufacturer = equipment.Manufacturer,
             Category = equipment.Category,
             Quantity = equipment.Quantity,
-            Executor = equipment.Executor,
+            ExecutorId = equipment.ExecutorId,
+            Executor = equipment.Executor != null ? UserDto.FromUser(equipment.Executor) : null,
             SZZ = equipment.SZZ,
             ParentId = equipment.ParentId,
             Description = equipment.Description,
@@ -58,7 +60,7 @@ public class CreateEquipmentDto
     public required int Category { get; set; }
     [Required(ErrorMessage = "Quantity is required")]
     public int Quantity { get; set; }
-    public string? Executor { get; set; }
+    public Guid? ExecutorId { get; set; }
     public string? SZZ { get; set; }
     public string? Description { get; set; }
     public ICollection<CreateEquipmentDto>? Components { get; set; }

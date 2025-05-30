@@ -7,6 +7,7 @@ using AuthApp.infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ServiceTrack.application.Interfaces;
 
 namespace AuthApp.infrastructure;
 
@@ -31,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IInspectionMethodRepository, InspectionMethodRepository>();
         services.AddScoped<IEquipmentAttachmentRepository, EquipmentAttachmentRepository>();
+        services.AddScoped<ISecurityLevelRepository, SecurityLevelRepository>();
 
         // Register services
         services.AddScoped<IAuthService, AuthService>();
@@ -42,7 +44,7 @@ public static class DependencyInjection
         services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<IInspectionMethodService, InspectionMethodService>();
         services.AddScoped<IEquipmentAttachmentService, EquipmentAttachmentService>();
-        
+        services.AddScoped<ISecurityLevelService, SecurityLevelService>();
 
         // Register security services
         services.AddSingleton<IPasswordHasher, PasswordHasher>();

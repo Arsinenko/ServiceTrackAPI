@@ -6,6 +6,7 @@ using System.Text;
 using AuthApp.infrastructure.Data;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using AuthApp.Api.Middleware;
 using ServiceTrack.Api.Middleware; // Убедитесь, что это ваш правильный namespace
 using ServiceTrack.Api.Middleware.Logging; // Убедитесь, что это ваш правильный namespace
 using Scalar.AspNetCore; // Для Scalar UI

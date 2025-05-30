@@ -12,7 +12,9 @@ public class Equipment
     public required string Manufacturer { get; set; }
     public required int Category { get; set; }
     public int Quantity { get; set; }
-    public string? Executor { get; set; }  // Исполнитель
+    public Guid? ExecutorId { get; set; }  // Foreign key for the executor
+    public User? Executor { get; set; }    // Navigation property to User
+    // ReSharper disable once InconsistentNaming
     public string? SZZ { get; set; }      // СЗЗ
     public Guid? ParentId { get; set; }
     public string? Description { get; set; }

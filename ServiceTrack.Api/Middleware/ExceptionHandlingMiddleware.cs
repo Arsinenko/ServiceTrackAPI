@@ -1,8 +1,9 @@
-using AuthApp.application.Exceptions;
 using System.Net;
 using System.Text.Json;
+using AuthApp.application.Exceptions;
+using ServiceTrack.application.Exceptions;
 
-namespace ServiceTrack.Api.Middleware;
+namespace AuthApp.Api.Middleware;
 
 public class ExceptionHandlingMiddleware
 {
@@ -45,6 +46,9 @@ public class ExceptionHandlingMiddleware
             CustomerNotFoundException => (HttpStatusCode.NotFound, exception.Message),
             CustomerInUseException => (HttpStatusCode.Conflict, exception.Message),
             CustomerAlreadyExistsException => (HttpStatusCode.Conflict, exception.Message),
+            
+            // SecurityLevel-related exceptions
+            SecurityLevelAlreadyExistsException => (HttpStatusCode.Conflict, exception.Message),
             
             // Validation exceptions (more specific to general)
             ArgumentNullException => (HttpStatusCode.BadRequest, exception.Message),

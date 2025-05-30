@@ -1,4 +1,4 @@
-using AuthApp.domain.Entities;
+namespace AuthApp.domain.Entities;
 
 public class EquipmentSecurityLevel 
 {
