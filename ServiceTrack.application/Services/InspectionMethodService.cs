@@ -2,6 +2,7 @@ using AuthApp.application.DTOs;
 using AuthApp.application.Exceptions;
 using AuthApp.application.Interfaces;
 using AuthApp.domain.Entities;
+using ServiceTrack.application.Interfaces;
 using CreateInspectionMethodItemDto = AuthApp.application.DTOs.CreateInspectionMethodItemDto;
 
 namespace AuthApp.application.Services;

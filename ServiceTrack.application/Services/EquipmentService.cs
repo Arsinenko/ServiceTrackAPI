@@ -35,6 +35,7 @@ public class EquipmentService : IEquipmentService
 
     public async Task<EquipmentDto> CreateAsync(CreateEquipmentDto createEquipmentDto)
     {
+        //TODO fix constructor
         var equipment = new Equipment
         {
             Id = Guid.NewGuid(),
@@ -49,8 +50,7 @@ public class EquipmentService : IEquipmentService
             Description = createEquipmentDto.Description,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            SecurityLevels = new List<EquipmentSecurityLevel>(),
-            InspectionMethods = new List<EquipmentInspectionMethod>(),
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>(),
             Attachments = new List<EquipmentAttachment>()
         };
         await _equipmentRepository.CreateAsync(equipment);
@@ -59,6 +59,7 @@ public class EquipmentService : IEquipmentService
 
     private async Task<Equipment> CreateEquipmentWithComponentsAsync(CreateEquipmentDto dto, Guid? parentId = null)
     {
+        //TODO fix constructor
         var equipment = new Equipment
         {
             Id = Guid.NewGuid(),
@@ -74,8 +75,6 @@ public class EquipmentService : IEquipmentService
             ParentId = parentId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            SecurityLevels = new List<EquipmentSecurityLevel>(),
-            InspectionMethods = new List<EquipmentInspectionMethod>(),
             Attachments = new List<EquipmentAttachment>()
         };
 
@@ -288,6 +287,7 @@ public class EquipmentService : IEquipmentService
 
     public async Task<EquipmentDto?> AddComponentAsync(Guid equipmentId, CreateEquipmentDto componentDto)
     {
+        //TODO Fix constructor
         var component = new Equipment
         {
             Id = Guid.NewGuid(),
@@ -302,8 +302,7 @@ public class EquipmentService : IEquipmentService
             Description = componentDto.Description,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            SecurityLevels = new List<EquipmentSecurityLevel>(),
-            InspectionMethods = new List<EquipmentInspectionMethod>(),
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>(),
             Attachments = new List<EquipmentAttachment>()
         };
 
@@ -313,6 +312,7 @@ public class EquipmentService : IEquipmentService
 
     public async Task<EquipmentDto?> UpdateComponentAsync(Guid equipmentId, Guid componentId, UpdateEquipmentDto componentDto)
     {
+        //TODO Fix constructor
         var updatedComponent = new Equipment
         {
             Name = componentDto.Name,
@@ -325,8 +325,7 @@ public class EquipmentService : IEquipmentService
             SZZ = componentDto.SZZ,
             Description = componentDto.Description,
             UpdatedAt = DateTime.UtcNow,
-            SecurityLevels = new List<EquipmentSecurityLevel>(),
-            InspectionMethods = new List<EquipmentInspectionMethod>()
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         var equipment = await _equipmentRepository.UpdateComponentAsync(equipmentId, componentId, updatedComponent);

@@ -19,7 +19,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<InspectionMethod> InspectionMethods { get; set; }
     public DbSet<EquipmentSecurityLevel> EquipmentSecurityLevels { get; set; }
     public DbSet<EquipmentInspectionMethod> EquipmentInspectionMethods { get; set; }
-
+    //TODO Реализовать связь оборудования и грифа. Связь 1 ко многим. У одного оборудования только 1 гриф (SecurityLevel)
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -143,15 +143,15 @@ public class ApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Configure many-to-many relationship with SecurityLevels
-            entity.HasMany(e => e.SecurityLevels)
+            entity.HasMany(e => e.EquipmentSecurityLevels)
                 .WithOne(esl => esl.Equipment)
                 .HasForeignKey(esl => esl.EquipmentId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Configure many-to-many relationship with InspectionMethods
-            entity.HasMany(e => e.InspectionMethods)
+            entity.HasMany(e => e.EquipmentInspectionMethods)
                 .WithOne(eim => eim.Equipment)
-                .HasForeignKey(eim => eim.EquipmentID)
+                .HasForeignKey(eim => eim.EquipmentId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Configure one-to-many relationship with Attachments
@@ -211,7 +211,7 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.HasOne(esl => esl.Equipment)
-                .WithMany(e => e.SecurityLevels)
+                .WithMany(e => e.EquipmentSecurityLevels)
                 .HasForeignKey(esl => esl.EquipmentId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -223,10 +223,10 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<EquipmentInspectionMethod>(entity =>
         {
-            entity.HasKey(e => new { e.EquipmentID, e.InspectionMethodId });
+            entity.HasKey(e => e.Id);
             entity.HasOne(eim => eim.Equipment)
-                .WithMany(e => e.InspectionMethods)
-                .HasForeignKey(eim => eim.EquipmentID)
+                .WithMany(e => e.EquipmentInspectionMethods)
+                .HasForeignKey(eim => eim.EquipmentId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(eim => eim.InspectionMethod)

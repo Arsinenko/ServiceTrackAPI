@@ -4,6 +4,8 @@ using AuthApp.application.Services;
 using AuthApp.domain.Entities;
 using Microsoft.Extensions.Logging;
 using Moq;
+using ServiceTrack.application.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace ServiceTrack.Tests.Application;
 
@@ -11,13 +13,21 @@ public class EquipmentServiceTests
 {
     private readonly Mock<IEquipmentRepository> _equipmentRepositoryMock;
     private readonly Mock<ILogger<EquipmentService>> _loggerMock;
+    private readonly Mock<IInspectionMethodRepository> _inspectionMethodRepositoryMock;
+    private readonly Mock<ISecurityLevelRepository> _securityLevelRepositoryMock;
     private readonly EquipmentService _service;
 
     public EquipmentServiceTests()
     {
         _equipmentRepositoryMock = new Mock<IEquipmentRepository>();
         _loggerMock = new Mock<ILogger<EquipmentService>>();
-        _service = new EquipmentService(_equipmentRepositoryMock.Object, _loggerMock.Object);
+        _inspectionMethodRepositoryMock = new Mock<IInspectionMethodRepository>();
+        _securityLevelRepositoryMock = new Mock<ISecurityLevelRepository>();
+        _service = new EquipmentService(
+            _equipmentRepositoryMock.Object,
+            _loggerMock.Object,
+            _inspectionMethodRepositoryMock.Object,
+            _securityLevelRepositoryMock.Object);
     }
 
     [Fact]
@@ -38,8 +48,8 @@ public class EquipmentServiceTests
             Quantity = 1,
             CreatedAt = createdAt,
             UpdatedAt = updatedAt,
-            SecurityLevels = new List<EquipmentSecurityLevel>(),
-            InspectionMethods = new List<EquipmentInspectionMethod>()
+            EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         _equipmentRepositoryMock
@@ -95,8 +105,8 @@ public class EquipmentServiceTests
                 Quantity = 1,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                SecurityLevels = new List<EquipmentSecurityLevel>(),
-                InspectionMethods = new List<EquipmentInspectionMethod>()
+                EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+                EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
             },
             new()
             {
@@ -109,8 +119,8 @@ public class EquipmentServiceTests
                 Quantity = 2,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                SecurityLevels = new List<EquipmentSecurityLevel>(),
-                InspectionMethods = new List<EquipmentInspectionMethod>()
+                EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+                EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
             }
         };
 
@@ -177,8 +187,8 @@ public class EquipmentServiceTests
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            SecurityLevels = new List<EquipmentSecurityLevel>(),
-            InspectionMethods = new List<EquipmentInspectionMethod>()
+            EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         var updateDto = new UpdateEquipmentDto
@@ -288,8 +298,8 @@ public class EquipmentServiceTests
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            SecurityLevels = new List<EquipmentSecurityLevel>(),
-            InspectionMethods = new List<EquipmentInspectionMethod>(),
+            EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>(),
             Components = new List<Equipment>()
         };
 
@@ -316,8 +326,8 @@ public class EquipmentServiceTests
             Quantity = componentDto.Quantity,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            SecurityLevels = new List<EquipmentSecurityLevel>(),
-            InspectionMethods = new List<EquipmentInspectionMethod>()
+            EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         existingEquipment.Components.Add(component);
@@ -360,8 +370,8 @@ public class EquipmentServiceTests
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            SecurityLevels = new List<EquipmentSecurityLevel>(),
-            InspectionMethods = new List<EquipmentInspectionMethod>(),
+            EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>(),
             Components = new List<Equipment>
             {
                 new()
@@ -373,8 +383,8 @@ public class EquipmentServiceTests
                     Model = "Old Model",
                     Manufacturer = "Old Manufacturer",
                     Category = 1,
-                    SecurityLevels = new List<EquipmentSecurityLevel>(),
-                    InspectionMethods = new List<EquipmentInspectionMethod>()
+                    EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+                    EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
                 }
             }
         };
@@ -401,8 +411,8 @@ public class EquipmentServiceTests
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            SecurityLevels = new List<EquipmentSecurityLevel>(),
-            InspectionMethods = new List<EquipmentInspectionMethod>(),
+            EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>(),
             Components = new List<Equipment>
             {
                 new()
@@ -414,8 +424,8 @@ public class EquipmentServiceTests
                     Model = updateDto.Model,
                     Manufacturer = updateDto.Manufacturer,
                     Category = updateDto.Category,
-                    SecurityLevels = new List<EquipmentSecurityLevel>(),
-                    InspectionMethods = new List<EquipmentInspectionMethod>()
+                    EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+                    EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
                 }
             }
         };
@@ -458,8 +468,8 @@ public class EquipmentServiceTests
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            SecurityLevels = new List<EquipmentSecurityLevel>(),
-            InspectionMethods = new List<EquipmentInspectionMethod>(),
+            EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>(),
             Components = new List<Equipment>
             {
                 new()
@@ -471,8 +481,8 @@ public class EquipmentServiceTests
                     Model = "Test Model",
                     Manufacturer = "Test Manufacturer",
                     Category = 1,
-                    SecurityLevels = new List<EquipmentSecurityLevel>(),
-                    InspectionMethods = new List<EquipmentInspectionMethod>()
+                    EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+                    EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
                 }
             }
         };
@@ -506,8 +516,8 @@ public class EquipmentServiceTests
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            SecurityLevels = new List<EquipmentSecurityLevel>(),
-            InspectionMethods = new List<EquipmentInspectionMethod>()
+            EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         _equipmentRepositoryMock
@@ -573,8 +583,8 @@ public class EquipmentServiceTests
                 Quantity = 1,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                SecurityLevels = new List<EquipmentSecurityLevel>(),
-                InspectionMethods = new List<EquipmentInspectionMethod>()
+                EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+                EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
             },
             new()
             {
@@ -587,8 +597,8 @@ public class EquipmentServiceTests
                 Quantity = 2,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                SecurityLevels = new List<EquipmentSecurityLevel>(),
-                InspectionMethods = new List<EquipmentInspectionMethod>()
+                EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+                EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
             }
         };
 
@@ -638,8 +648,8 @@ public class EquipmentServiceTests
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            SecurityLevels = new List<EquipmentSecurityLevel>(),
-            InspectionMethods = new List<EquipmentInspectionMethod>()
+            EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         var updateBulkDto = new UpdateEquipmentBulkDto
@@ -688,8 +698,8 @@ public class EquipmentServiceTests
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            SecurityLevels = new List<EquipmentSecurityLevel>(),
-            InspectionMethods = new List<EquipmentInspectionMethod>()
+            EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         var updateBulkDto = new UpdateEquipmentBulkDto
@@ -856,8 +866,8 @@ public class EquipmentServiceTests
                 Quantity = 1,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                SecurityLevels = new List<EquipmentSecurityLevel>(),
-                InspectionMethods = new List<EquipmentInspectionMethod>()
+                EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+                EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
             },
             new()
             {
@@ -870,8 +880,8 @@ public class EquipmentServiceTests
                 Quantity = 2,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                SecurityLevels = new List<EquipmentSecurityLevel>(),
-                InspectionMethods = new List<EquipmentInspectionMethod>()
+                EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+                EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
             }
         };
 
@@ -917,8 +927,8 @@ public class EquipmentServiceTests
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            SecurityLevels = new List<EquipmentSecurityLevel>(),
-            InspectionMethods = new List<EquipmentInspectionMethod>()
+            EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         _equipmentRepositoryMock
@@ -962,8 +972,8 @@ public class EquipmentServiceTests
             Quantity = 1,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            SecurityLevels = new List<EquipmentSecurityLevel>(),
-            InspectionMethods = new List<EquipmentInspectionMethod>()
+            EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
         };
 
         _equipmentRepositoryMock
@@ -1003,5 +1013,164 @@ public class EquipmentServiceTests
         Assert.Empty(result.FailureReasons);
         _equipmentRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<Guid>()), Times.Never);
         _equipmentRepositoryMock.Verify(repo => repo.DeleteAsync(It.IsAny<Guid>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CreateAsync_WithValidInspectionMethodsAndSecurityLevels_SuccessfullyCreatesEquipment()
+    {
+        // Arrange
+        var createDto = new CreateEquipmentDto
+        {
+            Name = "Test Equipment",
+            Model = "Test Model",
+            SerialNumber = "123456",
+            Manufacturer = "Test Manufacturer",
+            Category = 1,
+            Quantity = 1,
+            Methods = new List<InitialInspectionMethodAssignmentDto>
+            {
+                new() { InspectionMethodId = 1 },
+                new() { InspectionMethodId = 2 }
+            },
+            SecurityLevels = new List<InitialSecurityLevelAssignmentDto>
+            {
+                new() { SecurityLevelId = 1 },
+                new() { SecurityLevelId = 2 }
+            }
+        };
+
+        var equipment = new Equipment
+        {
+            Id = Guid.NewGuid(),
+            Name = createDto.Name,
+            Model = createDto.Model,
+            SerialNumber = createDto.SerialNumber,
+            Manufacturer = createDto.Manufacturer,
+            Category = createDto.Category,
+            Quantity = createDto.Quantity,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>(),
+            EquipmentSecurityLevels = new List<EquipmentSecurityLevel>()
+        };
+
+        _equipmentRepositoryMock
+            .Setup(repo => repo.CreateAsync(It.IsAny<Equipment>()))
+            .ReturnsAsync(equipment);
+
+        // Act
+        var result = await _service.CreateAsync(createDto);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(equipment.Id, result.Id);
+        Assert.Equal(2, result.InspectionMethods.Count);
+        Assert.Equal(2, result.SecurityLevels.Count);
+    }
+
+    [Fact]
+    public async Task CreateAsync_WithInvalidInspectionMethodId_ThrowsValidationException()
+    {
+        // Arrange
+        var createDto = new CreateEquipmentDto
+        {
+            Name = "Test Equipment",
+            Model = "Test Model",
+            SerialNumber = "123456",
+            Manufacturer = "Test Manufacturer",
+            Category = 1,
+            Quantity = 1,
+            Methods = new List<InitialInspectionMethodAssignmentDto>
+            {
+                new() { InspectionMethodId = -1 } // Invalid ID
+            },
+            SecurityLevels = new List<InitialSecurityLevelAssignmentDto>
+            {
+                new() { SecurityLevelId = 1 }
+            }
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ValidationException>(() => _service.CreateAsync(createDto));
+    }
+
+    [Fact]
+    public async Task CreateAsync_WithInvalidSecurityLevelId_ThrowsValidationException()
+    {
+        // Arrange
+        var createDto = new CreateEquipmentDto
+        {
+            Name = "Test Equipment",
+            Model = "Test Model",
+            SerialNumber = "123456",
+            Manufacturer = "Test Manufacturer",
+            Category = 1,
+            Quantity = 1,
+            Methods = new List<InitialInspectionMethodAssignmentDto>
+            {
+                new() { InspectionMethodId = 1 }
+            },
+            SecurityLevels = new List<InitialSecurityLevelAssignmentDto>
+            {
+                new() { SecurityLevelId = -1 } // Invalid ID
+            }
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ValidationException>(() => _service.CreateAsync(createDto));
+    }
+
+    [Fact]
+    public async Task CreateAsync_WithDuplicateInspectionMethods_ThrowsValidationException()
+    {
+        // Arrange
+        var createDto = new CreateEquipmentDto
+        {
+            Name = "Test Equipment",
+            Model = "Test Model",
+            SerialNumber = "123456",
+            Manufacturer = "Test Manufacturer",
+            Category = 1,
+            Quantity = 1,
+            Methods = new List<InitialInspectionMethodAssignmentDto>
+            {
+                new() { InspectionMethodId = 1 },
+                new() { InspectionMethodId = 1 } // Duplicate
+            },
+            SecurityLevels = new List<InitialSecurityLevelAssignmentDto>
+            {
+                new() { SecurityLevelId = 1 }
+            }
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ValidationException>(() => _service.CreateAsync(createDto));
+    }
+
+    [Fact]
+    public async Task CreateAsync_WithDuplicateSecurityLevels_ThrowsValidationException()
+    {
+        // Arrange
+        var createDto = new CreateEquipmentDto
+        {
+            Name = "Test Equipment",
+            Model = "Test Model",
+            SerialNumber = "123456",
+            Manufacturer = "Test Manufacturer",
+            Category = 1,
+            Quantity = 1,
+            Methods = new List<InitialInspectionMethodAssignmentDto>
+            {
+                new() { InspectionMethodId = 1 }
+            },
+            SecurityLevels = new List<InitialSecurityLevelAssignmentDto>
+            {
+                new() { SecurityLevelId = 1 },
+                new() { SecurityLevelId = 1 } // Duplicate
+            }
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ValidationException>(() => _service.CreateAsync(createDto));
     }
 } 

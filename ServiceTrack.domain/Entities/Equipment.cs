@@ -21,9 +21,10 @@ public class Equipment
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     
-    public required ICollection<EquipmentSecurityLevel> SecurityLevels { get; set; } 
+    public int SecurityLevelId { get; set; }
+    public required SecurityLevel SecurityLevel { get; set; }
     
-    public required ICollection<EquipmentInspectionMethod> InspectionMethods { get; set; }
+    public required ICollection<EquipmentInspectionMethod> EquipmentInspectionMethods { get; set; }
     
     public ICollection<EquipmentAttachment> Attachments { get; set; } = new List<EquipmentAttachment>();
     

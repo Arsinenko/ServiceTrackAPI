@@ -1,9 +1,12 @@
-using AuthApp.application.Services;
+using AuthApp.application.DTOs;
 using AuthApp.application.Interfaces;
+using AuthApp.application.Services;
 using AuthApp.domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Moq;
+using ServiceTrack.application.Interfaces;
 using Xunit;
 using System.IO;
 using System.Text;
@@ -12,15 +15,24 @@ namespace ServiceTrack.Tests.Application;
 
 public class EquipmentAttachmentServiceTests
 {
-    private readonly Mock<IEquipmentAttachmentRepository> _mockAttachmentRepository;
-    private readonly Mock<IHostEnvironment> _mockEnvironment;
+    private readonly Mock<IEquipmentRepository> _equipmentRepositoryMock;
+    private readonly Mock<ILogger<EquipmentAttachmentService>> _loggerMock;
+    private readonly Mock<IInspectionMethodRepository> _inspectionMethodRepositoryMock;
+    private readonly Mock<ISecurityLevelRepository> _securityLevelRepositoryMock;
     private readonly EquipmentAttachmentService _service;
     private readonly string _testUploadDirectory;
 
     public EquipmentAttachmentServiceTests()
     {
-        _mockAttachmentRepository = new Mock<IEquipmentAttachmentRepository>();
-        _mockEnvironment = new Mock<IHostEnvironment>();
+        _equipmentRepositoryMock = new Mock<IEquipmentRepository>();
+        _loggerMock = new Mock<ILogger<EquipmentAttachmentService>>();
+        _inspectionMethodRepositoryMock = new Mock<IInspectionMethodRepository>();
+        _securityLevelRepositoryMock = new Mock<ISecurityLevelRepository>();
+        _service = new EquipmentAttachmentService(
+            _equipmentRepositoryMock.Object,
+            _loggerMock.Object,
+            _inspectionMethodRepositoryMock.Object,
+            _securityLevelRepositoryMock.Object);
         _testUploadDirectory = Path.Combine(Path.GetTempPath(), "equipment_attachments_test");
         
         _mockEnvironment.Setup(e => e.ContentRootPath)
@@ -28,8 +40,6 @@ public class EquipmentAttachmentServiceTests
         _mockEnvironment.Setup(e => e.EnvironmentName)
             .Returns("Test");
 
-        _service = new EquipmentAttachmentService(_mockAttachmentRepository.Object, _mockEnvironment.Object);
-        
         // Clean up test directory before each test
         if (Directory.Exists(_testUploadDirectory))
         {
@@ -292,5 +302,54 @@ public class EquipmentAttachmentServiceTests
             var testFilePath = Path.Combine(_testUploadDirectory, attachment.FilePath);
             Assert.False(File.Exists(testFilePath));
         }
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_WhenAttachmentExists_ReturnsAttachmentDto()
+    {
+        // Arrange
+        var attachmentId = Guid.NewGuid();
+        var equipmentId = Guid.NewGuid();
+        var attachment = new EquipmentAttachment
+        {
+            Id = attachmentId,
+            EquipmentId = equipmentId,
+            FileName = "test.pdf",
+            FilePath = "/uploads/test.pdf",
+            FileSize = 1024,
+            FileType = "application/pdf",
+            UploadDate = DateTime.UtcNow,
+            Equipment = new Equipment
+            {
+                Id = equipmentId,
+                Name = "Test Equipment",
+                Model = "Test Model",
+                SerialNumber = "123456",
+                Manufacturer = "Test Manufacturer",
+                Category = 1,
+                Quantity = 1,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                EquipmentSecurityLevels = new List<EquipmentSecurityLevel>(),
+                EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
+            }
+        };
+
+        _equipmentRepositoryMock
+            .Setup(repo => repo.GetAttachmentByIdAsync(attachmentId))
+            .ReturnsAsync(attachment);
+
+        // Act
+        var result = await _service.GetByIdAsync(attachmentId);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(attachmentId, result.Id);
+        Assert.Equal(equipmentId, result.EquipmentId);
+        Assert.Equal(attachment.FileName, result.FileName);
+        Assert.Equal(attachment.FilePath, result.FilePath);
+        Assert.Equal(attachment.FileSize, result.FileSize);
+        Assert.Equal(attachment.FileType, result.FileType);
+        Assert.Equal(attachment.UploadDate.ToLocalTime(), result.UploadDate);
     }
 } 

@@ -4,6 +4,7 @@ namespace ServiceTrack.application.Interfaces;
 
 public interface ISecurityLevelRepository
 {
+    Task<IEnumerable<SecurityLevel>> GetByIdsAsync(IEnumerable<int> ids);
     Task<SecurityLevel?> GetByIdAsync(int id);
     Task<IEnumerable<SecurityLevel>> GetAllAsync();
     Task<SecurityLevel> CreateAsync(SecurityLevel securityLevel);

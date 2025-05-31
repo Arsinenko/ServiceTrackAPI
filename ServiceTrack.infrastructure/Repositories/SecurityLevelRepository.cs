@@ -14,6 +14,11 @@ public class SecurityLevelRepository : ISecurityLevelRepository
         _context = context;
     }
 
+    public Task<IEnumerable<SecurityLevel>> GetByIdsAsync(IEnumerable<int> ids)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<SecurityLevel?> GetByIdAsync(int id)
     {
         return await _context.SecurityLevels.FindAsync(id);

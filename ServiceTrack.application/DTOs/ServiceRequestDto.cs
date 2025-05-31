@@ -62,7 +62,20 @@ public class ServiceRequestDto
                             Description = c.Description,
                             CreatedAt = c.CreatedAt,
                             UpdatedAt = c.UpdatedAt,
-                            Components = c.Components?.Select(comp => EquipmentDto.FromEquipment(comp)).ToList()
+                            Components = c.Components?.Select(comp => EquipmentDto.FromEquipment(comp))
+                                .ToList(),
+                            Attachments = c.Attachments?
+                                              .Select(EquipmentAttachmentDto.FromEquipmentAttachment)
+                                              .ToList() ??
+                                          new List<EquipmentAttachmentDto>(),
+                            InspectionMethods = c.EquipmentInspectionMethods
+                                .Select(eim => new InspectionMethodDto
+                                {
+                                    Code = eim.InspectionMethod.Code,
+                                    Name = eim.InspectionMethod.Name,
+                                    IsAlive = eim.InspectionMethod.IsAlive
+                                })
+                                .ToList(),
                         })
                         .ToList() ?? new List<EquipmentDto>()
                 })

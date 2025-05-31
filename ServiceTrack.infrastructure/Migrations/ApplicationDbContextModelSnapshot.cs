@@ -150,19 +150,13 @@ namespace AuthApp.infrastructure.Migrations
 
             modelBuilder.Entity("AuthApp.domain.Entities.EquipmentSecurityLevel", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("EquipmentId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("SecurityLevelId")
                         .HasColumnType("integer");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("EquipmentId");
+                    b.HasKey("EquipmentId", "SecurityLevelId");
 
                     b.HasIndex("SecurityLevelId");
 
@@ -426,13 +420,13 @@ namespace AuthApp.infrastructure.Migrations
 
             modelBuilder.Entity("EquipmentInspectionMethod", b =>
                 {
-                    b.Property<Guid>("EquipmentID")
+                    b.Property<Guid>("EquipmentId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("InspectionMethodId")
                         .HasColumnType("integer");
 
-                    b.HasKey("EquipmentID", "InspectionMethodId");
+                    b.HasKey("EquipmentId", "InspectionMethodId");
 
                     b.HasIndex("InspectionMethodId");
 
@@ -468,7 +462,7 @@ namespace AuthApp.infrastructure.Migrations
             modelBuilder.Entity("AuthApp.domain.Entities.EquipmentSecurityLevel", b =>
                 {
                     b.HasOne("AuthApp.domain.Entities.Equipment", "Equipment")
-                        .WithMany("SecurityLevels")
+                        .WithMany("EquipmentSecurityLevels")
                         .HasForeignKey("EquipmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -555,8 +549,8 @@ namespace AuthApp.infrastructure.Migrations
             modelBuilder.Entity("EquipmentInspectionMethod", b =>
                 {
                     b.HasOne("AuthApp.domain.Entities.Equipment", "Equipment")
-                        .WithMany("InspectionMethods")
-                        .HasForeignKey("EquipmentID")
+                        .WithMany("EquipmentInspectionMethods")
+                        .HasForeignKey("EquipmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -577,9 +571,9 @@ namespace AuthApp.infrastructure.Migrations
 
                     b.Navigation("Components");
 
-                    b.Navigation("InspectionMethods");
+                    b.Navigation("EquipmentInspectionMethods");
 
-                    b.Navigation("SecurityLevels");
+                    b.Navigation("EquipmentSecurityLevels");
 
                     b.Navigation("ServiceRequestEquipments");
                 });
