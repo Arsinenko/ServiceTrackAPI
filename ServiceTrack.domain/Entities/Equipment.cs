@@ -22,7 +22,7 @@ public class Equipment
     public DateTime UpdatedAt { get; set; }
     
     public int SecurityLevelId { get; set; }
-    public required SecurityLevel SecurityLevel { get; set; }
+    public SecurityLevel? SecurityLevel { get; set; }
     
     public required ICollection<EquipmentInspectionMethod> EquipmentInspectionMethods { get; set; }
     

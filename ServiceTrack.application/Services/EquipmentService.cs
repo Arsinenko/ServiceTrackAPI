@@ -1,4 +1,5 @@
 using AuthApp.application.DTOs;
+using AuthApp.application.Exceptions;
 using AuthApp.application.Interfaces;
 using AuthApp.domain.Entities;
 using Microsoft.Extensions.Logging;
@@ -8,11 +9,13 @@ namespace AuthApp.application.Services;
 public class EquipmentService : IEquipmentService
 {
     private readonly IEquipmentRepository _equipmentRepository;
+    private readonly IInspectionMethodRepository _methodRepository;
     private readonly ILogger<EquipmentService> _logger;
 
-    public EquipmentService(IEquipmentRepository equipmentRepository, ILogger<EquipmentService> logger)
+    public EquipmentService(IEquipmentRepository equipmentRepository, IInspectionMethodRepository methodRepository, ILogger<EquipmentService> logger)
     {
         _equipmentRepository = equipmentRepository;
+        _methodRepository = methodRepository;
         _logger = logger;
     }
     public async Task<EquipmentDto?> GetByIdAsync(Guid id)
@@ -35,7 +38,7 @@ public class EquipmentService : IEquipmentService
 
     public async Task<EquipmentDto> CreateAsync(CreateEquipmentDto createEquipmentDto)
     {
-        //TODO fix constructor
+        
         var equipment = new Equipment
         {
             Id = Guid.NewGuid(),
@@ -46,6 +49,7 @@ public class EquipmentService : IEquipmentService
             Category = createEquipmentDto.Category,
             Quantity = createEquipmentDto.Quantity,
             ExecutorId = createEquipmentDto.ExecutorId,
+            SecurityLevelId = createEquipmentDto.SecurityLevelId,
             SZZ = createEquipmentDto.SZZ,
             Description = createEquipmentDto.Description,
             CreatedAt = DateTime.UtcNow,
@@ -53,6 +57,19 @@ public class EquipmentService : IEquipmentService
             EquipmentInspectionMethods = new List<EquipmentInspectionMethod>(),
             Attachments = new List<EquipmentAttachment>()
         };
+        foreach (var method in createEquipmentDto.Methods)
+        {
+            var inspectionMethod =  await _methodRepository.GetByIdAsync(method.InspectionMethodId);
+            if (inspectionMethod == null)
+            {
+                throw new InspectionMethodNotFoundException("Inspection method not found");
+            }
+            equipment.EquipmentInspectionMethods.Add(new  EquipmentInspectionMethod
+            {
+                EquipmentId = equipment.Id,
+                InspectionMethodId = inspectionMethod.Id
+            });
+        }
         await _equipmentRepository.CreateAsync(equipment);
         return EquipmentDto.FromEquipment(equipment);
     }
@@ -70,13 +87,27 @@ public class EquipmentService : IEquipmentService
             Category = dto.Category,
             Quantity = dto.Quantity,
             ExecutorId = dto.ExecutorId,
+            SecurityLevelId = dto.SecurityLevelId,
             SZZ = dto.SZZ,
             Description = dto.Description,
-            ParentId = parentId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>(),
             Attachments = new List<EquipmentAttachment>()
         };
+        foreach (var method in dto.Methods)
+        {
+            var inspectionMethod =  await _methodRepository.GetByIdAsync(method.InspectionMethodId);
+            if (inspectionMethod == null)
+            {
+                throw new InspectionMethodNotFoundException("Inspection method not found");
+            }
+            equipment.EquipmentInspectionMethods.Add(new  EquipmentInspectionMethod
+            {
+                EquipmentId = equipment.Id,
+                InspectionMethodId = inspectionMethod.Id
+            });
+        }
 
         // Create components recursively if they exist
         if (dto.Components != null && dto.Components.Any())
@@ -154,9 +185,25 @@ public class EquipmentService : IEquipmentService
         equipment.Category = updateEquipmentDto.Category;
         equipment.Quantity = updateEquipmentDto.Quantity;
         equipment.ExecutorId = updateEquipmentDto.ExecutorId;
+        equipment.SecurityLevelId = updateEquipmentDto.SecurityLevelId;
         equipment.SZZ = updateEquipmentDto.SZZ;
         equipment.Description = updateEquipmentDto.Description;
         equipment.UpdatedAt = DateTime.UtcNow;
+        
+        equipment.EquipmentInspectionMethods.Clear();
+        foreach (var method in updateEquipmentDto.Methods)
+        {
+            var inspectionMethod =  await _methodRepository.GetByIdAsync(method.InspectionMethodId);
+            if (inspectionMethod == null)
+            {
+                throw new InspectionMethodNotFoundException("Inspection method not found");
+            }
+            equipment.EquipmentInspectionMethods.Add(new  EquipmentInspectionMethod
+            {
+                EquipmentId = equipment.Id,
+                InspectionMethodId = inspectionMethod.Id
+            });
+        }
         
         await _equipmentRepository.UpdateAsync(equipment);
         return EquipmentDto.FromEquipment(equipment);
@@ -205,6 +252,22 @@ public class EquipmentService : IEquipmentService
                 existing.SZZ = item.SZZ;
                 existing.Description = item.Description;
                 existing.UpdatedAt = DateTime.UtcNow;
+                existing.SecurityLevelId = item.SecurityLevelId;
+                existing.EquipmentInspectionMethods.Clear();
+                
+                foreach (var method in item.Methods)
+                {
+                    var inspectionMethod =  await _methodRepository.GetByIdAsync(method.InspectionMethodId);
+                    if (inspectionMethod == null)
+                    {
+                        throw new InspectionMethodNotFoundException("Inspection method not found");
+                    }
+                    existing.EquipmentInspectionMethods.Add(new EquipmentInspectionMethod
+                    {
+                        EquipmentId = existing.Id,
+                        InspectionMethodId = inspectionMethod.Id
+                    });
+                }
                 
                 equipmentToUpdate.Add(existing);
             }

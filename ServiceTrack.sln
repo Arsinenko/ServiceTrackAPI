@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# 
+#
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceTrack.domain", "ServiceTrack.domain\ServiceTrack.domain.csproj", "{2EC7AD11-F825-4AD1-86F2-F44063FE49F8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceTrack.application", "ServiceTrack.application\ServiceTrack.application.csproj", "{57545544-E99D-462E-B5C6-DB1418AD753B}"
@@ -8,8 +8,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceTrack.infrastructure", "ServiceTrack.infrastructure\ServiceTrack.infrastructure.csproj", "{49597F98-F8B0-436E-B678-5AF76D5A3C9D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceTrack.Api", "ServiceTrack.Api\ServiceTrack.Api.csproj", "{98C289D0-9888-4CB7-A945-4BE5BA0B1C9C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceTrack.Tests", "ServiceTrack.Tests\ServiceTrack.Tests.csproj", "{FB89C532-20FF-4F70-8436-AD1E347A2B11}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,9 +31,5 @@ Global
 		{98C289D0-9888-4CB7-A945-4BE5BA0B1C9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98C289D0-9888-4CB7-A945-4BE5BA0B1C9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98C289D0-9888-4CB7-A945-4BE5BA0B1C9C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FB89C532-20FF-4F70-8436-AD1E347A2B11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FB89C532-20FF-4F70-8436-AD1E347A2B11}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FB89C532-20FF-4F70-8436-AD1E347A2B11}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FB89C532-20FF-4F70-8436-AD1E347A2B11}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

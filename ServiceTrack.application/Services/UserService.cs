@@ -42,6 +42,7 @@ public class UserService : IUserService
         user.Email = updateUserDto.Email;
         user.IsAlive = updateUserDto.IsAlive;
         user.UpdatedAt = DateTime.UtcNow;
+        user.RoleId = updateUserDto.RoleId;
 
         await _userRepository.UpdateAsync(user);
         return UserDto.FromUser(user);

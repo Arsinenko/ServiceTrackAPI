@@ -8,11 +8,13 @@ public class ServiceRequestDto
 {
     public int Id { get; set; }
     public int ContractId { get; set; }
+    public required string RequestNumber { get; set; }
     public CustomerDto Customer { get; set; }
-    public string Description { get; set; }
+    public string Reasons { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public bool IsCompleted { get; set; }
+    public DateTime PlannedCompletionDate { get; set; }
     public DateTime? CompletedAt { get; set; }
     public JobTypeDto JobType { get; set; }
     public List<AssignedUserDto> AssignedUsers { get; set; } = new();
@@ -24,10 +26,12 @@ public class ServiceRequestDto
         {
             Id = request.Id,
             ContractId = request.ContractId,
-            Customer = request.Customer != null ? CustomerDto.FromCustomer(request.Customer) : null,
-            Description = request.Description,
+            RequestNumber = request.RequestNumber,
+            Customer = CustomerDto.FromCustomer(request.Customer),
+            Reasons = request.Reasons,
             CreatedAt = request.CreatedAt,
             UpdatedAt = request.UpdatedAt,
+            PlannedCompletionDate = request.PlannedCompletionDate,
             IsCompleted = request.IsCompleted,
             CompletedAt = request.CompletedAt,
             JobType = request.JobType != null ? JobTypeDto.FromJobType(request.JobType) : null,
@@ -76,6 +80,7 @@ public class ServiceRequestDto
                                     IsAlive = eim.InspectionMethod.IsAlive
                                 })
                                 .ToList(),
+                            SecurityLevel = SecurityLevelDto.FromSecurityLevel(c.SecurityLevel),
                         })
                         .ToList() ?? new List<EquipmentDto>()
                 })

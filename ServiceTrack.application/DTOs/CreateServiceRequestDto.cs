@@ -8,11 +8,15 @@ public class CreateServiceRequestDto
 {
     [Required(ErrorMessage = "ContractId is required!")]
     public required int ContractId { get; set; }
+    [Required(ErrorMessage = "RequestNumber is required!")]
+    public required string RequestNumber { get; set; }
     [Required(ErrorMessage = "CustomerId is required!")]
     public required int CustomerId { get; set; }
-    [Required(ErrorMessage = "Description is required")]
-    public required string Description { get; set; }
-    [Required(ErrorMessage = "JobType is requred!")]
+    [Required(ErrorMessage = "Reasons is required")]
+    public required string Reasons { get; set; }
+    [Required]
+    public DateTime PlannedCompletionDate { get; set; }
+    [Required(ErrorMessage = "JobType is required!")]
     public Guid JobTypeId { get; set; }
     [Required]
     public List<InitialUserAssignmentDto> InitialAssignments { get; set; } = new();

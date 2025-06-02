@@ -22,7 +22,8 @@ public class EquipmentDto
     public ICollection<EquipmentDto>? Components { get; set; }
     public required ICollection<InspectionMethodDto> InspectionMethods { get; set; }
     public ICollection<EquipmentAttachmentDto> Attachments { get; set; } = new List<EquipmentAttachmentDto>();
-    //TODO Реализовать связь оборудования и грифа
+    public int SecurityLevelId {get; set;}
+    public required SecurityLevelDto? SecurityLevel {get; set;}
 
     public static EquipmentDto FromEquipment(Equipment equipment)
     {
@@ -39,6 +40,10 @@ public class EquipmentDto
             Executor = equipment.Executor != null
                 ? UserDto.FromUser(equipment.Executor)
                 : null,
+            SecurityLevelId = equipment.SecurityLevelId,
+            SecurityLevel = equipment.SecurityLevel != null
+                ? SecurityLevelDto.FromSecurityLevel(equipment.SecurityLevel)
+            : null,
             SZZ = equipment.SZZ,
             ParentId = equipment.ParentId,
             Description = equipment.Description,
@@ -90,20 +95,22 @@ public class CreateEquipmentDto
     [Required(ErrorMessage = "Quantity is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
     public int Quantity { get; set; }
-
-    public Guid? ExecutorId { get; set; }
+    
+    [Required(ErrorMessage = "ExecutorId is required")]
+    public Guid ExecutorId { get; set; }
+    
+    [Required(ErrorMessage = "SecurityLevelId is required")]
+    public int SecurityLevelId { get; set; }
 
     [StringLength(50, ErrorMessage = "SZZ cannot be longer than 50 characters")]
     public string? SZZ { get; set; }
 
-    [StringLength(500, ErrorMessage = "Description cannot be longer than 500 characters")]
+    [StringLength(500, ErrorMessage = "Reasons cannot be longer than 500 characters")]
     public string? Description { get; set; }
 
     [Required(ErrorMessage = "At least one inspection method is required")]
     public required List<InitialInspectionMethodAssignmentDto> Methods { get; set; }
-
-    [Required(ErrorMessage = "At least one security level is required")]
-    public required List<InitialSecurityLevelAssignmentDto> SecurityLevels { get; set; }
+    
 
     public ICollection<CreateEquipmentDto>? Components { get; set; }
 }
@@ -147,13 +154,11 @@ public class UpdateEquipmentBulkResult
 public class InitialInspectionMethodAssignmentDto
 {
     [Required(ErrorMessage = "InspectionMethodId is required")]
-    [Range(1, int.MaxValue, ErrorMessage = "InspectionMethodId must be greater than 0")]
     public required int InspectionMethodId { get; set; }
 }
 
 public class InitialSecurityLevelAssignmentDto
 {
     [Required(ErrorMessage = "SecurityLevelId is required")]
-    [Range(1, int.MaxValue, ErrorMessage = "SecurityLevelId must be greater than 0")]
     public required int SecurityLevelId { get; set; }
 }

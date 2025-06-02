@@ -6,4 +6,5 @@ public class UpdateUserDto
     public string LastName { get; set; }
     public string Email { get; set; }
     public bool IsAlive { get; set; }
+    public Guid RoleId { get; set; }
 } 

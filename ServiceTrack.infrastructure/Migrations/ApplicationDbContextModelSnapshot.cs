@@ -93,6 +93,9 @@ namespace AuthApp.infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<int>("SecurityLevelId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("SerialNumber")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -106,6 +109,8 @@ namespace AuthApp.infrastructure.Migrations
                     b.HasIndex("ExecutorId");
 
                     b.HasIndex("ParentId");
+
+                    b.HasIndex("SecurityLevelId");
 
                     b.ToTable("Equipment");
                 });
@@ -148,19 +153,27 @@ namespace AuthApp.infrastructure.Migrations
                     b.ToTable("EquipmentAttachments");
                 });
 
-            modelBuilder.Entity("AuthApp.domain.Entities.EquipmentSecurityLevel", b =>
+            modelBuilder.Entity("AuthApp.domain.Entities.EquipmentInspectionMethod", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
                     b.Property<Guid>("EquipmentId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("SecurityLevelId")
+                    b.Property<int>("InspectionMethodId")
                         .HasColumnType("integer");
 
-                    b.HasKey("EquipmentId", "SecurityLevelId");
+                    b.HasKey("Id");
 
-                    b.HasIndex("SecurityLevelId");
+                    b.HasIndex("EquipmentId");
 
-                    b.ToTable("EquipmentSecurityLevels");
+                    b.HasIndex("InspectionMethodId");
+
+                    b.ToTable("EquipmentInspectionMethods");
                 });
 
             modelBuilder.Entity("AuthApp.domain.Entities.InspectionMethod", b =>
@@ -300,15 +313,22 @@ namespace AuthApp.infrastructure.Migrations
                     b.Property<int>("CustomerId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");
 
                     b.Property<Guid>("JobTypeId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("PlannedCompletionDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Reasons")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("RequestNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -418,21 +438,6 @@ namespace AuthApp.infrastructure.Migrations
                     b.ToTable("UserServiceRequests");
                 });
 
-            modelBuilder.Entity("EquipmentInspectionMethod", b =>
-                {
-                    b.Property<Guid>("EquipmentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("InspectionMethodId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("EquipmentId", "InspectionMethodId");
-
-                    b.HasIndex("InspectionMethodId");
-
-                    b.ToTable("EquipmentInspectionMethods");
-                });
-
             modelBuilder.Entity("AuthApp.domain.Entities.Equipment", b =>
                 {
                     b.HasOne("AuthApp.domain.Entities.User", "Executor")
@@ -445,7 +450,15 @@ namespace AuthApp.infrastructure.Migrations
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("AuthApp.domain.Entities.SecurityLevel", "SecurityLevel")
+                        .WithMany()
+                        .HasForeignKey("SecurityLevelId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
+
                     b.Navigation("Executor");
+
+                    b.Navigation("SecurityLevel");
                 });
 
             modelBuilder.Entity("AuthApp.domain.Entities.EquipmentAttachment", b =>
@@ -459,23 +472,23 @@ namespace AuthApp.infrastructure.Migrations
                     b.Navigation("Equipment");
                 });
 
-            modelBuilder.Entity("AuthApp.domain.Entities.EquipmentSecurityLevel", b =>
+            modelBuilder.Entity("AuthApp.domain.Entities.EquipmentInspectionMethod", b =>
                 {
                     b.HasOne("AuthApp.domain.Entities.Equipment", "Equipment")
-                        .WithMany("EquipmentSecurityLevels")
+                        .WithMany("EquipmentInspectionMethods")
                         .HasForeignKey("EquipmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("AuthApp.domain.Entities.SecurityLevel", "SecurityLevel")
+                    b.HasOne("AuthApp.domain.Entities.InspectionMethod", "InspectionMethod")
                         .WithMany()
-                        .HasForeignKey("SecurityLevelId")
+                        .HasForeignKey("InspectionMethodId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Equipment");
 
-                    b.Navigation("SecurityLevel");
+                    b.Navigation("InspectionMethod");
                 });
 
             modelBuilder.Entity("AuthApp.domain.Entities.ServiceRequest", b =>
@@ -546,25 +559,6 @@ namespace AuthApp.infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("EquipmentInspectionMethod", b =>
-                {
-                    b.HasOne("AuthApp.domain.Entities.Equipment", "Equipment")
-                        .WithMany("EquipmentInspectionMethods")
-                        .HasForeignKey("EquipmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AuthApp.domain.Entities.InspectionMethod", "InspectionMethod")
-                        .WithMany()
-                        .HasForeignKey("InspectionMethodId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Equipment");
-
-                    b.Navigation("InspectionMethod");
-                });
-
             modelBuilder.Entity("AuthApp.domain.Entities.Equipment", b =>
                 {
                     b.Navigation("Attachments");
@@ -572,8 +566,6 @@ namespace AuthApp.infrastructure.Migrations
                     b.Navigation("Components");
 
                     b.Navigation("EquipmentInspectionMethods");
-
-                    b.Navigation("EquipmentSecurityLevels");
 
                     b.Navigation("ServiceRequestEquipments");
                 });

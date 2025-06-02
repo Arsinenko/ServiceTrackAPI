@@ -28,7 +28,7 @@ public class CreateJobTypeDto
 {
     [Required(ErrorMessage = "Name field is requred!")]
     public required string Name { get; set; }
-    [Required(ErrorMessage = "Description field is required!")]
+    [Required(ErrorMessage = "Reasons field is required!")]
     public required string Description { get; set; }
 }
 

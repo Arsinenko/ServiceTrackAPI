@@ -65,13 +65,15 @@ public class ServiceRequestService : IServiceRequestService
             ContractId = createDto.ContractId,
             CustomerId = createDto.CustomerId,
             Customer = customer,
-            Description = createDto.Description,
+            Reasons = createDto.Reasons,
             JobTypeId = createDto.JobTypeId,
             JobType = jobType,
             CreatedAt = DateTime.UtcNow,
             IsCompleted = false,
             UserServiceRequests = new List<UserServiceRequest>(),
-            ServiceRequestEquipments = new List<ServiceRequestEquipment>()
+            ServiceRequestEquipments = new List<ServiceRequestEquipment>(),
+            RequestNumber = createDto.RequestNumber,
+            PlannedCompletionDate = createDto.PlannedCompletionDate,
         };
 
         // Add initial user assignments
@@ -140,18 +142,20 @@ public class ServiceRequestService : IServiceRequestService
         {
             var jobType = await _jobTypeRepository.GetByIdAsync(requestDto.JobTypeId);
             if (jobType == null)
-                throw new ArgumentException($"Invalid job type ID for request: {requestDto.Description}");
+                throw new ArgumentException($"Invalid job type ID for request: {requestDto.Reasons}");
 
             var customer = await _customerRepository.GetByIdAsync(requestDto.CustomerId);
             if (customer == null)
-                throw new ArgumentException($"Invalid customer ID for request: {requestDto.Description}");
+                throw new ArgumentException($"Invalid customer ID for request: {requestDto.ContractId}");
 
             var request = new ServiceRequest
             {
                 ContractId = requestDto.ContractId,
                 CustomerId = requestDto.CustomerId,
+                RequestNumber = requestDto.RequestNumber,
+                PlannedCompletionDate = requestDto.PlannedCompletionDate,
                 Customer = customer,
-                Description = requestDto.Description,
+                Reasons = requestDto.Reasons,
                 JobTypeId = requestDto.JobTypeId,
                 JobType = jobType,
                 CreatedAt = DateTime.UtcNow,
@@ -227,7 +231,7 @@ public class ServiceRequestService : IServiceRequestService
 
         request.CustomerId = updateDto.CustomerId;
         request.Customer = customer;
-        request.Description = updateDto.Description;
+        request.Reasons = updateDto.Description;
         request.IsCompleted = updateDto.IsCompleted;
         request.JobTypeId = updateDto.JobTypeId;
         request.UpdatedAt = DateTime.UtcNow;

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using AuthApp.domain.Entities;
 
 namespace AuthApp.application.DTOs;
 
@@ -9,6 +10,18 @@ public class SecurityLevelDto
     public required string Name { get; set; } = null!;
     public string? Description { get; set; }
     public required bool IsAlive { get; set; }
+
+    public static SecurityLevelDto FromSecurityLevel(SecurityLevel securityLevel)
+    {
+        return new SecurityLevelDto
+        {
+            Id = securityLevel.Id,
+            Code = securityLevel.Code,
+            Name = securityLevel.Name,
+            Description = securityLevel.Description,
+            IsAlive = securityLevel.IsAlive
+        };
+    }
 }
 
 public class CreateSecurityLevelDto

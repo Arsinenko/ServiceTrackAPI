@@ -17,9 +17,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<EquipmentAttachment> EquipmentAttachments { get; set; }
     public DbSet<SecurityLevel> SecurityLevels { get; set; }
     public DbSet<InspectionMethod> InspectionMethods { get; set; }
-    public DbSet<EquipmentSecurityLevel> EquipmentSecurityLevels { get; set; }
     public DbSet<EquipmentInspectionMethod> EquipmentInspectionMethods { get; set; }
-    //TODO Реализовать связь оборудования и грифа. Связь 1 ко многим. У одного оборудования только 1 гриф (SecurityLevel)
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -59,10 +57,12 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.ContractId).IsRequired();
+            entity.Property(e => e.RequestNumber).IsRequired();
             entity.Property(e => e.CustomerId).IsRequired();
-            entity.Property(e => e.Description).IsRequired();
+            entity.Property(e => e.Reasons).IsRequired();
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.UpdatedAt);
+            entity.Property(e => e.PlannedCompletionDate).IsRequired();
             entity.Property(e => e.IsCompleted).IsRequired();
             entity.Property(e => e.CompletedAt);
             entity.Property(e => e.JobTypeId).IsRequired();
@@ -142,11 +142,11 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(e => e.ParentId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Configure many-to-many relationship with SecurityLevels
-            entity.HasMany(e => e.EquipmentSecurityLevels)
-                .WithOne(esl => esl.Equipment)
-                .HasForeignKey(esl => esl.EquipmentId)
-                .OnDelete(DeleteBehavior.Cascade);
+            // Configure many-to-many relationship with SecurityLevel
+            entity.HasOne(e => e.SecurityLevel)
+                .WithMany()
+                .HasForeignKey(e => e.SecurityLevelId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Configure many-to-many relationship with InspectionMethods
             entity.HasMany(e => e.EquipmentInspectionMethods)
@@ -205,20 +205,6 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
             entity.Property(e => e.Description).HasMaxLength(500);
             entity.Property(e => e.IsAlive).IsRequired();
-        });
-
-        modelBuilder.Entity<EquipmentSecurityLevel>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.HasOne(esl => esl.Equipment)
-                .WithMany(e => e.EquipmentSecurityLevels)
-                .HasForeignKey(esl => esl.EquipmentId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasOne(esl => esl.SecurityLevel)
-                .WithMany()
-                .HasForeignKey(esl => esl.SecurityLevelId)
-                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<EquipmentInspectionMethod>(entity =>
