@@ -76,7 +76,6 @@ public class EquipmentService : IEquipmentService
 
     private async Task<Equipment> CreateEquipmentWithComponentsAsync(CreateEquipmentDto dto, Guid? parentId = null)
     {
-        //TODO fix constructor
         var equipment = new Equipment
         {
             Id = Guid.NewGuid(),

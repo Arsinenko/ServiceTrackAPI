@@ -16,4 +16,5 @@ public interface IServiceRequestService
     Task<ServiceRequestDto?> UnassignUserAsync(int requestId, Guid userId);
     Task<ServiceRequestDto?> AssignEquipmentAsync(int requestId, Guid equipmentId, string? notes = null);
     Task<ServiceRequestDto?> UnassignEquipmentAsync(int requestId, Guid equipmentId);
+    Task<List<ServiceRequestDto>> CreateBulkWithNewEquipmentAsync(CreateServiceRequestWithNewEquipmentBulkDto createDto);
 } 

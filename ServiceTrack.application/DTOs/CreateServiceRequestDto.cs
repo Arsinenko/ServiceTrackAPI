@@ -47,3 +47,35 @@ public class DeleteServiceRequestBulkResult
     public required ICollection<int> FailedServiceRequestIds { get; set; }
     public required ICollection<string> FailureReasons { get; set; }
 }
+
+public class CreateServiceRequestWithNewEquipmentDto
+{
+    [Required(ErrorMessage = "ContractId is required!")]
+    public required int ContractId { get; set; }
+    
+    [Required(ErrorMessage = "RequestNumber is required!")]
+    public required string RequestNumber { get; set; }
+    
+    [Required(ErrorMessage = "CustomerId is required!")]
+    public required int CustomerId { get; set; }
+    
+    [Required(ErrorMessage = "Reasons is required")]
+    public required string Reasons { get; set; }
+    
+    [Required]
+    public DateTime PlannedCompletionDate { get; set; }
+    
+    [Required(ErrorMessage = "JobType is required!")]
+    public Guid JobTypeId { get; set; }
+    
+    [Required]
+    public List<InitialUserAssignmentDto> InitialAssignments { get; set; } = new();
+    
+    [Required]
+    public List<CreateEquipmentDto> NewEquipment { get; set; } = new();
+}
+
+public class CreateServiceRequestWithNewEquipmentBulkDto
+{
+    public required ICollection<CreateServiceRequestWithNewEquipmentDto> ServiceRequests { get; set; }
+}

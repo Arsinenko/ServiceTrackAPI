@@ -115,6 +115,21 @@ public class ServiceRequestController : ControllerBase
     }
 
     /// <summary>
+    /// Создает заявки на обслуживание с новым оборудованием
+    /// </summary>
+    /// <param name="createDto">Данные для создания заявок с новым оборудованием</param>
+    /// <returns>Созданные заявки</returns>
+    /// <response code="201">Заявки успешно созданы</response>
+    /// <response code="400">Некорректные данные</response>
+    /// <response code="401">Требуется авторизация</response>
+    [HttpPost("bulk-with-equipment")]
+    public async Task<ActionResult<IEnumerable<ServiceRequestDto>>> CreateBulkWithEquipment(CreateServiceRequestWithNewEquipmentBulkDto createDto)
+    {
+        var requests = await _serviceRequestService.CreateBulkWithNewEquipmentAsync(createDto);
+        return CreatedAtAction(nameof(GetAll), requests);
+    }
+
+    /// <summary>
     /// Обновляет существующую заявку
     /// </summary>
     /// <param name="id">Идентификатор заявки</param>
