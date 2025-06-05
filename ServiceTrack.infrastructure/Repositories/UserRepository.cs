@@ -41,12 +41,9 @@ public class UserRepository : IUserRepository
         foreach (var user in userList)
         {
             user.CreatedAt = DateTime.UtcNow;
+            _context.Users.Add(user);
         }
-
-        await _context.BulkInsertAsync(userList, options =>
-        {
-            options.AutoMapOutputDirection = false;
-        });
+        await _context.SaveChangesAsync();
         return userList;
     }
 

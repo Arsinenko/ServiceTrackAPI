@@ -52,11 +52,9 @@ public class CustomerRepository : ICustomerRepository
         foreach (var customer in customerList)
         {
             customer.CreatedAt = DateTime.UtcNow;
+            _dbContext.Customers.Add(customer);
         }
-        await _dbContext.BulkInsertAsync(customerList, options =>
-        {
-            options.AutoMapOutputDirection = false;
-        });
+        await _dbContext.SaveChangesAsync();
         return customerList;
     }
 
@@ -74,11 +72,9 @@ public class CustomerRepository : ICustomerRepository
         foreach (var customer in customerList)
         {
             customer.UpdatedAt = DateTime.UtcNow;
+            _dbContext.Customers.Update(customer);
         }
-        await _dbContext.BulkUpdateAsync(customerList, options =>
-        {
-            options.AutoMapOutputDirection = false;
-        });
+        await _dbContext.SaveChangesAsync();
         return customerList;
     }
 
@@ -96,12 +92,12 @@ public class CustomerRepository : ICustomerRepository
 
     public async Task<IEnumerable<Customer>> DeleteBulkAsync(IEnumerable<int> ids)
     {
-        var customers = new List<Customer>();
-        foreach (var id in ids)
-        {
-            customers.Add((await _dbContext.Customers.FirstOrDefaultAsync(c => c.Id == id))!);
-        }
-        await _dbContext.BulkDeleteAsync(customers);
+        var customers = await _dbContext.Customers
+            .Where(c => ids.Contains(c.Id))
+            .ToListAsync();
+            
+        _dbContext.Customers.RemoveRange(customers);
+        await _dbContext.SaveChangesAsync();
         return customers;
-    } // TODO Check it 
+    }
 }

@@ -44,22 +44,28 @@ public class InspectionMethodRepository : IInspectionMethodRepository
 
     public async Task<List<InspectionMethod>> CreateBulkAsync(List<InspectionMethod> inspectionMethods)
     {
-        await _dbContext.BulkInsertAsync(inspectionMethods, options =>
+        foreach (var method in inspectionMethods)
         {
-            options.AutoMapOutputDirection = false;
-        });
+            _dbContext.InspectionMethods.Add(method);
+        }
+        await _dbContext.SaveChangesAsync();
         return inspectionMethods;
-}
+    }
 
     public async Task<List<InspectionMethod>> UpdateBulkAsync(List<InspectionMethod> inspectionMethods)
     {
-        await _dbContext.BulkUpdateAsync(inspectionMethods);
+        foreach (var method in inspectionMethods)
+        {
+            _dbContext.InspectionMethods.Update(method);
+        }
+        await _dbContext.SaveChangesAsync();
         return inspectionMethods;
     }
 
     public async Task<List<InspectionMethod>> DeleteBulkAsync(List<InspectionMethod> inspectionMethods)
     {
-        await _dbContext.BulkDeleteAsync(inspectionMethods);
+        _dbContext.InspectionMethods.RemoveRange(inspectionMethods);
+        await _dbContext.SaveChangesAsync();
         return inspectionMethods;
     }
 }

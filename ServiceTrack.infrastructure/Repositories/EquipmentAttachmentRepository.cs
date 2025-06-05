@@ -40,8 +40,9 @@ public class EquipmentAttachmentRepository : IEquipmentAttachmentRepository
         foreach (var attachment in equipmentAttachment)
         {
             attachment.UploadDate = DateTime.Now;
+            _context.EquipmentAttachments.Add(attachment);
         }
-        await _context.EquipmentAttachments.BulkInsertAsync(equipmentAttachment);
+        await _context.SaveChangesAsync();
         return equipmentAttachment;
     }
 
@@ -53,6 +54,7 @@ public class EquipmentAttachmentRepository : IEquipmentAttachmentRepository
     
     public async Task DeleteBulkAsync(List<EquipmentAttachment> equipmentAttachments)
     {
-        await _context.EquipmentAttachments.BulkDeleteAsync(equipmentAttachments);
+        _context.EquipmentAttachments.RemoveRange(equipmentAttachments);
+        await _context.SaveChangesAsync();
     }
 }

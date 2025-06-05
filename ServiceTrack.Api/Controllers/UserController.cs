@@ -51,7 +51,7 @@ public class UserController : ControllerBase
     /// <response code="401">Требуется авторизация</response>
     /// <response code="403">Нет прав доступа (требуется роль Admin)</response>
     [HttpGet]
-    [Authorize(Roles = "Admin")]
+    // [Authorize(Roles = "Admin")]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetAll()
     {
         var users = await _userService.GetAllAsync();

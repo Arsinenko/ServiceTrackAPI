@@ -70,13 +70,10 @@ public class EquipmentRepository : IEquipmentRepository
         foreach (var equipmentEntity in equipmentList)
         {
             equipmentEntity.UpdatedAt = DateTime.UtcNow;
+            _context.Equipment.Update(equipmentEntity);
         }
         
-        await _context.BulkUpdateAsync(equipmentList, options => 
-        {
-            options.AutoMapOutputDirection = false;
-        });
-
+        await _context.SaveChangesAsync();
         return equipmentList;
     }
 
@@ -194,25 +191,17 @@ public class EquipmentRepository : IEquipmentRepository
             foreach (var equipmentEntity in flattenedEquipment)
             {
                 equipmentEntity.CreatedAt = DateTime.UtcNow;
+                _context.Equipment.Add(equipmentEntity);
             }
             
-            _logger.LogInformation("Executing bulk insert with EF Core Bulk Extensions");
-            await _context.BulkInsertAsync(flattenedEquipment, options => 
-            {
-                options.AutoMapOutputDirection = false;
-                options.UseRowsAffected = true;
-                options.BatchSize = 100; // Process in smaller batches to avoid timeouts
-            });
+            _logger.LogInformation("Executing bulk insert with standard EF Core");
+            await _context.SaveChangesAsync();
             
-            var ids = flattenedEquipment.Select(e => e.Id).ToList();
-            _logger.LogInformation("Bulk insert completed. Created {Count} items with IDs: {Ids}", 
-                ids.Count, string.Join(", ", ids));
-            
-            return ids;
+            return flattenedEquipment.Select(e => e.Id).ToList();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during bulk equipment insert");
+            _logger.LogError(ex, "Error during bulk insert of equipment");
             throw;
         }
     }

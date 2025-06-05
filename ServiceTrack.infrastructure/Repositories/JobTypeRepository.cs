@@ -42,13 +42,10 @@ public class JobTypeRepository :  IJobTypeRepository
         foreach (var jobType in jobTypesList)
         {
             jobType.CreatedAt = DateTime.UtcNow;
+            _context.JobTypes.Add(jobType);
         }
-        await _context.BulkInsertAsync(jobTypesList, options =>
-        {
-            options.AutoMapOutputDirection = false;
-        });
+        await _context.SaveChangesAsync();
         return jobTypesList.Select(jobType => jobType.Id).ToList();
-        
     }
 
 
@@ -66,12 +63,9 @@ public class JobTypeRepository :  IJobTypeRepository
         foreach (var jobType in jobTypesList)
         {
             jobType.UpdatedAt = DateTime.UtcNow;
+            _context.JobTypes.Update(jobType);
         }
-        
-        await _context.BulkUpdateAsync(jobTypesList, options =>
-        {
-            options.AutoMapOutputDirection = false;
-        });
+        await _context.SaveChangesAsync();
         return jobTypesList;
     }
 

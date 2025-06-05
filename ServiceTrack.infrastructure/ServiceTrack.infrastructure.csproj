@@ -21,8 +21,10 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.9.0" />
-        <PackageReference Include="Z.EntityFramework.Extensions" Version="9.103.8" />
-        <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="9.103.8" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.2">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 
     <ItemGroup>

@@ -51,12 +51,9 @@ public class RoleRepository : IRoleRepository
         foreach (var role in roleList)
         {
             role.CreatedAt = DateTime.UtcNow;
+            _context.Roles.Add(role);
         }
-
-        await _context.BulkInsertAsync(roleList, options =>
-        {
-            options.AutoMapOutputDirection = false;
-        });
+        await _context.SaveChangesAsync();
         return roleList.Select(r => r.Id).ToList();
     }
 
@@ -74,11 +71,9 @@ public class RoleRepository : IRoleRepository
         foreach (var role in roleList)
         {
             role.UpdatedAt = DateTime.UtcNow;
+            _context.Roles.Update(role);
         }
-        await _context.BulkUpdateAsync(roleList, options =>
-        {
-            options.AutoMapOutputDirection = false;
-        });
+        await _context.SaveChangesAsync();
         return roleList;
     }
 
