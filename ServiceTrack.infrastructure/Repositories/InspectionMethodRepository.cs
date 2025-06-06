@@ -7,29 +7,35 @@ namespace AuthApp.infrastructure.Repositories;
 
 public class InspectionMethodRepository : IInspectionMethodRepository
 {
-    private readonly ApplicationDbContext _dbContext;
+    private readonly ApplicationDbContext _context;
 
-    public InspectionMethodRepository(ApplicationDbContext dbContext)
+    public InspectionMethodRepository(ApplicationDbContext context)
     {
-        _dbContext = dbContext;
+        _context = context;
     }
 
     public async Task<List<InspectionMethod>> GetAllAsync()
     {
-        return await _dbContext.InspectionMethods.ToListAsync();
+        return await _context.InspectionMethods.ToListAsync();
     }
 
     public async Task<InspectionMethod?> GetByIdAsync(int id)
     {
-        var inspectionMethod = await _dbContext.InspectionMethods.FirstOrDefaultAsync(i => i.Id == id);
+        var inspectionMethod = await _context.InspectionMethods.FirstOrDefaultAsync(i => i.Id == id);
         if (inspectionMethod == null)
             return null;
         return inspectionMethod;
     }
 
+    public async Task<IEnumerable<InspectionMethod>> GetByIdsAsync(IEnumerable<int> ids)
+    {
+        var idList  = ids.ToList();
+        return await _context.InspectionMethods.Where(i => idList.Contains(i.Id)).ToListAsync(); 
+    }
+
     public async Task<InspectionMethod?> GetByNameAsync(string code)
     {
-        var inspectionMethod = await _dbContext.InspectionMethods.FirstOrDefaultAsync(i => i.Code == code);
+        var inspectionMethod = await _context.InspectionMethods.FirstOrDefaultAsync(i => i.Code == code);
         if (inspectionMethod == null)
             return null;
         return inspectionMethod;
@@ -37,8 +43,8 @@ public class InspectionMethodRepository : IInspectionMethodRepository
 
     public async Task<InspectionMethod> CreateAsync(InspectionMethod inspectionMethod)
     {
-        _dbContext.InspectionMethods.Add(inspectionMethod);
-        await _dbContext.SaveChangesAsync();
+        _context.InspectionMethods.Add(inspectionMethod);
+        await _context.SaveChangesAsync();
         return inspectionMethod;
     }
 
@@ -46,9 +52,9 @@ public class InspectionMethodRepository : IInspectionMethodRepository
     {
         foreach (var method in inspectionMethods)
         {
-            _dbContext.InspectionMethods.Add(method);
+            _context.InspectionMethods.Add(method);
         }
-        await _dbContext.SaveChangesAsync();
+        await _context.SaveChangesAsync();
         return inspectionMethods;
     }
 
@@ -56,16 +62,16 @@ public class InspectionMethodRepository : IInspectionMethodRepository
     {
         foreach (var method in inspectionMethods)
         {
-            _dbContext.InspectionMethods.Update(method);
+            _context.InspectionMethods.Update(method);
         }
-        await _dbContext.SaveChangesAsync();
+        await _context.SaveChangesAsync();
         return inspectionMethods;
     }
 
     public async Task<List<InspectionMethod>> DeleteBulkAsync(List<InspectionMethod> inspectionMethods)
     {
-        _dbContext.InspectionMethods.RemoveRange(inspectionMethods);
-        await _dbContext.SaveChangesAsync();
+        _context.InspectionMethods.RemoveRange(inspectionMethods);
+        await _context.SaveChangesAsync();
         return inspectionMethods;
     }
 }

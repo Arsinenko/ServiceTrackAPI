@@ -37,6 +37,9 @@ public class EquipmentRepository : IEquipmentRepository
         return await _context.Equipment
             .Include(e => e.Components)
             .Include(e => e.Executor)
+            .Include(e => e.SecurityLevel)
+            .Include(e => e.EquipmentInspectionMethods)
+            .ThenInclude(e => e.InspectionMethod)
             .FirstOrDefaultAsync(e => e.Name.ToLower() == name.ToLower());
     }
 
@@ -45,6 +48,9 @@ public class EquipmentRepository : IEquipmentRepository
         return await _context.Equipment
             .Include(e => e.Components)
             .Include(e => e.Executor)
+            .Include(e => e.SecurityLevel)
+            .Include(e => e.EquipmentInspectionMethods)
+            .ThenInclude(e => e.InspectionMethod)
             .ToListAsync();
     }
 

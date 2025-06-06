@@ -18,6 +18,12 @@ public class JobTypeRepository :  IJobTypeRepository
         return await _context.JobTypes.FindAsync(id);
     }
 
+    public async Task<IEnumerable<JobType>> GetByIdsAsync(IEnumerable<Guid> ids)
+    {
+        var idList = ids.ToList();
+        return await _context.JobTypes.Where(j => idList.Contains(j.Id)).ToListAsync(); 
+    }
+
     public async Task<JobType?> GetByNameAsync(string name)
     {
         return await _context.JobTypes.FirstOrDefaultAsync(j => j.Name == name);

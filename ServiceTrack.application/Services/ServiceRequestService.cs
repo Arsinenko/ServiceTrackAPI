@@ -115,6 +115,13 @@ public class ServiceRequestService : IServiceRequestService
         return ServiceRequestDto.FromServiceRequest(request);
     }
 
+    private DateTime EnsureUtcDateTime(DateTime dateTime)
+    {
+        return dateTime.Kind == DateTimeKind.Unspecified 
+            ? DateTime.SpecifyKind(dateTime, DateTimeKind.Utc)
+            : dateTime.ToUniversalTime();
+    }
+
     public async Task<List<ServiceRequestDto>> CreateBulkAsync(CreateServiceRequestBulkDto createDto)
     {
         // Check for duplicate ContractIds in the input
@@ -136,11 +143,12 @@ public class ServiceRequestService : IServiceRequestService
 
         if (conflictingContractIds.Any())
         {
-            throw new ArgumentException($"ContractIds already exist in the database: {string.Join(", ", conflictingContractIds)}");
+            throw new ArgumentException(
+                $"ContractIds already exist in the database: {string.Join(", ", conflictingContractIds)}");
         }
 
         var requests = new List<ServiceRequest>();
-        
+
         foreach (var requestDto in createDto.ServiceRequests)
         {
             var jobType = await _jobTypeRepository.GetByIdAsync(requestDto.JobTypeId);
@@ -156,7 +164,7 @@ public class ServiceRequestService : IServiceRequestService
                 ContractId = requestDto.ContractId,
                 CustomerId = requestDto.CustomerId,
                 RequestNumber = requestDto.RequestNumber,
-                PlannedCompletionDate = requestDto.PlannedCompletionDate,
+                PlannedCompletionDate = EnsureUtcDateTime(requestDto.PlannedCompletionDate),
                 Customer = customer,
                 Reasons = requestDto.Reasons,
                 JobTypeId = requestDto.JobTypeId,
@@ -203,7 +211,7 @@ public class ServiceRequestService : IServiceRequestService
         }
 
         var createdIds = await _serviceRequestRepository.CreateBulkAsync(requests);
-        
+
         // Load the created requests with their related entities
         var createdRequests = new List<ServiceRequest>();
         foreach (var id in createdIds)
@@ -214,7 +222,7 @@ public class ServiceRequestService : IServiceRequestService
                 createdRequests.Add(request);
             }
         }
-        
+
         return createdRequests.Select(ServiceRequestDto.FromServiceRequest).ToList();
     }
 
@@ -309,8 +317,9 @@ public class ServiceRequestService : IServiceRequestService
                 {
                     failedRequestIds.Add(requestId);
                     failureReasons.Add("Request not found");
-                    continue;   
+                    continue;
                 }
+
                 await _serviceRequestRepository.DeleteAsync(requestId);
                 deletedRequests.Add(ServiceRequestDto.FromServiceRequest(request));
             }
@@ -416,40 +425,67 @@ public class ServiceRequestService : IServiceRequestService
         return ServiceRequestDto.FromServiceRequest(request);
     }
 
-    public async Task<List<ServiceRequestDto>> CreateBulkWithNewEquipmentAsync(CreateServiceRequestWithNewEquipmentBulkDto createDto)
+    public async Task<List<ServiceRequestDto>> CreateBulkWithNewEquipmentAsync(
+        CreateServiceRequestWithNewEquipmentBulkDto createDto)
     {
-        // Check for duplicate ContractIds in the input
         var contractIds = createDto.ServiceRequests.Select(r => r.ContractId).ToList();
-        var duplicateContractIds = contractIds.GroupBy(x => x)
-            .Where(g => g.Count() > 1)
-            .Select(g => g.Key)
+
+        // Проверка на дубликаты в входящих данных
+        var duplicateContractIds = contractIds.GroupBy(x => x).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+        if (duplicateContractIds.Any())
+            throw new ArgumentException($"Duplicate ContractIds found: {string.Join(", ", duplicateContractIds)}");
+
+        // Проверка существующих контрактов в БД (нужно добавить метод, если его нет)
+        var existingRequests = await _serviceRequestRepository.GetByIdsAsync(contractIds);
+        var existingContractIds = existingRequests.Select(r => r.ContractId).ToList();
+
+        var conflictingContractIds = contractIds.Intersect(existingContractIds).ToList();
+        if (conflictingContractIds.Any())
+            throw new ArgumentException(
+                $"ContractIds already exist in the database: {string.Join(", ", conflictingContractIds)}");
+
+        // Собираем уникальные Id для справочников
+        var allUserIds = createDto.ServiceRequests
+            .SelectMany(r => r.InitialAssignments.Select(a => a.UserId)
+                .Concat(r.NewEquipment.Select(e => e.ExecutorId)
+                    .Concat(r.NewEquipment.SelectMany(e =>
+                        e.Components?.Select(c => c.ExecutorId) ?? Enumerable.Empty<Guid>()))))
+            .Distinct()
             .ToList();
 
-        if (duplicateContractIds.Any())
+        var jobTypeIds = createDto.ServiceRequests.Select(r => r.JobTypeId).Distinct().ToList();
+
+        var methodIds = createDto.ServiceRequests
+            .SelectMany(r => r.NewEquipment
+                .SelectMany(e => GetAllInspectionMethodIds(e)))
+            .Distinct()
+            .ToList();
+
+        var customerIds = createDto.ServiceRequests.Select(r => r.CustomerId).Distinct().ToList();
+
+        // Helper method to recursively get all inspection method IDs from equipment and its components
+        IEnumerable<int> GetAllInspectionMethodIds(CreateEquipmentDto equipment)
         {
-            throw new ArgumentException($"Duplicate ContractIds found: {string.Join(", ", duplicateContractIds)}");
+            var methods = equipment.Methods?.Select(m => m.InspectionMethodId) ?? Enumerable.Empty<int>();
+            var componentMethods = equipment.Components?.SelectMany(GetAllInspectionMethodIds) ?? Enumerable.Empty<int>();
+            return methods.Concat(componentMethods);
         }
 
-        // Check for existing ContractIds in the database
-        var existingRequests = await _serviceRequestRepository.GetAllAsync();
-        var existingContractIds = existingRequests.Select(r => r.ContractId).ToList();
-        var conflictingContractIds = contractIds.Intersect(existingContractIds).ToList();
-
-        if (conflictingContractIds.Any())
-        {
-            throw new ArgumentException($"ContractIds already exist in the database: {string.Join(", ", conflictingContractIds)}");
-        }
+        // Загружаем справочные данные
+        var usersDict = (await _userRepository.GetByIdsAsync(allUserIds)).ToDictionary(u => u.Id);
+        var jobTypesDict = (await _jobTypeRepository.GetByIdsAsync(jobTypeIds)).ToDictionary(j => j.Id);
+        var methodsDict = (await _methodRepository.GetByIdsAsync(methodIds)).ToDictionary(m => m.Id);
+        var customersDict = (await _customerRepository.GetByIdsAsync(customerIds)).ToDictionary(c => c.Id);
 
         var requests = new List<ServiceRequest>();
-        
+        var allEquipments = new List<Equipment>();
+
         foreach (var requestDto in createDto.ServiceRequests)
         {
-            var jobType = await _jobTypeRepository.GetByIdAsync(requestDto.JobTypeId);
-            if (jobType == null)
+            if (!jobTypesDict.TryGetValue(requestDto.JobTypeId, out var jobType))
                 throw new ArgumentException($"Invalid job type ID for request: {requestDto.Reasons}");
 
-            var customer = await _customerRepository.GetByIdAsync(requestDto.CustomerId);
-            if (customer == null)
+            if (!customersDict.TryGetValue(requestDto.CustomerId, out var customer))
                 throw new ArgumentException($"Invalid customer ID for request: {requestDto.ContractId}");
 
             var request = new ServiceRequest
@@ -468,11 +504,10 @@ public class ServiceRequestService : IServiceRequestService
                 ServiceRequestEquipments = new List<ServiceRequestEquipment>()
             };
 
-            // Add initial user assignments
+            // Добавляем пользователей
             foreach (var assignment in requestDto.InitialAssignments)
             {
-                var user = await _userRepository.GetByIdAsync(assignment.UserId);
-                if (user != null)
+                if (usersDict.TryGetValue(assignment.UserId, out var user))
                 {
                     request.UserServiceRequests.Add(new UserServiceRequest
                     {
@@ -484,92 +519,12 @@ public class ServiceRequestService : IServiceRequestService
                 }
             }
 
-            // Create and add new equipment
+            // Создаем оборудование и компоненты в памяти
             foreach (var equipmentDto in requestDto.NewEquipment)
             {
-                // Validate ExecutorId exists
-                var executor = await _userRepository.GetByIdAsync(equipmentDto.ExecutorId);
-                if (executor == null)
-                {
-                    throw new ArgumentException($"Invalid executor ID for equipment: {equipmentDto.Name}");
-                }
+                var equipment = BuildEquipment(equipmentDto, usersDict, methodsDict);
+                allEquipments.Add(equipment);
 
-                var equipment = new Equipment
-                {
-                    Id = Guid.NewGuid(),
-                    Name = equipmentDto.Name,
-                    Model = equipmentDto.Model,
-                    SerialNumber = equipmentDto.SerialNumber,
-                    Manufacturer = equipmentDto.Manufacturer,
-                    Category = equipmentDto.Category,
-                    Quantity = equipmentDto.Quantity,
-                    ExecutorId = equipmentDto.ExecutorId,
-                    SecurityLevelId = equipmentDto.SecurityLevelId,
-                    SZZ = equipmentDto.SZZ,
-                    Description = equipmentDto.Description,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    EquipmentInspectionMethods = new List<EquipmentInspectionMethod>(),
-                    Attachments = new List<EquipmentAttachment>()
-                };
-
-                // Create components recursively if they exist
-                if (equipmentDto.Components != null && equipmentDto.Components.Any())
-                {
-                    equipment.Components = new List<Equipment>();
-                    foreach (var componentDto in equipmentDto.Components)
-                    {
-                        // Validate ExecutorId exists for component
-                        var componentExecutor = await _userRepository.GetByIdAsync(componentDto.ExecutorId);
-                        if (componentExecutor == null)
-                        {
-                            throw new ArgumentException($"Invalid executor ID for component: {componentDto.Name}");
-                        }
-
-                        var component = new Equipment
-                        {
-                            Id = Guid.NewGuid(),
-                            Name = componentDto.Name,
-                            Model = componentDto.Model,
-                            SerialNumber = componentDto.SerialNumber,
-                            Manufacturer = componentDto.Manufacturer,
-                            Category = componentDto.Category,
-                            Quantity = componentDto.Quantity,
-                            ExecutorId = componentDto.ExecutorId,
-                            SecurityLevelId = componentDto.SecurityLevelId,
-                            SZZ = componentDto.SZZ,
-                            Description = componentDto.Description,
-                            CreatedAt = DateTime.UtcNow,
-                            UpdatedAt = DateTime.UtcNow,
-                            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>(),
-                            Attachments = new List<EquipmentAttachment>()
-                        };
-
-                        // Add inspection methods for component
-                        foreach (var method in componentDto.Methods)
-                        {
-                            var inspectionMethod = await _methodRepository.GetByIdAsync(method.InspectionMethodId);
-                            if (inspectionMethod == null)
-                            {
-                                throw new ArgumentException($"Invalid inspection method ID for component: {componentDto.Name}");
-                            }
-                            component.EquipmentInspectionMethods.Add(new EquipmentInspectionMethod
-                            {
-                                EquipmentId = component.Id,
-                                InspectionMethodId = inspectionMethod.Id
-                            });
-                        }
-
-                        // Save the component
-                        await _equipmentRepository.CreateAsync(component);
-                        equipment.Components.Add(component);
-                    }
-                }
-
-                // Save the equipment
-                await _equipmentRepository.CreateAsync(equipment);
-
-                // Add equipment to service request
                 request.ServiceRequestEquipments.Add(new ServiceRequestEquipment
                 {
                     EquipmentId = equipment.Id,
@@ -582,19 +537,78 @@ public class ServiceRequestService : IServiceRequestService
             requests.Add(request);
         }
 
-        var createdIds = await _serviceRequestRepository.CreateBulkAsync(requests);
-        
-        // Load the created requests with their related entities
+        // Массово сохранить оборудование и заявки
+        var equipmentIds = await _equipmentRepository.CreateBulkAsync(allEquipments);
+        var createdRequestIds = await _serviceRequestRepository.CreateBulkAsync(requests);
+
+        // Загрузить созданные заявки с деталями (если нужно)
         var createdRequests = new List<ServiceRequest>();
-        foreach (var id in createdIds)
+        foreach (var id in createdRequestIds)
         {
             var request = await _serviceRequestRepository.GetByIdAsync(id);
             if (request != null)
-            {
                 createdRequests.Add(request);
-            }
         }
-        
+
         return createdRequests.Select(ServiceRequestDto.FromServiceRequest).ToList();
     }
-} 
+
+// Метод для рекурсивного построения Equipment с компонентами в памяти
+    private Equipment BuildEquipment(CreateEquipmentDto equipmentDto, Dictionary<Guid, User> usersDict,
+        Dictionary<int, InspectionMethod> methodsDict)
+    {
+        if (!usersDict.ContainsKey(equipmentDto.ExecutorId))
+            throw new ArgumentException($"Invalid or missing executor ID for equipment: {equipmentDto.Name}");
+
+        var equipment = new Equipment
+        {
+            Id = Guid.NewGuid(),
+            Name = equipmentDto.Name,
+            Model = equipmentDto.Model,
+            SerialNumber = equipmentDto.SerialNumber,
+            Manufacturer = equipmentDto.Manufacturer,
+            Category = equipmentDto.Category,
+            Quantity = equipmentDto.Quantity,
+            ExecutorId = equipmentDto.ExecutorId,
+            SecurityLevelId = equipmentDto.SecurityLevelId,
+            SZZ = equipmentDto.SZZ,
+            Description = equipmentDto.Description,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>(),
+            Attachments = new List<EquipmentAttachment>(),
+            Components = new List<Equipment>()
+        };
+
+        // Убедитесь, что в CreateEquipmentDto есть поле с методами осмотра
+        // Например, если называется InspectionMethods или иначе — исправьте ниже
+        var inspectionMethods = equipmentDto.Methods; // или equipmentDto.InspectionMethods
+
+        if (inspectionMethods != null)
+        {
+            foreach (var methodDto in inspectionMethods)
+            {
+                if (!methodsDict.TryGetValue(methodDto.InspectionMethodId, out var inspectionMethod))
+                    throw new ArgumentException($"Invalid inspection method ID for equipment: {equipmentDto.Name}");
+
+                equipment.EquipmentInspectionMethods.Add(new EquipmentInspectionMethod
+                {
+                    EquipmentId = equipment.Id,
+                    InspectionMethodId = inspectionMethod.Id
+                });
+            }
+        }
+
+        // Рекурсивно создаем компоненты (если есть)
+        if (equipmentDto.Components != null)
+        {
+            foreach (var componentDto in equipmentDto.Components)
+            {
+                var component = BuildEquipment(componentDto, usersDict, methodsDict);
+                equipment.Components.Add(component);
+            }
+        }
+
+        return equipment;
+    }
+}

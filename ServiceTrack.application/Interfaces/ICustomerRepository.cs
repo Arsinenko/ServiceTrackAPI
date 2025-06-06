@@ -5,6 +5,7 @@ namespace AuthApp.application.Interfaces;
 public interface ICustomerRepository
 {
     Task<Customer?> GetByIdAsync(int id);
+    Task<IEnumerable<Customer>> GetByIdsAsync(List<int> ids);
     Task<Customer?> GetByNameAsync(string name);
     Task<IEnumerable<Customer>> GetAllAsync();
     Task<Customer> CreateAsync(Customer customer);

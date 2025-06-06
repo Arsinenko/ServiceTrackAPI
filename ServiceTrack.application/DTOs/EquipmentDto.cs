@@ -55,7 +55,7 @@ public class EquipmentDto
                               .Select(EquipmentAttachmentDto.FromEquipmentAttachment)
                               .ToList() ??
                           new List<EquipmentAttachmentDto>(),
-            InspectionMethods = equipment.EquipmentInspectionMethods
+            InspectionMethods = equipment.EquipmentInspectionMethods?
                 .Select(eim => new InspectionMethodDto
                 {
                     Id = eim.InspectionMethod.Id,

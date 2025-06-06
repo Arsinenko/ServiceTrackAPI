@@ -24,6 +24,11 @@ public class CustomerRepository : ICustomerRepository
         return customer;
     }
 
+    public async Task<IEnumerable<Customer>> GetByIdsAsync(List<int> ids)
+    {
+        return await _dbContext.Customers.Where(c => ids.Contains(c.Id)).ToListAsync(); 
+    }
+
     public async Task<Customer?> GetByNameAsync(string name)
     {
         var customer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.Name == name);
@@ -52,8 +57,8 @@ public class CustomerRepository : ICustomerRepository
         foreach (var customer in customerList)
         {
             customer.CreatedAt = DateTime.UtcNow;
-            _dbContext.Customers.Add(customer);
         }
+        await _dbContext.AddRangeAsync(customerList);
         await _dbContext.SaveChangesAsync();
         return customerList;
     }

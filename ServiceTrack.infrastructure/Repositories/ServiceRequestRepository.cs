@@ -54,6 +54,14 @@ public class ServiceRequestRepository : IServiceRequestRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<ServiceRequest>> GetByIdsAsync(List<int> contractIds)
+    {
+        return await _context.ServiceRequests
+            .Where(s => contractIds
+                .Contains(s.ContractId))
+            .ToListAsync();
+    }
+
     public async Task<int> CreateAsync(ServiceRequest request)
     {
         using var transaction = await _context.Database.BeginTransactionAsync();

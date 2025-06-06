@@ -5,6 +5,7 @@ namespace AuthApp.application.Interfaces;
 public interface IJobTypeRepository
 {
     Task<JobType?> GetByIdAsync(Guid id);
+    Task<IEnumerable<JobType>> GetByIdsAsync(IEnumerable<Guid> ids);
     Task<JobType?> GetByNameAsync(string name);
     Task<IEnumerable<JobType>> GetAllAsync();
     Task<Guid> CreateAsync(JobType jobType);

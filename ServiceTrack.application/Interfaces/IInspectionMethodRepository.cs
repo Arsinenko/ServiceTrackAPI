@@ -6,6 +6,7 @@ public interface IInspectionMethodRepository
 {
     Task<List<InspectionMethod>> GetAllAsync();
     Task<InspectionMethod?> GetByIdAsync(int id);
+    Task<IEnumerable<InspectionMethod>> GetByIdsAsync(IEnumerable<int> ids);
     Task<InspectionMethod?> GetByNameAsync(string code);
     Task<InspectionMethod> CreateAsync(InspectionMethod inspectionMethod);
     Task<List<InspectionMethod>> CreateBulkAsync(List<InspectionMethod> inspectionMethods);
