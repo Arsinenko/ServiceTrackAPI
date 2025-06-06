@@ -493,7 +493,7 @@ public class ServiceRequestService : IServiceRequestService
                 ContractId = requestDto.ContractId,
                 CustomerId = requestDto.CustomerId,
                 RequestNumber = requestDto.RequestNumber,
-                PlannedCompletionDate = requestDto.PlannedCompletionDate,
+                PlannedCompletionDate = requestDto.PlannedCompletionDate.ToUniversalTime(),
                 Customer = customer,
                 Reasons = requestDto.Reasons,
                 JobTypeId = requestDto.JobTypeId,

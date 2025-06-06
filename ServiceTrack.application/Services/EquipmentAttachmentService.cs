@@ -115,4 +115,22 @@ public class EquipmentAttachmentService : IEquipmentAttachmentService
     {
         return await _attachmentRepository.GetByEquipmentIdAsync(equipmentId);
     }
+
+    public async Task<(byte[] FileContent, string FileName, string ContentType)> GetAttachmentFileAsync(int attachmentId)
+    {
+        var attachment = await _attachmentRepository.GetByIdAsync(attachmentId);
+        if (attachment == null)
+        {
+            throw new FileNotFoundException($"Attachment with ID {attachmentId} not found");
+        }
+
+        var filePath = Path.Combine(_uploadDirectory, attachment.FilePath);
+        if (!File.Exists(filePath))
+        {
+            throw new FileNotFoundException($"File not found at path: {filePath}");
+        }
+
+        var fileContent = await File.ReadAllBytesAsync(filePath);
+        return (fileContent, attachment.FileName, attachment.FileType ?? "application/octet-stream");
+    }
 } 

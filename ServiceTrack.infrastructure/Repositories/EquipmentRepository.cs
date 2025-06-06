@@ -51,6 +51,7 @@ public class EquipmentRepository : IEquipmentRepository
             .Include(e => e.SecurityLevel)
             .Include(e => e.EquipmentInspectionMethods)
             .ThenInclude(e => e.InspectionMethod)
+            .Include(e => e.Attachments)
             .ToListAsync();
     }
 

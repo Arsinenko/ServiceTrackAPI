@@ -127,4 +127,25 @@ public class EquipmentAttachmentController : ControllerBase
         await _attachmentService.DeleteAttachmentsAsync(ids);
         return NoContent();
     }
+
+    /// <summary>
+    /// Скачивает файл вложения
+    /// </summary>
+    /// <param name="id">Идентификатор вложения</param>
+    /// <returns>Файл для скачивания</returns>
+    /// <response code="200">Возвращает файл</response>
+    /// <response code="404">Вложение не найдено</response>
+    [HttpGet("{id}/download")]
+    public async Task<IActionResult> DownloadAttachment(int id)
+    {
+        try
+        {
+            var (fileContent, fileName, contentType) = await _attachmentService.GetAttachmentFileAsync(id);
+            return File(fileContent, contentType, fileName);
+        }
+        catch (FileNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
 } 

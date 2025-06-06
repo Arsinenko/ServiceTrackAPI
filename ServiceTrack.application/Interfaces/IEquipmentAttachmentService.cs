@@ -11,4 +11,5 @@ public interface IEquipmentAttachmentService
     Task DeleteAttachmentsAsync(List<int> attachmentIds);
     Task<EquipmentAttachment?> GetByIdAsync(int id);
     Task<List<EquipmentAttachment>> GetAttachmentsByEquipmentIdAsync(Guid equipmentId);
+    Task<(byte[] FileContent, string FileName, string ContentType)> GetAttachmentFileAsync(int attachmentId);
 }

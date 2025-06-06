@@ -31,7 +31,7 @@ public class ServiceRequestDto
             Reasons = request.Reasons,
             CreatedAt = request.CreatedAt,
             UpdatedAt = request.UpdatedAt,
-            PlannedCompletionDate = request.PlannedCompletionDate,
+            PlannedCompletionDate = request.PlannedCompletionDate.ToLocalTime(),
             IsCompleted = request.IsCompleted,
             CompletedAt = request.CompletedAt,
             JobType = request.JobType != null ? JobTypeDto.FromJobType(request.JobType) : null,
