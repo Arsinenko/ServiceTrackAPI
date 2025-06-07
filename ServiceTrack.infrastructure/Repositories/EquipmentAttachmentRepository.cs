@@ -40,8 +40,8 @@ public class EquipmentAttachmentRepository : IEquipmentAttachmentRepository
         foreach (var attachment in equipmentAttachment)
         {
             attachment.UploadDate = DateTime.Now;
-            _context.EquipmentAttachments.Add(attachment);
         }
+        _context.EquipmentAttachments.AddRange(equipmentAttachment);
         await _context.SaveChangesAsync();
         return equipmentAttachment;
     }

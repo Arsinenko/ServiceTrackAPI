@@ -77,9 +77,8 @@ public class EquipmentRepository : IEquipmentRepository
         foreach (var equipmentEntity in equipmentList)
         {
             equipmentEntity.UpdatedAt = DateTime.UtcNow;
-            _context.Equipment.Update(equipmentEntity);
         }
-        
+        _context.UpdateRange(equipmentList);
         await _context.SaveChangesAsync();
         return equipmentList;
     }
@@ -198,8 +197,9 @@ public class EquipmentRepository : IEquipmentRepository
             foreach (var equipmentEntity in flattenedEquipment)
             {
                 equipmentEntity.CreatedAt = DateTime.UtcNow;
-                _context.Equipment.Add(equipmentEntity);
             }
+
+            _context.Equipment.AddRange(flattenedEquipment);
             
             _logger.LogInformation("Executing bulk insert with standard EF Core");
             await _context.SaveChangesAsync();

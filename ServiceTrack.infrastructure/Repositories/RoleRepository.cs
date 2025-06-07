@@ -47,12 +47,13 @@ public class RoleRepository : IRoleRepository
 
     public async Task<List<Guid>> CreateBulkAsync(IEnumerable<Role> roles)
     {
-        var roleList = roles.ToList();
+        var enumerable = roles.ToList();
+        var roleList = enumerable.ToList();
         foreach (var role in roleList)
         {
             role.CreatedAt = DateTime.UtcNow;
-            _context.Roles.Add(role);
         }
+        _context.Roles.AddRange(enumerable);
         await _context.SaveChangesAsync();
         return roleList.Select(r => r.Id).ToList();
     }
@@ -71,8 +72,8 @@ public class RoleRepository : IRoleRepository
         foreach (var role in roleList)
         {
             role.UpdatedAt = DateTime.UtcNow;
-            _context.Roles.Update(role);
         }
+        _context.Roles.UpdateRange(roleList);
         await _context.SaveChangesAsync();
         return roleList;
     }

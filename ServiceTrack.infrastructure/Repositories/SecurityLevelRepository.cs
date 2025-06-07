@@ -14,9 +14,9 @@ public class SecurityLevelRepository : ISecurityLevelRepository
         _context = context;
     }
 
-    public Task<IEnumerable<SecurityLevel>> GetByIdsAsync(IEnumerable<int> ids)
+    public async Task<IEnumerable<SecurityLevel>> GetByIdsAsync(IEnumerable<int> ids)
     {
-        throw new NotImplementedException();
+        return await _context.SecurityLevels.Where(sl => ids.Contains(sl.Id)).ToListAsync(); 
     }
 
     public async Task<SecurityLevel?> GetByIdAsync(int id)

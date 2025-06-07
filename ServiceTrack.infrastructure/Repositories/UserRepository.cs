@@ -50,8 +50,8 @@ public class UserRepository : IUserRepository
         foreach (var user in userList)
         {
             user.CreatedAt = DateTime.UtcNow;
-            _context.Users.Add(user);
         }
+        _context.Users.AddRange(userList);
         await _context.SaveChangesAsync();
         return userList;
     }

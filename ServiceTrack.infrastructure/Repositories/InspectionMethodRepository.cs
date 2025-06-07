@@ -50,20 +50,14 @@ public class InspectionMethodRepository : IInspectionMethodRepository
 
     public async Task<List<InspectionMethod>> CreateBulkAsync(List<InspectionMethod> inspectionMethods)
     {
-        foreach (var method in inspectionMethods)
-        {
-            _context.InspectionMethods.Add(method);
-        }
+        _context.InspectionMethods.AddRange(inspectionMethods);
         await _context.SaveChangesAsync();
         return inspectionMethods;
     }
 
     public async Task<List<InspectionMethod>> UpdateBulkAsync(List<InspectionMethod> inspectionMethods)
     {
-        foreach (var method in inspectionMethods)
-        {
-            _context.InspectionMethods.Update(method);
-        }
+        _context.InspectionMethods.UpdateRange(inspectionMethods);
         await _context.SaveChangesAsync();
         return inspectionMethods;
     }
