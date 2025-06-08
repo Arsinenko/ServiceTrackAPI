@@ -1,4 +1,5 @@
 using AuthApp.application.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServiceTrack.application.Interfaces;
 
@@ -8,6 +9,7 @@ namespace AuthApp.Api.Controllers;
 /// Контроллер для управления уровнями безопасности
 /// </summary>
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class SecurityLevelController : ControllerBase
 {

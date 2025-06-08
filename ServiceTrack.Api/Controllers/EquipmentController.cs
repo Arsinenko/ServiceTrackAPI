@@ -1,6 +1,7 @@
 using AuthApp.application.DTOs;
 using AuthApp.application.Interfaces;
 using AuthApp.domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthApp.Api.Controllers;

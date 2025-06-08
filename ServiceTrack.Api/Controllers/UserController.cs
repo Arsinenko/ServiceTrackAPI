@@ -10,6 +10,7 @@ namespace AuthApp.Api.Controllers;
 /// Контроллер для управления пользователями
 /// </summary>
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 
 public class UserController : ControllerBase

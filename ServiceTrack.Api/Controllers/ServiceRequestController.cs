@@ -10,6 +10,7 @@ namespace AuthApp.Api.Controllers;
 /// Контроллер для управления заявками на обслуживание
 /// </summary>
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class ServiceRequestController : ControllerBase
 {

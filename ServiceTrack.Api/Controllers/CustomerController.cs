@@ -1,6 +1,7 @@
 using AuthApp.application.DTOs;
 using AuthApp.application.Exceptions;
 using AuthApp.application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthApp.Api.Controllers;
@@ -9,6 +10,7 @@ namespace AuthApp.Api.Controllers;
 /// Контроллер для управления заказчиками
 /// </summary>
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class CustomerController : ControllerBase
 {

@@ -9,6 +9,7 @@ namespace AuthApp.Api.Controllers;
 /// Контроллер для управления ролями пользователей
 /// </summary>
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class RoleController : ControllerBase
 {

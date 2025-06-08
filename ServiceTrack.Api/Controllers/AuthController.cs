@@ -1,5 +1,6 @@
 using AuthApp.application.DTOs;
 using AuthApp.application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthApp.Api.Controllers;
@@ -67,6 +68,7 @@ public class AuthController : ControllerBase
     /// <returns>Результаты регистрации для каждого пользователя</returns>
     /// <response code="200">Регистрация завершена (может содержать как успешные, так и неуспешные результаты)</response>
     /// <response code="400">Некорректные данные</response>
+    [Authorize(Roles = "Admin")]
     [HttpPost("register-bulk")]
     public async Task<ActionResult<List<AuthResult>>> RegisterBulk(List<RegisterUserDto> registerDtos)
     {

@@ -1,5 +1,6 @@
 using AuthApp.application.DTOs;
 using AuthApp.application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,6 +10,7 @@ namespace AuthApp.Api.Controllers;
 /// Контроллер для управления методами инспекции
 /// </summary>
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class InspectionMethodController : ControllerBase
 {

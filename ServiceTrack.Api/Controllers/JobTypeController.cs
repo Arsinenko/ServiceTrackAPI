@@ -9,6 +9,7 @@ namespace AuthApp.Api.Controllers;
 /// Контроллер для управления типами работ
 /// </summary>
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class JobTypeController : ControllerBase
 {
