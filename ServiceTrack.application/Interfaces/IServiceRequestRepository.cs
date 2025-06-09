@@ -11,5 +11,6 @@ public interface IServiceRequestRepository
     Task<int> CreateAsync(ServiceRequest request);
     Task<List<int>> CreateBulkAsync(IEnumerable<ServiceRequest> requests);
     Task<int> UpdateAsync(ServiceRequest request);
+    Task<List<int>> UpdateBulkAsync(IEnumerable<ServiceRequest> requestList);
     Task<bool> DeleteAsync(int id);
 } 

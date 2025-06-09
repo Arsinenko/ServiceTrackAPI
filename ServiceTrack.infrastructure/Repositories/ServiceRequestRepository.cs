@@ -240,6 +240,80 @@ public class ServiceRequestRepository : IServiceRequestRepository
         return request.Id;
     }
 
+    public async Task<List<int>> UpdateBulkAsync(IEnumerable<ServiceRequest> requests)
+    {
+        var requestList = requests.ToList();
+        var now = DateTime.UtcNow;
+
+        // Установка дат
+        foreach (var request in requestList)
+        {
+            request.UpdatedAt = now;
+            if (request.IsCompleted && !request.CompletedAt.HasValue)
+            {
+                request.CompletedAt = now;
+            }
+        }
+
+        // Обновляем основные сущности
+        _context.ServiceRequests.UpdateRange(requestList);
+
+        // Получаем Id всех обновляемых заявок
+        var requestIds = requestList.Select(r => r.Id).ToList();
+
+        // Загружаем существующие назначения
+        var existingAssignments = await _context.UserServiceRequests
+            .Where(usr => requestIds.Contains(usr.ServiceRequestId))
+            .ToListAsync();
+
+        // Разбиваем существующие связи по ServiceRequestId для удобства сравнения
+        var existingGroups = existingAssignments
+            .GroupBy(ea => ea.ServiceRequestId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        var assignmentsToAdd = new List<UserServiceRequest>();
+        var assignmentsToRemove = new List<UserServiceRequest>();
+
+        foreach (var request in requestList)
+        {
+            if (!existingGroups.TryGetValue(request.Id, out var currentAssignments))
+            {
+                currentAssignments = new List<UserServiceRequest>();
+            }
+
+            // Новые назначения, которых нет в базе
+            var newAssignments = request.UserServiceRequests
+                .Where(na => !currentAssignments.Any(ea => 
+                    ea.UserId == na.UserId && ea.ServiceRequestId == na.ServiceRequestId))
+                .ToList();
+
+            assignmentsToAdd.AddRange(newAssignments);
+
+            // Удалить те, которых больше нет
+            var removedAssignments = currentAssignments
+                .Where(ea => !request.UserServiceRequests.Any(na => 
+                    na.UserId == ea.UserId && na.ServiceRequestId == ea.ServiceRequestId))
+                .ToList();
+
+            assignmentsToRemove.AddRange(removedAssignments);
+        }
+
+        // Выполняем массовые операции
+        if (assignmentsToRemove.Count > 0)
+        {
+            _context.UserServiceRequests.RemoveRange(assignmentsToRemove);
+        }
+
+        if (assignmentsToAdd.Count > 0)
+        {
+            _context.UserServiceRequests.AddRange(assignmentsToAdd);
+        }
+
+        await _context.SaveChangesAsync();
+
+        return requestList.Select(r => r.Id).ToList();
+    }
+
     public async Task<bool> DeleteAsync(int id)
     {
         var request = await _context.ServiceRequests

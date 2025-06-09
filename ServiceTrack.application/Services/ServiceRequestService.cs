@@ -297,6 +297,87 @@ public class ServiceRequestService : IServiceRequestService
         return ServiceRequestDto.FromServiceRequest(request);
     }
 
+    public async Task<List<ServiceRequestDto?>> UpdateBulkAsync(UpdateServiceRequestBulkDto updateDto)
+{
+    if (updateDto.Items == null || !updateDto.Items.Any())
+        throw new ArgumentException("No items provided for bulk update.");
+
+    var updatedRequests = new List<ServiceRequestDto>();
+
+    foreach (var item in updateDto.Items)
+    {
+        var request = await _serviceRequestRepository.GetByIdAsync(item.Id);
+        if (request == null)
+            continue;
+
+        // Обновляем поля заявки
+        var jobType = await _jobTypeRepository.GetByIdAsync(item.JobTypeId);
+        if (jobType == null)
+            throw new ArgumentException("Invalid job type ID");
+
+        var customer = await _customerRepository.GetByIdAsync(item.CustomerId);
+        if (customer == null)
+            throw new ArgumentException("Invalid customer ID");
+
+        request.CustomerId = item.CustomerId;
+        request.Customer = customer;
+        request.Reasons = item.Description;
+        request.IsCompleted = item.IsCompleted;
+        request.JobTypeId = item.JobTypeId;
+        request.UpdatedAt = DateTime.UtcNow;
+
+        // Обновление назначений пользователей
+        if (item.UserAssignments != null)
+        {
+            request.UserServiceRequests.Clear();
+
+            foreach (var assignment in item.UserAssignments)
+            {
+                var user = await _userRepository.GetByIdAsync(assignment.UserId);
+                if (user != null)
+                {
+                    request.UserServiceRequests.Add(new UserServiceRequest
+                    {
+                        UserId = user.Id,
+                        ServiceRequestId = request.Id,
+                        AssignedAt = DateTime.UtcNow,
+                        IsPrimaryAssignee = assignment.IsPrimaryAssignee
+                    });
+                }
+            }
+        }
+
+        // Обновление оборудования
+        if (item.EquipmentAssignments != null)
+        {
+            request.ServiceRequestEquipments.Clear();
+
+            foreach (var assignment in item.EquipmentAssignments)
+            {
+                var equipment = await _equipmentRepository.GetByIdAsync(assignment.EquipmentId);
+                if (equipment != null)
+                {
+                    request.ServiceRequestEquipments.Add(new ServiceRequestEquipment
+                    {
+                        EquipmentId = equipment.Id,
+                        ServiceRequestId = request.Id,
+                        AddedAt = DateTime.UtcNow,
+                        Notes = assignment.Notes
+                    });
+                }
+            }
+        }
+
+        // Сохраняем изменения по заявке
+        await _serviceRequestRepository.UpdateAsync(request);
+
+        // Добавляем в результат
+        updatedRequests.Add(ServiceRequestDto.FromServiceRequest(request));
+    }
+
+    return updatedRequests;
+}
+
     public async Task<bool> DeleteAsync(int id)
     {
         return await _serviceRequestRepository.DeleteAsync(id);

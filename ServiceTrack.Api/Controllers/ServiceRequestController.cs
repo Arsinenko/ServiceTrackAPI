@@ -150,6 +150,22 @@ public class ServiceRequestController : ControllerBase
         return Ok(request);
     }
 
+
+    /// <summary>
+    /// Обновляет несколько заявок на обслуживание
+    /// </summary>
+    /// <param name="updateDto">Данные для обновления заявок</param>
+    /// <returns>Список обновленных заявок</returns>
+    /// <response code="200">Заявки успешно обновлены</response>
+    /// <response code="400">Некорректные данные</response>
+    /// <response code="404">Некоторые заявки не найдены</response>
+    [HttpPut("bulk")]
+    public async Task<ActionResult<IEnumerable<ServiceRequestDto>>> UpdateBulk(UpdateServiceRequestBulkDto updateDto)
+    {
+        var requests = await _serviceRequestService.UpdateBulkAsync(updateDto);
+        return Ok(requests);
+    }
+
     /// <summary>
     /// Удаляет заявку
     /// </summary>

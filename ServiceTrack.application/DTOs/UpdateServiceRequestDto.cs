@@ -13,6 +13,16 @@ public class UpdateServiceRequestDto
     public List<EquipmentAssignmentDto> EquipmentAssignments { get; set; } = new();
 }
 
+public class UpdateServiceRequestBulkItemDto : UpdateServiceRequestDto
+{
+    public required int Id { get; set; }
+}
+
+public class UpdateServiceRequestBulkDto
+{
+    public required List<UpdateServiceRequestBulkItemDto> Items { get; set; }
+} 
+
 public class UserAssignmentDto
 {
     public Guid UserId { get; set; }
