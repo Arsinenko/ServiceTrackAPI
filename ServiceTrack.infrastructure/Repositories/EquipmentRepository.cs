@@ -28,6 +28,8 @@ public class EquipmentRepository : IEquipmentRepository
     {
         return await _context.Equipment
             .Include(e => e.Executor)
+            .Include(e => e.EquipmentInspectionMethods)
+            .ThenInclude(eim => eim.InspectionMethod)
             .Where(e => ids.Contains(e.Id))
             .ToListAsync();   
     }

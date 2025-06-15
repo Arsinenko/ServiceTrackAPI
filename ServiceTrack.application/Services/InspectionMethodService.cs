@@ -106,7 +106,7 @@ public class InspectionMethodService : IInspectionMethodService
         return result.Select(InspectionMethodDto.FroMethodDto).ToList();
     }
 
-    public Task<List<InspectionMethodDto>> DeleteAsync(List<InspectionMethod> inspectionMethods)
+    public Task<List<InspectionMethodDto>> DeleteBulkAsync(List<InspectionMethod> inspectionMethods)
     {
         throw new NotImplementedException();
     }

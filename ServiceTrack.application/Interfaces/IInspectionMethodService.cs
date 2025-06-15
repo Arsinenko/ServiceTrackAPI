@@ -12,5 +12,6 @@ public interface IInspectionMethodService
     Task<IEnumerable<InspectionMethodDto>> CreateBulkAsync(CreateInspectionMethodsDto inspectionMethods);
     Task<InspectionMethodDto> UpdateAsync(UpdateInspectionMethodItemDto inspectionMethod);
     Task<List<InspectionMethodDto>> UpdateBulkAsync(UpdateInspectionMethodsDto inspectionMethods);
-    Task<List<InspectionMethodDto>> DeleteAsync(List<InspectionMethod> inspectionMethods);
+    Task<List<InspectionMethodDto>> DeleteBulkAsync(List<InspectionMethod> inspectionMethods);
+    
 }

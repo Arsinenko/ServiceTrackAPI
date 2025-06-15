@@ -70,7 +70,7 @@ public class SecurityLevelController : ControllerBase
     /// <summary>
     /// Массовое создание уровней безопасности
     /// </summary>
-    /// <param name="bulkCreateDto">Данные для массового создания уровней безопасности</param>
+    /// <param name="items">Данные для массового создания уровней безопасности</param>
     /// <returns>Список созданных уровней безопасности</returns>
     /// <response code="201">Возвращает список созданных уровней безопасности</response>
     /// <response code="400">Если данные некорректны</response>
@@ -79,9 +79,9 @@ public class SecurityLevelController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<SecurityLevelDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<IEnumerable<SecurityLevelDto>>> BulkCreate(BulkCreateSecurityLevelDto bulkCreateDto)
+    public async Task<ActionResult<IEnumerable<SecurityLevelDto>>> BulkCreate(BulkCreateSecurityLevelDto items)
     {
-        var createdSecurityLevels = await _securityLevelService.BulkCreateAsync(bulkCreateDto);
+        var createdSecurityLevels = await _securityLevelService.BulkCreateAsync(items);
         return CreatedAtAction(nameof(GetAll), createdSecurityLevels);
     }
 

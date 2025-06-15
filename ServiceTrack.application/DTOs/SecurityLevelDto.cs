@@ -36,11 +36,12 @@ public class CreateSecurityLevelDto
 
     [StringLength(500, ErrorMessage = "Описание не может быть длиннее 500 символов")]
     public string? Description { get; set; }
-
-    public required bool IsAlive { get; set; }
 }
 
-public class UpdateSecurityLevelDto : CreateSecurityLevelDto;
+public class UpdateSecurityLevelDto : CreateSecurityLevelDto
+{
+    public required bool IsAlive { get; set; }
+}
 
 public class BulkCreateSecurityLevelDto
 {

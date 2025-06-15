@@ -42,8 +42,7 @@ public class SecurityLevelService : ISecurityLevelService
         {
             Code = createDto.Code,
             Name = createDto.Name,
-            Description = createDto.Description,
-            IsAlive = createDto.IsAlive
+            Description = createDto.Description
         };
 
         await _repository.CreateAsync(securityLevel);

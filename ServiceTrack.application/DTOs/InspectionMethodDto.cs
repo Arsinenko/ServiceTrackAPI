@@ -23,7 +23,7 @@ public class InspectionMethodDto
     }
 }
 
-public abstract class CreateInspectionMethodItemDto
+public class CreateInspectionMethodItemDto
 {
     public required string Code { get; set; }
     public required string Name { get; set; }
