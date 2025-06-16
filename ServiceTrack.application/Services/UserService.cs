@@ -48,6 +48,11 @@ public class UserService : IUserService
         return UserDto.FromUser(user);
     }
 
+    public Task<List<UserDto>> UpdateBulkAsync(UpdateBulkUserDto updateBulkUserDto)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<bool> DeleteAsync(Guid id)
     {
         return await _userRepository.SoftDeleteAsync(id);

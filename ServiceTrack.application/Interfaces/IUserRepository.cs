@@ -10,6 +10,7 @@ public interface IUserRepository
     Task<Guid> CreateAsync(User user);
     Task<List<User>> CreateBulkAsync(IEnumerable<User> users);
     Task<Guid> UpdateAsync(User user);
+    Task<List<User>> UpdateBulkAsync(IEnumerable<User> users);
     Task<IEnumerable<User>> GetAllAsync();
     Task<bool> SoftDeleteAsync(Guid id);
 }

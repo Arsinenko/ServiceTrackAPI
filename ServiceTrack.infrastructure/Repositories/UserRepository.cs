@@ -63,6 +63,17 @@ public class UserRepository : IUserRepository
         return user.Id;
     }
 
+    public async Task<List<User>> UpdateBulkAsync(IEnumerable<User> users)
+    {
+        foreach (var user in users)
+        {
+            user.UpdatedAt = DateTime.UtcNow;
+        }
+        _context.Users.UpdateRange(users);
+        await _context.SaveChangesAsync();
+        return users.ToList();
+    }
+
     public async Task<IEnumerable<User>> GetAllAsync()
     {
         return await _context.Users
