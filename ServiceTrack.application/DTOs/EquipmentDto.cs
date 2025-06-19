@@ -111,30 +111,39 @@ public class CreateEquipmentDto
     [Required(ErrorMessage = "At least one inspection method is required")]
     public required List<InitialInspectionMethodAssignmentDto> Methods { get; set; }
     
+    public Guid? ParentId { get; set; }
+    
 
     public ICollection<CreateEquipmentDto>? Components { get; set; }
 }
 
-public class UpdateEquipmentDto : CreateEquipmentDto;
+public class UpdateEquipmentDto
+{
+    public Guid Id { get; set; }    
+    public string? Name { get; set; }
+    public string? Model { get; set; }
+    public string? SerialNumber { get; set; }
+    public string? Manufacturer { get; set; }
+    public int? Category { get; set; }
+    public int? Quantity { get; set; }
+    public Guid? ExecutorId { get; set; }
+    public int? SecurityLevelId { get; set; }
+    public string? SZZ { get; set; }
+    public string? Description { get; set; }
+    public Guid? ParentId { get; set; } 
+    public List<InitialInspectionMethodAssignmentDto>? Methods { get; set; }
+}
+
+public class UpdateEquipmentBulkDto
+{
+    public required List<UpdateEquipmentDto>? Equipments { get; set; }
+}
 
 public class CreateEquipmentBulkDto
 {
     [Required(ErrorMessage = "Equipment collection is required")]
     [MinLength(1, ErrorMessage = "At least one equipment item is required")]
     public required ICollection<CreateEquipmentDto> Equipment { get; set; }
-}
-
-public class UpdateEquipmentBulkItemDto : CreateEquipmentDto
-{
-    [Required(ErrorMessage = "Id is required")]
-    public required Guid Id { get; set; }
-}
-
-public class UpdateEquipmentBulkDto
-{
-    [Required(ErrorMessage = "Equipment collection is required")]
-    [MinLength(1, ErrorMessage = "At least one equipment item is required")]
-    public required ICollection<UpdateEquipmentBulkItemDto> Equipment { get; set; }
 }
 
 public class DeleteEquipmentBulkResult

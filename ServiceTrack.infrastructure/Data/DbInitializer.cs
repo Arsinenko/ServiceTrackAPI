@@ -1,5 +1,7 @@
 using AuthApp.domain.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using AuthApp.application.Services;
 
 namespace AuthApp.infrastructure.Data;
 
@@ -31,6 +33,32 @@ public static class DbInitializer
 
             await context.Roles.AddRangeAsync(roles);
             await context.SaveChangesAsync();
+        }
+
+        // Create admin user if it doesn't exist
+        if (!await context.Users.AnyAsync(u => u.Email == "admin@gmail.com"))
+        {
+            var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+            if (adminRole != null)
+            {
+                var passwordHasher = new PasswordHasher();
+                var hashedPassword = passwordHasher.HashPassword("P@ssw0rd");
+
+                var adminUser = new User
+                {
+                    Id = Guid.NewGuid(),
+                    FirstName = "Admin",
+                    LastName = "Admin",
+                    Email = "admin@gmail.com",
+                    PasswordHash = hashedPassword,
+                    RoleId = adminRole.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    IsAlive = true
+                };
+
+                await context.Users.AddAsync(adminUser);
+                await context.SaveChangesAsync();
+            }
         }
 
         // Seed security levels

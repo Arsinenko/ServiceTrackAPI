@@ -75,16 +75,15 @@ public class EquipmentController : ControllerBase
     /// <summary>
     /// Обновляет существующее оборудование
     /// </summary>
-    /// <param name="id">Идентификатор оборудования</param>
     /// <param name="updateEquipmentDto">Данные для обновления оборудования</param>
     /// <returns>Обновленное оборудование</returns>
     /// <response code="200">Оборудование успешно обновлено</response>
     /// <response code="400">Некорректные данные</response>
     /// <response code="404">Оборудование не найдено</response>
-    [HttpPut("{id}")]
-    public async Task<ActionResult<EquipmentDto>> UpdateEquipment(Guid id, UpdateEquipmentDto updateEquipmentDto)
+    [HttpPut("id")]
+    public async Task<ActionResult<EquipmentDto>> UpdateEquipment(UpdateEquipmentDto updateEquipmentDto)
     {
-        var equipment = await _equipmentService.UpdateAsync(id, updateEquipmentDto);
+        var equipment = await _equipmentService.UpdateAsync(updateEquipmentDto);
         if (equipment == null)
             return NotFound();
         return Ok(equipment);
@@ -97,20 +96,10 @@ public class EquipmentController : ControllerBase
     /// <response code="200">Оборудование успешно обновлено</response>
     /// <response code="400">Некорректные данные</response>
     [HttpPut("bulk")]
-    public async Task<ActionResult<UpdateEquipmentBulkResult>> UpdateEquipmentBulk(
+    public async Task<ActionResult<List<EquipmentDto>>> UpdateEquipmentBulk(
         UpdateEquipmentBulkDto updateEquipmentBulkDto)
     {
         var result = await _equipmentService.UpdateBulkAsync(updateEquipmentBulkDto);
-        
-        if (!result.UpdatedEquipment.Any() && result.FailedEquipmentIds.Any())
-        {
-            return BadRequest(new { 
-                Message = "Failed to update any equipment",
-                FailedIds = result.FailedEquipmentIds,
-                Reasons = result.FailureReasons
-            });
-        }
-        
         return Ok(result);
     }
 
@@ -175,25 +164,6 @@ public class EquipmentController : ControllerBase
     public async Task<ActionResult<EquipmentDto>> AddComponent(Guid equipmentId, CreateEquipmentDto componentDto)
     {
         var equipment = await _equipmentService.AddComponentAsync(equipmentId, componentDto);
-        if (equipment == null)
-            return NotFound();
-        return Ok(equipment);
-    }
-
-    /// <summary>
-    /// Обновляет компонент оборудования
-    /// </summary>
-    /// <param name="equipmentId">Идентификатор оборудования</param>
-    /// <param name="componentId">Идентификатор компонента</param>
-    /// <param name="componentDto">Данные для обновления компонента</param>
-    /// <returns>Обновленное оборудование</returns>
-    /// <response code="200">Компонент успешно обновлен</response>
-    /// <response code="400">Некорректные данные</response>
-    /// <response code="404">Компонент не найден</response>
-    [HttpPut("{equipmentId}/components/{componentId}")]
-    public async Task<ActionResult<EquipmentDto>> UpdateComponent(Guid equipmentId, Guid componentId, UpdateEquipmentDto componentDto)
-    {
-        var equipment = await _equipmentService.UpdateComponentAsync(equipmentId, componentId, componentDto);
         if (equipment == null)
             return NotFound();
         return Ok(equipment);

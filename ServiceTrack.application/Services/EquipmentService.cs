@@ -55,7 +55,8 @@ public class EquipmentService : IEquipmentService
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             EquipmentInspectionMethods = new List<EquipmentInspectionMethod>(),
-            Attachments = new List<EquipmentAttachment>()
+            Attachments = new List<EquipmentAttachment>(),
+            ParentId = createEquipmentDto.ParentId == Guid.Empty ? null : createEquipmentDto.ParentId
         };
         foreach (var method in createEquipmentDto.Methods)
         {
@@ -92,7 +93,8 @@ public class EquipmentService : IEquipmentService
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             EquipmentInspectionMethods = new List<EquipmentInspectionMethod>(),
-            Attachments = new List<EquipmentAttachment>()
+            Attachments = new List<EquipmentAttachment>(),
+            ParentId = parentId
         };
         foreach (var method in dto.Methods)
         {
@@ -170,141 +172,196 @@ public class EquipmentService : IEquipmentService
         }
     }
 
-    public async Task<EquipmentDto?> UpdateAsync(Guid id, UpdateEquipmentDto updateEquipmentDto)
+    private async Task<Equipment> CreateComponentAsync(CreateEquipmentDto componentDto, Guid parentId)
     {
-        var equipment = await _equipmentRepository.GetByIdAsync(id);
+        var component = new Equipment
+        {
+            Id = Guid.NewGuid(),
+            Name = componentDto.Name,
+            Model = componentDto.Model,
+            SerialNumber = componentDto.SerialNumber,
+            Manufacturer = componentDto.Manufacturer,
+            Category = componentDto.Category,
+            Quantity = componentDto.Quantity,
+            ExecutorId = componentDto.ExecutorId,
+            SecurityLevelId = componentDto.SecurityLevelId,
+            SZZ = componentDto.SZZ,
+            Description = componentDto.Description,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>(),
+            Attachments = new List<EquipmentAttachment>(),
+            ParentId = parentId
+        };
+        foreach (var method in componentDto.Methods)
+        {
+            var inspectionMethod = await _methodRepository.GetByIdAsync(method.InspectionMethodId);
+            if (inspectionMethod == null)
+            {
+                throw new InspectionMethodNotFoundException($"Inspection method {method.InspectionMethodId} not found");
+            }
+            component.EquipmentInspectionMethods.Add(new EquipmentInspectionMethod
+            {
+                EquipmentId = component.Id,
+                InspectionMethodId = inspectionMethod.Id
+            });
+        }
+        // Сохраняем компонент в базе
+        await _equipmentRepository.CreateAsync(component);
+        return component;
+    }
+    
+    public async Task<EquipmentDto?> UpdateAsync(UpdateEquipmentDto updateEquipmentDto)
+    {
+        var equipment = await _equipmentRepository.GetByIdAsync(updateEquipmentDto.Id);
         if (equipment == null)
         {
             return null;
         }
-        equipment.Name = updateEquipmentDto.Name;
-        equipment.Model = updateEquipmentDto.Model;
-        equipment.SerialNumber = updateEquipmentDto.SerialNumber;
-        equipment.Manufacturer = updateEquipmentDto.Manufacturer;
-        equipment.Category = updateEquipmentDto.Category;
-        equipment.Quantity = updateEquipmentDto.Quantity;
-        equipment.ExecutorId = updateEquipmentDto.ExecutorId;
-        equipment.SecurityLevelId = updateEquipmentDto.SecurityLevelId;
-        equipment.SZZ = updateEquipmentDto.SZZ;
-        equipment.Description = updateEquipmentDto.Description;
-        equipment.UpdatedAt = DateTime.UtcNow;
-        
-        equipment.EquipmentInspectionMethods.Clear();
-        foreach (var method in updateEquipmentDto.Methods)
+
+        // Список свойств, которые не нужно обновлять
+        var excludedProperties = new[] 
+        { 
+            nameof(UpdateEquipmentDto.Id),
+            nameof(UpdateEquipmentDto.Methods) 
+        };
+
+        // Получаем все свойства DTO, кроме исключенных
+        var dtoProperties = typeof(UpdateEquipmentDto).GetProperties()
+            .Where(p => !excludedProperties.Contains(p.Name))
+            .ToList();
+
+        foreach (var dtoProperty in dtoProperties)
         {
-            var inspectionMethod =  await _methodRepository.GetByIdAsync(method.InspectionMethodId);
-            if (inspectionMethod == null)
+            var value = dtoProperty.GetValue(updateEquipmentDto);
+            if (value != null)
             {
-                throw new InspectionMethodNotFoundException("Inspection method not found");
+                // Находим соответствующее свойство в сущности
+                var entityProperty = equipment.GetType().GetProperty(dtoProperty.Name);
+                if (entityProperty != null && entityProperty.CanWrite)
+                {
+                    entityProperty.SetValue(equipment, value);
+                }
             }
-            equipment.EquipmentInspectionMethods.Add(new  EquipmentInspectionMethod
-            {
-                EquipmentId = equipment.Id,
-                InspectionMethodId = inspectionMethod.Id
-            });
         }
-        
+
+        if (updateEquipmentDto.Methods != null)
+        {
+            equipment.EquipmentInspectionMethods = new List<EquipmentInspectionMethod>();
+            foreach (var method in updateEquipmentDto.Methods)
+            {
+                var inspectionMethod = await _methodRepository.GetByIdAsync(method.InspectionMethodId);
+                if (inspectionMethod == null)
+                {
+                    throw new InspectionMethodNotFoundException($"Inspection method {method.InspectionMethodId} not found");
+                }
+                equipment.EquipmentInspectionMethods.Add(new EquipmentInspectionMethod
+                {
+                    EquipmentId = equipment.Id,
+                    InspectionMethodId = inspectionMethod.Id
+                });
+            }
+        }
+
+        equipment.UpdatedAt = DateTime.UtcNow;
+
         await _equipmentRepository.UpdateAsync(equipment);
         return EquipmentDto.FromEquipment(equipment);
     }
 
-    public async Task<UpdateEquipmentBulkResult> UpdateBulkAsync(UpdateEquipmentBulkDto updateEquipmentBulkDto)
+    public async Task<List<EquipmentDto>> UpdateBulkAsync(UpdateEquipmentBulkDto updateEquipmentBulkDto)
+{
+    if (updateEquipmentBulkDto.Equipments == null || !updateEquipmentBulkDto.Equipments.Any())
     {
-        if (!updateEquipmentBulkDto.Equipment.Any())
+        return new List<EquipmentDto>();
+    }
+
+    // 1. Собираем все Id из DTO
+    var equipmentIds = updateEquipmentBulkDto.Equipments.Select(e => e.Id).ToList();
+
+    // 2. Получаем всё оборудование одним запросом
+    var existingEquipments = await _equipmentRepository.GetByIdsAsync(equipmentIds);
+    var equipmentDict = existingEquipments.ToDictionary(e => e.Id);
+
+    // 3. Собираем и проверяем методы осмотра
+    var methodIds = updateEquipmentBulkDto.Equipments
+        .Where(e => e.Methods != null)
+        .SelectMany(e => e.Methods)
+        .Select(m => m.InspectionMethodId)
+        .Distinct()
+        .ToList();
+
+    var methods = await _methodRepository.GetByIdsAsync(methodIds);
+    var methodDict = methods.ToDictionary(m => m.Id);
+
+    var missingMethodIds = methodIds.Where(id => !methodDict.ContainsKey(id)).ToList();
+    if (missingMethodIds.Count > 0)
+    {
+        throw new InspectionMethodNotFoundException($"Inspection methods {string.Join(", ", missingMethodIds)} not found.");
+    }
+
+    // 4. Обновляем каждую сущность
+    var updatedEquipments = new List<Equipment>();
+
+    foreach (var dto in updateEquipmentBulkDto.Equipments)
+    {
+        if (!equipmentDict.TryGetValue(dto.Id, out var equipment))
         {
-            return new UpdateEquipmentBulkResult
-            {
-                UpdatedEquipment = new List<EquipmentDto>(),
-                FailedEquipmentIds = new List<Guid>(),
-                FailureReasons = new List<string>()
-            };
+            continue; // Пропускаем, если оборудование не найдено
         }
 
-        var updatedEquipment = new List<EquipmentDto>();
-        var failedEquipmentIds = new List<Guid>();
-        var failureReasons = new List<string>();
-
-        // Get all existing equipment in one query
-        var equipmentIds = updateEquipmentBulkDto.Equipment.Select(e => e.Id).ToList();
-        var existingEquipment = (await _equipmentRepository.GetByIdsAsync(equipmentIds)).ToDictionary(e => e.Id);
-
-        var equipmentToUpdate = new List<Equipment>();
-
-        foreach (var item in updateEquipmentBulkDto.Equipment)
+        // Обновляем свойства, кроме Id и Methods
+        var excludedProperties = new[]
         {
-            try
-            {
-                if (!existingEquipment.TryGetValue(item.Id, out var existing))
-                {
-                    failedEquipmentIds.Add(item.Id);
-                    failureReasons.Add($"Equipment with ID {item.Id} not found");
-                    continue;
-                }
+            nameof(UpdateEquipmentDto.Id),
+            nameof(UpdateEquipmentDto.Methods)
+        };
 
-                // Update only the fields that are provided in the DTO
-                existing.Name = item.Name;
-                existing.Model = item.Model;
-                existing.SerialNumber = item.SerialNumber;
-                existing.Manufacturer = item.Manufacturer;
-                existing.Quantity = item.Quantity;
-                existing.ExecutorId = item.ExecutorId;
-                existing.SZZ = item.SZZ;
-                existing.Description = item.Description;
-                existing.UpdatedAt = DateTime.UtcNow;
-                existing.SecurityLevelId = item.SecurityLevelId;
-                existing.EquipmentInspectionMethods.Clear();
-                
-                foreach (var method in item.Methods)
+        var dtoProperties = typeof(UpdateEquipmentDto).GetProperties()
+            .Where(p => !excludedProperties.Contains(p.Name))
+            .ToList();
+
+        foreach (var property in dtoProperties)
+        {
+            var value = property.GetValue(dto);
+            if (value != null)
+            {
+                var entityProperty = equipment.GetType().GetProperty(property.Name);
+                if (entityProperty != null && entityProperty.CanWrite)
                 {
-                    var inspectionMethod =  await _methodRepository.GetByIdAsync(method.InspectionMethodId);
-                    if (inspectionMethod == null)
+                    entityProperty.SetValue(equipment, value);
+                }
+            }
+        }
+
+        // Обновляем методы осмотра
+        if (dto.Methods != null)
+        {
+            equipment.EquipmentInspectionMethods.Clear();
+            foreach (var methodDto in dto.Methods)
+            {
+                if (methodDict.TryGetValue(methodDto.InspectionMethodId, out var method))
+                {
+                    equipment.EquipmentInspectionMethods.Add(new EquipmentInspectionMethod
                     {
-                        throw new InspectionMethodNotFoundException("Inspection method not found");
-                    }
-                    existing.EquipmentInspectionMethods.Add(new EquipmentInspectionMethod
-                    {
-                        EquipmentId = existing.Id,
-                        InspectionMethodId = inspectionMethod.Id
+                        EquipmentId = equipment.Id,
+                        InspectionMethodId = method.Id
                     });
                 }
-                
-                equipmentToUpdate.Add(existing);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error preparing equipment {Id} for update", item.Id);
-                failedEquipmentIds.Add(item.Id);
-                failureReasons.Add($"Failed to prepare equipment with ID {item.Id} for update: {ex.Message}");
             }
         }
 
-        if (equipmentToUpdate.Any())
-        {
-            try
-            {
-                var result = await _equipmentRepository.UpdateBulkAsync(equipmentToUpdate);
-                if (result != null)
-                {
-                    updatedEquipment.AddRange(result.Select(EquipmentDto.FromEquipment));
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error during bulk update of equipment");
-                // Add all equipment IDs that were being updated to the failed list
-                failedEquipmentIds.AddRange(equipmentToUpdate.Select(e => e.Id));
-                failureReasons.AddRange(equipmentToUpdate.Select(e => 
-                    $"Failed to update equipment with ID {e.Id}: {ex.Message}"));
-            }
-        }
-
-        return new UpdateEquipmentBulkResult
-        {
-            UpdatedEquipment = updatedEquipment,
-            FailedEquipmentIds = failedEquipmentIds,
-            FailureReasons = failureReasons
-        };
+        equipment.UpdatedAt = DateTime.UtcNow;
+        updatedEquipments.Add(equipment);
     }
+
+    // 5. Массовое обновление в репозитории
+    await _equipmentRepository.UpdateBulkAsync(updatedEquipments);
+
+    // 6. Возвращаем обновлённые DTO
+    return updatedEquipments.Select(EquipmentDto.FromEquipment).ToList();
+}
+
 
     public async Task DeleteAsync(Guid id)
     {
@@ -349,48 +406,8 @@ public class EquipmentService : IEquipmentService
 
     public async Task<EquipmentDto?> AddComponentAsync(Guid equipmentId, CreateEquipmentDto componentDto)
     {
-        //TODO Fix constructor
-        var component = new Equipment
-        {
-            Id = Guid.NewGuid(),
-            Name = componentDto.Name,
-            Model = componentDto.Model,
-            SerialNumber = componentDto.SerialNumber,
-            Manufacturer = componentDto.Manufacturer,
-            Category = componentDto.Category,
-            Quantity = componentDto.Quantity,
-            ExecutorId = componentDto.ExecutorId,
-            SZZ = componentDto.SZZ,
-            Description = componentDto.Description,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>(),
-            Attachments = new List<EquipmentAttachment>()
-        };
-
+        var component = await CreateComponentAsync(componentDto, equipmentId);
         var equipment = await _equipmentRepository.AddComponentAsync(equipmentId, component);
-        return equipment != null ? EquipmentDto.FromEquipment(equipment) : null;
-    }
-
-    public async Task<EquipmentDto?> UpdateComponentAsync(Guid equipmentId, Guid componentId, UpdateEquipmentDto componentDto)
-    {
-        //TODO Fix constructor
-        var updatedComponent = new Equipment
-        {
-            Name = componentDto.Name,
-            Model = componentDto.Model,
-            SerialNumber = componentDto.SerialNumber,
-            Manufacturer = componentDto.Manufacturer,
-            Category = componentDto.Category,
-            Quantity = componentDto.Quantity,
-            ExecutorId = componentDto.ExecutorId,
-            SZZ = componentDto.SZZ,
-            Description = componentDto.Description,
-            UpdatedAt = DateTime.UtcNow,
-            EquipmentInspectionMethods = new List<EquipmentInspectionMethod>()
-        };
-
-        var equipment = await _equipmentRepository.UpdateComponentAsync(equipmentId, componentId, updatedComponent);
         return equipment != null ? EquipmentDto.FromEquipment(equipment) : null;
     }
 
