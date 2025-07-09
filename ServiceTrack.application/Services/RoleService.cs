@@ -140,25 +140,23 @@ public class RoleService : IRoleService
 
     public async Task<RoleDto?> UpdateAsync(Guid id, UpdateRoleDto updateRoleDto)
     {
-        ValidateRoleNameAndDescription(updateRoleDto.Name, updateRoleDto.Description);
-
         var role = await _roleRepository.GetByIdAsync(id);
         if (role == null)
             throw new RoleNotFoundException($"Role with id '{id}' not found");
 
-        // Check if we're changing the name and if the new name already exists
-        if (role.Name != updateRoleDto.Name)
+        var dtoProperties = typeof(UpdateRoleDto).GetProperties().Where(p => p.Name != nameof(UpdateRoleDto.Id));
+        foreach (var dtoProperty in dtoProperties)
         {
-            var existingRole = await _roleRepository.GetByNameAsync(updateRoleDto.Name);
-            if (existingRole != null)
+            var value = dtoProperty.GetValue(updateRoleDto);
+            if (value != null)
             {
-                throw new RoleNameAlreadyExistsException($"Role with name '{updateRoleDto.Name}' already exists");
+                var entityProperty = role.GetType().GetProperty(dtoProperty.Name);
+                if (entityProperty != null && entityProperty.CanWrite)
+                {
+                    entityProperty.SetValue(role, value);
+                }
             }
         }
-
-        role.Name = updateRoleDto.Name;
-        role.Description = updateRoleDto.Description;
-
         var result = await _roleRepository.UpdateAsync(role);
         return RoleDto.FromRole(result);
     }

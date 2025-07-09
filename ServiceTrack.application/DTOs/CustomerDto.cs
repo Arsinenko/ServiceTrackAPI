@@ -38,9 +38,10 @@ public class CreateCustomerBulkResultDto
     public required ICollection<string> FailureReasons { get; set; }
 }
 
-public class UpdateCustomerDto : CreateCustomerDto
+public class UpdateCustomerDto
 {
     public required int Id { get; set; }
+    public string? Name { get; set; }
 }
 
 public class UpdateCustomerBulkDto

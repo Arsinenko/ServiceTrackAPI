@@ -88,10 +88,10 @@ public class RoleController : ControllerBase
     }
     
     /// <summary>
-    /// Обновляет существующую роль
+    /// Обновляет существующую роль (можно передавать только изменяемые поля)
     /// </summary>
     /// <param name="id">Идентификатор роли</param>
-    /// <param name="updateRoleDto">Данные для обновления роли</param>
+    /// <param name="updateRoleDto">Данные для обновления роли (только изменяемые поля)</param>
     /// <returns>Обновленная роль</returns>
     /// <response code="200">Роль успешно обновлена</response>
     /// <response code="400">Некорректные данные (пустое имя/описание, превышена максимальная длина)</response>

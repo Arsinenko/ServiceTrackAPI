@@ -102,15 +102,20 @@ public class CustomerService : ICustomerService
         var customer = await _customerRepository.GetByIdAsync(updateCustomer.Id);
         if (customer == null)
             throw new CustomerNotFoundException($"Customer with id {updateCustomer.Id} does not exist.");
-        if (customer.Name != updateCustomer.Name)
+
+        var dtoProperties = typeof(UpdateCustomerDto).GetProperties().Where(p => p.Name != nameof(UpdateCustomerDto.Id));
+        foreach (var dtoProperty in dtoProperties)
         {
-            var existingCustomer = await _customerRepository.GetByNameAsync(updateCustomer.Name);
-            if (existingCustomer != null)
+            var value = dtoProperty.GetValue(updateCustomer);
+            if (value != null)
             {
-                throw new CustomerAlreadyExistsException($"Customer with name {updateCustomer.Name} already exists.");
+                var entityProperty = customer.GetType().GetProperty(dtoProperty.Name);
+                if (entityProperty != null && entityProperty.CanWrite)
+                {
+                    entityProperty.SetValue(customer, value);
+                }
             }
         }
-        customer.Name = updateCustomer.Name;
         var result = await _customerRepository.UpdateAsync(customer);
         return CustomerDto.FromCustomer(result);
     }

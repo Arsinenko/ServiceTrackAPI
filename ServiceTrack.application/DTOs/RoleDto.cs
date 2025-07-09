@@ -31,7 +31,12 @@ public class CreateRoleDto
     public required string Description { get; set; }
 }
 
-public class UpdateRoleDto : CreateRoleDto;
+public class UpdateRoleDto
+{
+    public required Guid Id { get; set; }
+    public string? Name { get; set; }
+    public string? Description { get; set; }
+}
 
 public class CreateRoleBulkDto
 {

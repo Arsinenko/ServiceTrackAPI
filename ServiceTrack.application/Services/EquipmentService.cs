@@ -77,6 +77,15 @@ public class EquipmentService : IEquipmentService
 
     private async Task<Equipment> CreateEquipmentWithComponentsAsync(CreateEquipmentDto dto, Guid? parentId = null)
     {
+        // Определяем итоговый parentId: если явно передан — используем его, иначе берем из dto
+        Guid? finalParentId = parentId;
+        if (finalParentId == null)
+        {
+            if (dto.ParentId.HasValue && dto.ParentId.Value != Guid.Empty)
+                finalParentId = dto.ParentId;
+            else
+                finalParentId = null;
+        }
         var equipment = new Equipment
         {
             Id = Guid.NewGuid(),
@@ -94,7 +103,7 @@ public class EquipmentService : IEquipmentService
             UpdatedAt = DateTime.UtcNow,
             EquipmentInspectionMethods = new List<EquipmentInspectionMethod>(),
             Attachments = new List<EquipmentAttachment>(),
-            ParentId = parentId
+            ParentId = finalParentId
         };
         foreach (var method in dto.Methods)
         {

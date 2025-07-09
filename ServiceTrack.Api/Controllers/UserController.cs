@@ -98,10 +98,10 @@ public class UserController : ControllerBase
     }
 
     /// <summary>
-    /// Обновляет информацию о пользователе
+    /// Обновляет информацию о пользователе (можно передавать только изменяемые поля, поддерживается смена пароля через поле NewPassword)
     /// </summary>
     /// <param name="id">Идентификатор пользователя</param>
-    /// <param name="updateUserDto">Данные для обновления</param>
+    /// <param name="updateUserDto">Данные для обновления (только изменяемые поля, для смены пароля используйте NewPassword)</param>
     /// <returns>Обновленная информация о пользователе</returns>
     /// <response code="200">Информация успешно обновлена</response>
     /// <response code="401">Требуется авторизация</response>
@@ -117,9 +117,9 @@ public class UserController : ControllerBase
         return Ok(user);
     }
     /// <summary>
-    /// Обновляет информацию о текущем пользователе
+    /// Обновляет информацию о текущем пользователе (можно передавать только изменяемые поля, поддерживается смена пароля через поле NewPassword)
     /// </summary>
-    /// <param name="updateUserDto">Данные для обновления</param>
+    /// <param name="updateUserDto">Данные для обновления (только изменяемые поля, для смены пароля используйте NewPassword)</param>
     /// <returns>Обновленная информация о пользователе</returns>
     /// <response code="200">Информация успешно обновлена</response>
     /// <response code="401">Требуется авторизация</response>

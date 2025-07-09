@@ -86,9 +86,9 @@ public class CustomerController : ControllerBase
     }
 
     /// <summary>
-    /// Обновляет данные заказчика
+    /// Обновляет данные заказчика (можно передавать только изменяемые поля)
     /// </summary>
-    /// <param name="customerDto">Данные для обновления заказчика</param>
+    /// <param name="customerDto">Данные для обновления заказчика (только изменяемые поля)</param>
     /// <returns>Обновленный заказчик</returns>
     /// <response code="200">Заказчик успешно обновлен</response>
     /// <response code="400">Некорректные данные</response>

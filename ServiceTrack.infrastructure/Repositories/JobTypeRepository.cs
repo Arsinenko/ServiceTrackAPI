@@ -76,8 +76,11 @@ public class JobTypeRepository :  IJobTypeRepository
         return jobTypesList;
     }
 
-    public Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
-        throw new NotImplementedException();
+        var jobType = await _context.JobTypes.FindAsync(id);
+        if (jobType != null) _context.JobTypes.Remove(jobType);
+        await _context.SaveChangesAsync();
+        
     }
 }

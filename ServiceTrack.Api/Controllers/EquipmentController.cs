@@ -80,7 +80,7 @@ public class EquipmentController : ControllerBase
     /// <response code="200">Оборудование успешно обновлено</response>
     /// <response code="400">Некорректные данные</response>
     /// <response code="404">Оборудование не найдено</response>
-    [HttpPut("id")]
+    [HttpPut("one")]
     public async Task<ActionResult<EquipmentDto>> UpdateEquipment(UpdateEquipmentDto updateEquipmentDto)
     {
         var equipment = await _equipmentService.UpdateAsync(updateEquipmentDto);

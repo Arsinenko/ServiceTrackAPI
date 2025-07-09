@@ -1,16 +1,17 @@
 using AuthApp.application.DTOs;
 using AuthApp.application.Interfaces;
 using AuthApp.domain.Entities;
-
 namespace AuthApp.application.Services;
 
 public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IPasswordHasher _passwordHasher;
 
-    public UserService(IUserRepository userRepository)
+    public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher)
     {
         _userRepository = userRepository;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<UserDto?> GetByIdAsync(Guid id)
@@ -37,13 +38,25 @@ public class UserService : IUserService
         if (user == null)
             return null;
 
-        user.FirstName = updateUserDto.FirstName;
-        user.LastName = updateUserDto.LastName;
-        user.Email = updateUserDto.Email;
-        user.IsAlive = updateUserDto.IsAlive;
+        var dtoProperties = typeof(UpdateUserDto).GetProperties();
+        foreach (var dtoProperty in dtoProperties)
+        {
+            var value = dtoProperty.GetValue(updateUserDto);
+            if (value != null && dtoProperty.Name != nameof(UpdateUserDto.NewPassword))
+            {
+                var entityProperty = user.GetType().GetProperty(dtoProperty.Name);
+                if (entityProperty != null && entityProperty.CanWrite)
+                {
+                    entityProperty.SetValue(user, value);
+                }
+            }
+        }
+        // Смена пароля
+        if (!string.IsNullOrEmpty(updateUserDto.NewPassword))
+        {
+            user.PasswordHash = _passwordHasher.HashPassword(updateUserDto.NewPassword);
+        }
         user.UpdatedAt = DateTime.UtcNow;
-        user.RoleId = updateUserDto.RoleId;
-
         await _userRepository.UpdateAsync(user);
         return UserDto.FromUser(user);
     }

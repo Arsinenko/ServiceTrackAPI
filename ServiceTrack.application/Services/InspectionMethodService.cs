@@ -84,7 +84,14 @@ public class InspectionMethodService : IInspectionMethodService
 
     public async Task<InspectionMethodDto> UpdateAsync(UpdateInspectionMethodItemDto inspectionMethod)
     {
-        throw new NotImplementedException();
+        var method = await _repository.GetByIdAsync(inspectionMethod.Id);
+        method!.Code = inspectionMethod.Code;
+        method.Name = inspectionMethod.Name;
+        method.Description = inspectionMethod.Description;
+        method.IsAlive = inspectionMethod.IsAlive;
+        await _repository.UpdateBulkAsync(new List<InspectionMethod>(){method});
+        return InspectionMethodDto.FroMethodDto(method);
+        
     }
 
     public async Task<List<InspectionMethodDto>> UpdateBulkAsync(UpdateInspectionMethodsDto inspectionMethods)
